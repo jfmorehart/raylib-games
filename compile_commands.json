@@ -1,0 +1,7 @@
+[
+  {
+    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "command": "cc -Wall -O2 -I/opt/homebrew/Cellar/raylib/5.5/include -L/opt/homebrew/Cellar/raylib/5.5/lib -lraylib -framework OpenGL -framework Cocoa -framework IOKit -o breakout main.c",
+    "file": "/Users/jackmorehart/Projects/raylib-games/main.c"
+  }
+]
