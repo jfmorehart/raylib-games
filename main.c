@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include <math.h>       
+#include <stdlib.h>
 
 #define FRAMERATE 120
 int WIDTH;
@@ -9,11 +10,11 @@ Vector2 screenVec;
 float deltaTime = 1.0 / FRAMERATE;
 
 float PixelsToWorld(float pixels) {                     
-    return 1.5 *  pixels / HEIGHT;                                      
+    return 2 *  pixels / HEIGHT;                                      
 }                                                                                                                        
    
 float WorldToPixels(float world) {                                                                                       
-    return world * HEIGHT * 0.66;                              
+    return world * HEIGHT * 0.5;                              
 }          
 
 Vector2 WorldToScreen(Vector2 worldPos){
@@ -169,12 +170,26 @@ int main(void)
     SetWindowSize(WIDTH, HEIGHT);
     xBounds = (Vector2){ScreenToWorld((Vector2){0, 0}).x, ScreenToWorld((Vector2){WIDTH, 0}).x}; 
     
+    Texture2D tex = LoadTexture("empire.png");    
+
+    Shader s = LoadShader(0, "shader.fs");
+    int resLoc = GetShaderLocation(s, "resolution");        
+    float res[2] = { (float)WIDTH, (float)HEIGHT };                                                                                                                                                    
+    SetShaderValue(s, resLoc, res, SHADER_UNIFORM_VEC2);                                                                                                                                               
+                                                           
     while (!WindowShouldClose()) {
         BeginDrawing();
+            
+        //BeginShaderMode(s);
         ClearBackground((Color){ 24, 24, 32, 255 });
+        DrawTextureEx(tex, (Vector2){0, 0}, 0, 0.3, WHITE);     
+        //DrawRectangle(0,  0, WIDTH, HEIGHT, RED);
         Render();
+        //EndShaderMode();
         EndDrawing();
     }
+    UnloadTexture(tex);
+    UnloadShader(s);
     CloseWindow();
     return 0;
 }
