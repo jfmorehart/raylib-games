@@ -1,16 +1,22 @@
-CC = cc
-CFLAGS = -Wall -O2
-LIBS = $(shell pkg-config --libs --cflags raylib) -framework OpenGL -framework Cocoa -framework IOKit
+MAKEFLAGS += --warn-undefined-variables
+CFLAGS = -Wall -O2 $(shell pkg-config --cflags raylib)                                                                                
+LIBS = $(shell pkg-config --libs raylib) -framework OpenGL -framework Cocoa -framework IOKit
 
 all: raylibtest
 
-raylibtest: main.c
-	$(CC) $(CFLAGS) -o raylibtest main.c $(LIBS)
+HFILES = mapshaders.h helpers.h islands.h globals.h
+
+main.o : main.c $(HFILES)
+helpers.o : helpers.c $(HFILES)
+NEEDSCOMPILE = main.o helpers.o
+
+raylibtest: $(NEEDSCOMPILE)
+	cc $(CFLAGS) -o raylibtest $(NEEDSCOMPILE) $(LIBS)
 
 run: raylibtest
-	./raylibtest
+	./raylibtest 
 
 clean:
-	rm -f raylibtest
+	rm -f raylibtest $(NEEDSCOMPILE)
 
 .PHONY: all run clean
