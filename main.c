@@ -91,6 +91,7 @@ float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target){
         }else{
             alternate = -1;
         }
+        //hey chloe
 
         float angle = ship->angle + (i * (0.5 * fanAngle / (rays-1))) * alternate;
         float a2T = fabsf(sAngle(angleToTarget, angle));
