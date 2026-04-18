@@ -19,6 +19,8 @@ typedef struct{
     float scale;
 } Ship;
 
+#define SHIPTURN 2
+
 int shipCount = 5;
 Ship ships[5];
 
@@ -31,8 +33,8 @@ void RunOnStart(){
     }
 
     for(int i = 0; i < shipCount; i++){
-        ships[i] = (Ship){true, Vector2Multiply(RVec(1), (Vector2){2, 1}), RVec(5).x, fabsf(RVec(0.1).x)};
-    }
+        ships[i] = (Ship){true, RVec(0.5), RVec(5).x, Clamp(RVec(0.03).x, 0.01, 0.03)};
+    }   
   
     InitWindow(WIDTH, HEIGHT, "raylib");
 
@@ -68,8 +70,53 @@ void InputLoop(Vector2 mposSc){
   
     }
 }
+Vector2 VfromAngle(float angle) {return (Vector2){cos(angle), sin(angle)};};
+
+float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target){
+
+    Vector2 d2m = Vector2Subtract(target, ship->wPos);
+    float angleToTarget= atan2(d2m.y, d2m.x);
+    float tdist = Vector2Length(d2m);
+
+    float bestAngle = ship->angle + PI;
+
+    //float angle = ship->angle + (i * (fanAngle / (rays-1))) - (fanAngle * 0.5);
+
+    float best_a2T = PI;
+
+    for(int i = 0; i < rays; i++){
+        float alternate = 0;
+        if(i % 2 == 0){
+            alternate = 1;
+        }else{
+            alternate = -1;
+        }
+
+        float angle = ship->angle + (i * (0.5 * fanAngle / (rays-1))) * alternate;
+        float a2T = fabsf(sAngle(angleToTarget, angle));
+
+        Vector2 delta = VfromAngle(angle);
+        Edge segment = {ship->wPos, Vector2Add(Vector2Scale(delta, tdist), ship->wPos)};
+        Hit hit = AllIslandsIntersect(island, segment);
+
+        if(hit.hit){
+
+            float d = Vector2DistanceSqr(ship->wPos, hit.hitPosition);
+            if(d >= tdist * tdist && a2T < best_a2T){
+                best_a2T = a2T;
+                bestAngle = angle;
+            }
+        }else if(a2T < best_a2T)
+        {
+            best_a2T = a2T;
+            bestAngle = angle;
+        }
+    }
+    return bestAngle;
+}
+
 void RenderShip(const Ship *ship){
-    Vector2 forward = {cos(ship->angle), sin(ship->angle)};
+    Vector2 forward = VfromAngle(ship->angle);
     // Vector2 forwardNormal = Vector2Normalize(forward);
     forward = Vector2Scale(forward, ship->scale * 2);
 
@@ -80,11 +127,6 @@ void RenderShip(const Ship *ship){
     Vector2 leftWing = Vector2Add(Vector2Add(ship->wPos, Vector2Negate(right)), Vector2Scale(forward, -0.5));
     
     DrawTriangle(WorldToScreen(nose), WorldToScreen(rightWing),WorldToScreen(leftWing), WHITE);
-    Edge segment = {ship->wPos, Vector2Add(Vector2Scale(forward, 1000), ship->wPos)};
-    Hit hit = AllIslandsIntersect(island, segment);
-
-    // if
-    // DrawCircleV(WorldToScreen(ship->wPos), 30, BLUE);
 }
 
 void FrameLoop(){
@@ -96,12 +138,20 @@ void FrameLoop(){
     mousePos_ScreenCoords.y = HEIGHT - mousePos_ScreenCoords.y;
     mousePos_ScreenCoords = Vector2Scale(mousePos_ScreenCoords, 2); 
 
-
     //Set shader variables and draw ocean
     PrepOceanPass(mousePos_ScreenCoords);
 
-    for(int i = 0; i < ISLANDCOUNT; i++){
+    for(int i = 0; i < shipCount; i++){
         RenderShip(&ships[i]);
+
+        float angle = Path2Target(&ships[i], 8, PI * 1, mousePos);
+        float diff = sAngle(ships[i].angle, angle);
+        if(diff < -0.01){
+            ships[i].angle -= deltaTime * SHIPTURN;
+        }else if(diff >= 0.01){
+            ships[i].angle += deltaTime * SHIPTURN;
+        }
+        ships[i].wPos = Vector2Add(ships[i].wPos, Vector2Scale(VfromAngle(ships[i].angle), deltaTime * 0.3));
     }
     // RenderShip(&(Ship){true, {0, 0}, appTime, 0.1 * (1 + sin(appTime))});
 

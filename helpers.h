@@ -7,11 +7,15 @@
 
 Vector2 RVec(float scale);
 
+float sAngle(float a1, float a2);
+    
+
 float PixelsToWorld(float pixels);     
 float WorldToPixels(float world);
 
 Vector2 WorldToScreen(Vector2 worldPos);
 Vector2 ScreenToWorld(Vector2 screenPos);
+
 
 typedef struct{
     // from A to B

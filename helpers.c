@@ -10,6 +10,12 @@ Vector2 RVec(float scale){
     //printf("rvec: (%f, %f)\n", rvec.x, rvec.y);  
     return rvec;
 }
+float sAngle(float a1, float a2){
+    float diff = a2 - a1;
+    if(diff > PI) diff -= 2 * PI;
+    if(diff < -PI) diff += 2 * PI;
+    return diff;
+}
 
 float PixelsToWorld(float pixels) {                     
     return 2 *  pixels / HEIGHT;                                      
@@ -58,6 +64,6 @@ Hit Intersect(Edge ab, Edge cd){
     // printf("against line %fx +%f\n", slope_cd, cd_yinter);
 
     bool hit = WithinSegment(xIntercept, ab) && WithinSegment(xIntercept, cd);
-    printf("hit (%f, %f)\n", xIntercept, yIntercept);
+    // printf("hit (%f, %f)\n", xIntercept, yIntercept);
     return (Hit){hit,(Vector2){xIntercept, yIntercept}};
 }
