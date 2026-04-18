@@ -17,6 +17,8 @@ float sAngle(float a1, float a2){
     return diff;
 }
 
+Vector2 VfromAngle(float angle) {return (Vector2){cos(angle), sin(angle)};};
+
 float PixelsToWorld(float pixels) {                     
     return 2 *  pixels / HEIGHT;                                      
 }                                                                                                                        

@@ -8,7 +8,8 @@
 Vector2 RVec(float scale);
 
 float sAngle(float a1, float a2);
-    
+
+Vector2 VfromAngle(float angle);
 
 float PixelsToWorld(float pixels);     
 float WorldToPixels(float world);

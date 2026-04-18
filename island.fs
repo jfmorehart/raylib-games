@@ -28,7 +28,7 @@ float rand(vec2 x) {
 	// Same code, with the clamps in smoothstep and common subexpressions
 	// optimized away.
 	vec2 u = f * f * (3.0 - 2.0 * f);
-	return (mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y) - 0.5;
+	return (mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y) - 0.4;
 }
 
 float octaves(vec2 uv, int octaveCount){
@@ -44,21 +44,38 @@ float octaves(vec2 uv, int octaveCount){
     return value;
 }
 
+float scale(float toscale, float factor){
+    return round(toscale * factor) / factor;
+}
+
 void main()                                                                                                                                                                                        
 {
 
     vec2 uv = gl_FragCoord.xy / resolution.x;   
 
     float stime = _Time * 1;//sin(_Time * 3);
-    float n1 = (octaves(130 + (vec2(gl_FragCoord.x * 0.5, gl_FragCoord.y)) * 0.01, 5)) * 0.2;
-    float n2 = (0.5 + octaves(324 + (10 * stime + vec2(gl_FragCoord.x * 0.5, gl_FragCoord.y)) * 0.04, 5) - 0.1) * 0.05;
+    float baseFreq = 1;
+    float n1 = octaves(130 + (vec2(gl_FragCoord.x * 0.5, gl_FragCoord.y)) * 0.005 * baseFreq, 5);
+    // float n2 = (octaves(130 + (vec2(gl_FragCoord.x * 0.5, gl_FragCoord.y)) * 0.015 * baseFreq, 5)) * 1;
+
+
 
     uv = fract(uv * multiplier);
-    float rdot = dotsize + n1 * 2 + n2;
+    float noise = n1;// + n2;
+    // noise = pow(noise + 0.01, 0.5);
+    noise += 0.2;
+    noise *= 0.4;
 
-    rdot = clamp(rdot, 0, 0.5);
+    noise = scale(noise, 8);
+    float rdot = dotsize + noise;
+
+
+    // rdot = 
+
+    rdot = clamp(rdot, 0.03, 0.4);
+    
     float val = step(length(uv - 0.5), rdot);
     // val = n1 * 100;
-    val = 0;
+    // val = 0;
     finalColor = vec4(val, val, val, 1); 
 }                                                                                                                                                                                                  
