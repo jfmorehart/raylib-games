@@ -4,6 +4,7 @@
 #include <math.h>       
 #include <stdio.h>
 #include <stdlib.h>
+#include "globals.h"
 
 float R01();
 Vector2 RVec(float scale);
@@ -35,6 +36,9 @@ typedef struct{
 
 Hit Intersect(Edge ab, Edge cd);
 
+bool FindRoutineFromName(const char* routineName, Routine **routine);
+
+bool RunRoutine(const char* routineName);
 
 
 

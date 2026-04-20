@@ -56,8 +56,13 @@ void PrepOceanPass(Vector2 mousePos){
     landTime = GetShaderLocation(islandShader_frag, "_Time"); 
 
     SetShaderValue(oceanShader_frag, mousePosLoc, &mousePos, SHADER_UNIFORM_VEC2);
-    SetShaderValue(oceanShader_frag, timeLoc, &scaledTime, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(islandShader_frag, landTime, &scaledTime, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(oceanShader_frag, timeLoc, &unscaledTime, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(islandShader_frag, landTime, &unscaledTime, SHADER_UNIFORM_FLOAT);
+
+    resLoc = GetShaderLocation(oceanShader_frag, "worldScale");   
+    SetShaderValue(oceanShader_frag, resLoc, &worldScale, SHADER_UNIFORM_FLOAT);
+    resLoc = GetShaderLocation(oceanShader_frag, "cameraPosition");   
+    SetShaderValue(oceanShader_frag, resLoc, &cameraPosition, SHADER_UNIFORM_VEC2);
 
     BeginShaderMode(oceanShader_frag);
     
@@ -67,6 +72,7 @@ void PrepOceanPass(Vector2 mousePos){
     SetShaderValue(islandShader_frag, resLoc, &worldScale, SHADER_UNIFORM_FLOAT);
     resLoc = GetShaderLocation(islandShader_frag, "cameraPosition");   
     SetShaderValue(islandShader_frag, resLoc, &cameraPosition, SHADER_UNIFORM_VEC2);
+
 
 }
 void EndOceanPass(){

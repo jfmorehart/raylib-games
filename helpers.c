@@ -5,6 +5,7 @@
 #include "islands.h"
 
 #include <stdio.h>
+#include <string.h>
 
 float R01(){
     return (float)rand() / RAND_MAX;
@@ -124,6 +125,32 @@ bool IsPointWithinIslands(Vector2 wPoint){
         if(PointIslandCheck(wPoint, &island[i])){
             return true;
         }
+    }
+    return false;
+}
+
+
+bool FindRoutineFromName(const char* routineName, Routine **routine){
+    for(int i = 0; i < routineCount; i++){
+        if(strcmp(routines[i].name,routineName) == 0){
+            printf("found %s\n", routineName);
+            *routine = &routines[i];
+            return true;
+        }
+    }
+    return false;
+}
+
+bool RunRoutine(const char* routineName){
+    Routine *routine = NULL;
+    if(FindRoutineFromName(routineName, &routine)){
+        //todo fix time
+        printf("found smth");
+        if(unscaledTime - routine->startTime < routine->delay) return false;
+        printf("activating");
+        routine->startTime = unscaledTime;
+        routine->isActive = true;
+        return true;
     }
     return false;
 }

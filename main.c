@@ -21,44 +21,6 @@ int detectablesCount = 10;
 Vector2 detectables[10];
 bool isdetected[10];
 
-
-bool timeRoutineActive;
-float lastTimeRoutineActivated = -999;
-float timeRoutineDelay = 2;
-float timeRoutineDuration = 2;
-
-typedef struct Routine{
-    const char* name;
-    bool isActive;
-    bool useUnscaledTime;
-    float startTime;
-    float duration;
-    float delay;
-    void (*runWhileActive)(struct Routine *routine);
-} Routine;
-
-int routineCount = 5;
-Routine routines[5];
-
-Routine *FindRoutineFromName(const char* routineName){
-    for(int i = 0; i < routineCount; i++){
-        if(routines[i].name == routineName){
-            printf("found %s\n", routineName);
-            return &routines[i];
-        }
-    }
-}
-
-bool RunRoutine(const char* routineName){
-    Routine *routine = FindRoutineFromName(routineName);
-    //too early
-    //todo fix time
-    if(unscaledTime - routine->startTime < routine->delay) return false;
-    routine->startTime = unscaledTime;
-    routine->isActive = true;
-    return true;
-}
-
 void TimeRoutine(Routine *routine){
 
     float runtime = (unscaledTime - routine->startTime);
@@ -78,6 +40,7 @@ float startingZoom;
 float endZoom;
 Vector2 focusTarget;
 bool isZoomed;
+
 void FocusRoutine(Routine *routine){
     float runtime = (unscaledTime - routine->startTime);
     float pct = runtime / routine->duration;
@@ -94,8 +57,9 @@ void FocusRoutine(Routine *routine){
 
 void RunOnStart(){
 
-    routines[0] = (Routine){"TimeRoutine", false, true, -999, 2, 2, (void *)TimeRoutine};
-    routines[1] = (Routine){"FocusRoutine", false, true, -999, 1, 1, (void *)FocusRoutine};
+    routines[0] = (Routine){"TimeRoutine", false, true, -999, 2, 2, TimeRoutine};
+    routines[1] = (Routine){"FocusRoutine", false, true, -999, 1, 1, FocusRoutine};
+    routineCount = 2; //update with full number!
 
     InitWindow(WIDTH, HEIGHT, "raylib");
 
@@ -142,15 +106,36 @@ void ExecuteRoutines(){
     }
 }
 
+
 void InputLoop(){
 
     if(IsMouseButtonDown(0)){
+
+        if(!IsKeyDown(KEY_LEFT_SHIFT)){
+            for(int i = 0; i < shipCount; i++){
+                ships[i].selected = false;
+            } 
+        }
+
         if(IsPointWithinIslands(ScreenToWorld(GetMousePosition()))){
             DrawCircleV(GetMousePosition(), 5, RED);
         }else{
             DrawCircleV(GetMousePosition(), 5, GREEN);
         }
-  
+
+        for(int i = 0; i < shipCount; i++){
+           if(Vector2Distance(ships[i].wPos, mousePos) < 0.3){
+                ships[i].selected = true;
+            }
+        }   
+    }
+    if(IsMouseButtonDown(1)){
+        for(int i = 0; i < shipCount; i++){
+            if(ships[i].selected){
+                ships[i].tPos = mousePos;
+                ships[i].hasTarget = true;
+            }
+        }   
     }
     if(IsKeyPressed(KEY_SPACE)){
         bool run = RunRoutine("TimeRoutine");
@@ -169,10 +154,7 @@ void InputLoop(){
             }else{
                 endZoom = 0.3;
             }
-
-
         }
-
         printf("pressed F %u\n", run);
     }
 

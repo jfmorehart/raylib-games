@@ -19,6 +19,9 @@ typedef struct{
     Vector2 wPos;
     float angle;
     float scale;
+    bool hasTarget;
+    Vector2 tPos;
+    bool selected;
 } Ship;
 
 extern Island island[ISLANDCOUNT];
@@ -96,18 +99,28 @@ void RenderShip(const Ship *ship){
     Vector2 leftWing = Vector2Add(ship->wPos, Vector2Negate(right));//Vector2Add(), Vector2Scale(forward, -0.5));
     Vector2 tail = Vector2Subtract(ship->wPos, forward);
 
-    DrawTriangle(WorldToScreen(nose), WorldToScreen(rightWing),WorldToScreen(leftWing), WHITE);
+    if(ship->selected){
+        DrawTriangle(WorldToScreen(nose), WorldToScreen(rightWing),WorldToScreen(leftWing), BLUE);
+        DrawTriangle(WorldToScreen(tail), WorldToScreen(leftWing), WorldToScreen(rightWing), BLUE);
+    }else{
+        DrawTriangle(WorldToScreen(nose), WorldToScreen(rightWing),WorldToScreen(leftWing), WHITE);
     DrawTriangle(WorldToScreen(tail), WorldToScreen(leftWing), WorldToScreen(rightWing), WHITE);
+    }
+
+    
 }
 
 void SteerShip(Ship *ship){
     //Steer Ship
-    float angle = Path2Target(ship, 4, PI * 0.5, mousePos);
-    float diff = sAngle(ship->angle, angle);
-    if(diff < -0.01){
-        ship->angle -= scaledDeltaTime * SHIPTURN;
-    }else if(diff >= 0.01){
-        ship->angle += scaledDeltaTime * SHIPTURN;
+    if(ship->hasTarget){
+        float angle = Path2Target(ship, 4, PI * 0.5, ship->tPos);
+        float diff = sAngle(ship->angle, angle);
+        if(diff < -0.01){
+            ship->angle -= scaledDeltaTime * SHIPTURN;
+        }else if(diff >= 0.01){
+            ship->angle += scaledDeltaTime * SHIPTURN;
+        }
+        ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), scaledDeltaTime * 0.1 * SHIPSPEED));
     }
-    ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), scaledDeltaTime * 0.1 * SHIPSPEED));
+
 }

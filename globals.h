@@ -24,3 +24,19 @@ float fixedDeltaTime;
 float scaledTime;
 float unscaledTime;
 float timeScale;
+
+
+typedef struct Routine{
+    const char* name;
+    bool isActive;
+    bool useUnscaledTime;
+    float startTime;
+    float duration;
+    float delay;
+    void (*runWhileActive)(struct Routine *routine);
+} Routine;
+
+
+int routineCount;
+Routine routines[10];
+

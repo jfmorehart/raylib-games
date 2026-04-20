@@ -8,6 +8,11 @@ uniform float dotsize = 1;
 uniform vec2 mpos;
 uniform float _Time;
 
+
+uniform float worldScale;
+uniform vec2 cameraPosition;
+
+
 float hash(float n) { return fract(sin(n) * 1e4); }
 float hash(vec2 p) { return fract(1e4 * sin(17.0 * p.x + p.y * 0.1) * (0.1 + abs(sin(p.y * 13.0 + p.x)))); }
 float rand(vec2 x) {
@@ -46,22 +51,28 @@ float octaves(vec2 uv, int octaveCount){
 
 void main()                                                                                                                                                                                        
 {
-    vec3 col = vec3(1, 1, 1);
 
+    vec2 screenCoords = vec2(gl_FragCoord.x, gl_FragCoord.y);
+    screenCoords -= (resolution);
+    screenCoords *= worldScale;
+    vec2 ns = (screenCoords + cameraPosition * vec2(resolution.y, resolution.y));
+
+    vec3 col;// = vec3(1, 1, 1);
 
     float distRaw = distance(mpos, gl_FragCoord.xy);
     float pDist = distRaw / resolution.y;
 
-    pDist += octaves(gl_FragCoord.xy * 0.005, 2) * 0.4;
+    pDist += octaves(ns * 0.005, 2) * 0.4;
     pDist = pow(pDist, 0.5);
     pDist = clamp(pDist, 0.2, 0.7);
     pDist = 0.7 - pDist;
 
 
-    vec2 uv = gl_FragCoord.xy / resolution.x;   
+    vec2 uv = (ns / resolution.x);   
+
     float stime = sin(_Time * 2) * 3;
-    float ono = octaves(130 + (4 * stime + vec2(gl_FragCoord.x * 0.5, gl_FragCoord.y)) * 0.004, 2) * 0.1;
-    float ono2 = octaves(130 + (8 * _Time + stime + vec2(-gl_FragCoord.x, -gl_FragCoord.y * 0.7)) * 0.01, 2) * 0.05;
+    float ono = octaves(130 + (4 * stime + ns) * 0.004, 2) * 0.1;
+    float ono2 = octaves(130 + (8 * _Time + stime + ns) * 0.01, 2) * 0.05;
     uv += ono + ono2;
 
     vec2 towardsPointer = mpos - gl_FragCoord.xy;
