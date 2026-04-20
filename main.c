@@ -75,18 +75,19 @@ void TimeRoutine(Routine *routine){
 
 Vector2 startingCameraPos;
 float startingZoom;
+float endZoom;
 Vector2 focusTarget;
-
+bool isZoomed;
 void FocusRoutine(Routine *routine){
     float runtime = (unscaledTime - routine->startTime);
     float pct = runtime / routine->duration;
     pct = pow(pct, 0.5);
     cameraPosition = Vector2Lerp(startingCameraPos, focusTarget, pct);
-    worldScale = Lerp(1, 0.1, pct);
+    worldScale = Lerp(startingZoom, endZoom, pct);
 
     if(pct > 1){
+        isZoomed = !isZoomed;
         routine->isActive= false;
-        timeScale = 0.1;
         printf("End Time Routine");
     }
 }
@@ -115,7 +116,7 @@ void RunOnStart(){
 
     timeScale = 0.1;
 
-    deltaTime = 1.0 / FRAMERATE;
+    fixedDeltaTime = 1.0 /FRAMERATE;
 
     srand(time(NULL));
     for(int i = 0; i < ISLANDCOUNT; i++){
@@ -163,6 +164,13 @@ void InputLoop(){
             startingCameraPos = cameraPosition;
             startingZoom = worldScale;
             focusTarget = ScreenToWorld(GetMousePosition());
+            if(isZoomed){
+                endZoom = 1;
+            }else{
+                endZoom = 0.1;
+            }
+
+
         }
 
         printf("pressed F %u\n", run);
@@ -174,16 +182,16 @@ void InputLoop(){
     //     worldScale = 1;
     // }
     if(IsKeyDown(KEY_D)){
-        cameraPosition.x += deltaTime;
+        cameraPosition.x += fixedDeltaTime;
     }
     if(IsKeyDown(KEY_A)){
-        cameraPosition.x -= deltaTime;
+        cameraPosition.x -= fixedDeltaTime;
     }
      if(IsKeyDown(KEY_W)){
-        cameraPosition.y += deltaTime;
+        cameraPosition.y += fixedDeltaTime;
     }
     if(IsKeyDown(KEY_S)){
-        cameraPosition.y -= deltaTime;
+        cameraPosition.y -= fixedDeltaTime;
     }
 
     if(IsKeyPressed(KEY_R)){
@@ -262,7 +270,7 @@ int main(void)
 
         frameCount++;
         frames_fudged += 1.0 * timeScale;
-        deltaTime = (timeScale / (FRAMERATE));
+        scaledDeltaTime = (timeScale / (FRAMERATE));
         scaledTime = (float)frames_fudged / FRAMERATE;
         unscaledTime = (float)frameCount / FRAMERATE;
 

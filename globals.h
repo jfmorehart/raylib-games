@@ -19,7 +19,8 @@ Vector2 yBounds;
 int frameCount;
 float frames_fudged;
 
-float deltaTime;
+float scaledDeltaTime;
+float fixedDeltaTime;
 float scaledTime;
 float unscaledTime;
 float timeScale;

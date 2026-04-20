@@ -105,9 +105,9 @@ void SteerShip(Ship *ship){
     float angle = Path2Target(ship, 4, PI * 0.5, mousePos);
     float diff = sAngle(ship->angle, angle);
     if(diff < -0.01){
-        ship->angle -= deltaTime * SHIPTURN;
+        ship->angle -= scaledDeltaTime * SHIPTURN;
     }else if(diff >= 0.01){
-        ship->angle += deltaTime * SHIPTURN;
+        ship->angle += scaledDeltaTime * SHIPTURN;
     }
-    ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), deltaTime * 0.1 * SHIPSPEED));
+    ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), scaledDeltaTime * 0.1 * SHIPSPEED));
 }
