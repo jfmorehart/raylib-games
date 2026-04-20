@@ -36,19 +36,6 @@ int ShaderInit(){
     float dotsize = 0.1;
     SetShaderValue(islandShader_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
 
-
-    //setup OCEAN CONSTANTS
-    resLoc = GetShaderLocation(oceanShader_frag, "multiplier");   
-    multiplier = 40;
-    SetShaderValue(oceanShader_frag, resLoc, &multiplier, SHADER_UNIFORM_INT);
-
-    resLoc = GetShaderLocation(oceanShader_frag, "dotsize");   
-    dotsize = 0.028;
-    SetShaderValue(oceanShader_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
-
-    timeLoc = GetShaderLocation(oceanShader_frag, "_Time"); 
-    landTime = GetShaderLocation(islandShader_frag, "_Time"); 
-
     return 0;
 }
 
@@ -56,15 +43,42 @@ void PrepOceanPass(Vector2 mousePos){
 
     int mousePosLoc = GetShaderLocation(oceanShader_frag, "mpos");   
 
+    //setup OCEAN CONSTANTS
+    int resLoc = GetShaderLocation(oceanShader_frag, "multiplier");   
+    int multiplier = 40;
+    SetShaderValue(oceanShader_frag, resLoc, &multiplier, SHADER_UNIFORM_INT);
+
+    resLoc = GetShaderLocation(oceanShader_frag, "dotsize");   
+    float dotsize = 0.028;
+    SetShaderValue(oceanShader_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
+
+    timeLoc = GetShaderLocation(oceanShader_frag, "_Time"); 
+    landTime = GetShaderLocation(islandShader_frag, "_Time"); 
+
     SetShaderValue(oceanShader_frag, mousePosLoc, &mousePos, SHADER_UNIFORM_VEC2);
-    SetShaderValue(oceanShader_frag, timeLoc, &appTime, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(islandShader_frag, landTime, &appTime, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(oceanShader_frag, timeLoc, &scaledTime, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(islandShader_frag, landTime, &scaledTime, SHADER_UNIFORM_FLOAT);
 
     BeginShaderMode(oceanShader_frag);
     
     DrawRectangle(0, 0, WIDTH, HEIGHT, BLACK);
+
+}
+void EndOceanPass(){
     EndShaderMode();
 }
+void PrepShipRangePass(){
+    int resLoc = GetShaderLocation(oceanShader_frag, "multiplier");   
+    int multiplier = 60;
+    SetShaderValue(oceanShader_frag, resLoc, &multiplier, SHADER_UNIFORM_INT);
+
+    resLoc = GetShaderLocation(oceanShader_frag, "dotsize");   
+    float dotsize = 0.04;
+    SetShaderValue(oceanShader_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
+
+    BeginShaderMode(oceanShader_frag);
+}
+
 void UnloadShaders(){
     UnloadShader(islandShader_frag);
     UnloadShader(oceanShader_frag);

@@ -19,6 +19,8 @@ typedef struct{
     Edge edges[MAXHULLPOINTS];
 } Island;
 
+Island island[ISLANDCOUNT];
+
 Vector2 IslandPointToWorld(const Island *island, Vector2 objectSpace);
 
 int FindNextPoint(int current, const Vector2 *points);

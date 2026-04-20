@@ -9,8 +9,10 @@
 
 #include <stdio.h>
 
-#define SHIPTURN 3
+#define SHIPTURN 2
+#define SHIPSPEED 1
 #define SHIP_BLEND_MAX 0.15
+#define SHIP_SEARCHRANGE 0.35
 
 typedef struct{
     bool team;
@@ -26,7 +28,7 @@ float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target){
     Vector2 d2m = Vector2Subtract(target, ship->wPos);
     float angleToTarget= atan2(d2m.y, d2m.x);
     float tdist = Vector2Length(d2m);
-    tdist = Clamp(tdist, 0.03, 0.5);
+    tdist = Clamp(tdist, 0.03, 0.4);
 
     float bestAngle = ship->angle + PI;
 
@@ -85,15 +87,17 @@ float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target){
 void RenderShip(const Ship *ship){
     Vector2 forward = VfromAngle(ship->angle);
     // Vector2 forwardNormal = Vector2Normalize(forward);
-    forward = Vector2Scale(forward, ship->scale * 2);
+    forward = Vector2Scale(forward, ship->scale * 3);
 
     Vector2 right = {cos(ship->angle + PI * 0.5) * ship->scale, sin(ship->angle +PI * 0.5) * ship->scale};
 
     Vector2 nose = Vector2Add(ship->wPos, forward);
-    Vector2 rightWing = Vector2Add(Vector2Add(ship->wPos, right), Vector2Scale(forward, -0.5));
-    Vector2 leftWing = Vector2Add(Vector2Add(ship->wPos, Vector2Negate(right)), Vector2Scale(forward, -0.5));
-    
+    Vector2 rightWing = Vector2Add(ship->wPos, right);//Vector2Add(, Vector2Scale(forward, -0.5));
+    Vector2 leftWing = Vector2Add(ship->wPos, Vector2Negate(right));//Vector2Add(), Vector2Scale(forward, -0.5));
+    Vector2 tail = Vector2Subtract(ship->wPos, forward);
+
     DrawTriangle(WorldToScreen(nose), WorldToScreen(rightWing),WorldToScreen(leftWing), WHITE);
+    DrawTriangle(WorldToScreen(tail), WorldToScreen(leftWing), WorldToScreen(rightWing), WHITE);
 }
 
 void SteerShip(Ship *ship){
@@ -105,5 +109,5 @@ void SteerShip(Ship *ship){
     }else if(diff >= 0.01){
         ship->angle += deltaTime * SHIPTURN;
     }
-    ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), deltaTime * 0.3));
+    ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), deltaTime * 0.1 * SHIPSPEED));
 }

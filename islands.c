@@ -11,7 +11,6 @@
 #define MAXHULLPOINTS 15
 
 
-
 Vector2 IslandPointToWorld(const Island *island, Vector2 objectSpace){
     //translates from object space to world space
     return Vector2Add(island->relativePosition, Vector2Scale(objectSpace, island->scale));
@@ -32,9 +31,7 @@ int FindNextPoint(int current, const Vector2 *points){
 Island CreateIsland(){
     Island is;
     is.scale = 0.5 * (float)rand()/ RAND_MAX;
-    is.relativePosition = RVec(1);
-    is.relativePosition.x += 0.7;
-    is.relativePosition.x *= 2.5;
+    is.relativePosition =  RandomWorldPoint();
 
     Vector2 points[MAXHULLPOINTS];
     int indexOfLowest = 0;
@@ -123,9 +120,9 @@ Hit AllIslandsIntersect(const Island *islands, Edge segment){
         }
     }
     if(!hitSmth){
-        DrawLineV(WorldToScreen(segment.b), WorldToScreen(segment.a), GREEN);
+        // DrawLineV(WorldToScreen(segment.b), WorldToScreen(segment.a), GREEN);
     }else{
-        DrawLineV(WorldToScreen(bestHit.hitPosition), WorldToScreen((segment.a)), RED);
+        // DrawLineV(WorldToScreen(bestHit.hitPosition), WorldToScreen((segment.a)), RED);
     }
     return bestHit;
 }

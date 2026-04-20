@@ -59,9 +59,11 @@ void main()
 
 
     vec2 uv = gl_FragCoord.xy / resolution.x;   
-    float stime = sin(_Time * 3);
-    uv += octaves(130 + (4 * stime + vec2(gl_FragCoord.x * 0.5, gl_FragCoord.y)) * 0.004, 2) * 0.05;
-    uv += octaves(130 + (7 * _Time + stime + vec2(-gl_FragCoord.x, -gl_FragCoord.y * 0.7)) * 0.01, 2) * 0.02;
+    float stime = sin(_Time * 2) * 3;
+    float ono = octaves(130 + (4 * stime + vec2(gl_FragCoord.x * 0.5, gl_FragCoord.y)) * 0.004, 2) * 0.1;
+    float ono2 = octaves(130 + (8 * _Time + stime + vec2(-gl_FragCoord.x, -gl_FragCoord.y * 0.7)) * 0.01, 2) * 0.05;
+    uv += ono + ono2;
+
     vec2 towardsPointer = mpos - gl_FragCoord.xy;
     towardsPointer = (towardsPointer / length(towardsPointer));
     pDist *= 0.05;
@@ -81,5 +83,5 @@ void main()
     //col += step(pDist, 300);
     //col += pDist;
     //finalColor = vec4(pDist, pDist, pDist, 1);     
-    finalColor = vec4(col.xyz, 1); 
+    finalColor = vec4(col.xyz, val); 
 }                                                                                                                                                                                                  

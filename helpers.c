@@ -2,14 +2,39 @@
 #include "raymath.h"
 #include "helpers.h"
 #include "globals.h"
+#include "islands.h"
+
 #include <stdio.h>
 
+float R01(){
+    return (float)rand() / RAND_MAX;
+}
 Vector2 RVec(float scale){
    
     Vector2 rvec =(Vector2){scale * ((float) 2 * rand() / RAND_MAX - 1), scale * ((float) 2 * rand() / RAND_MAX - 1)};
     //printf("rvec: (%f, %f)\n", rvec.x, rvec.y);  
     return rvec;
 }
+Vector2 RandomWorldPoint(){
+    Vector2 r01 = (Vector2){(float)rand() / RAND_MAX,  (float) rand() / RAND_MAX};
+    r01.x = xBounds.x + (xBounds.y - xBounds.x) * r01.x;
+    r01.y = yBounds.x + (yBounds.y - yBounds.x) * r01.y;
+    // printf("ro1= %f, %f\n", r01.x, r01.y);
+    return r01;
+}
+Vector2 RandomWorldPointNoIsland(){
+    int tries = 0;
+    Vector2 point;
+    while(tries < 50){
+        tries++;
+        point = RandomWorldPoint();
+        if(!IsPointWithinIslands(point)){
+            return point;
+        }
+    }
+    return Vector2Zero();
+}
+
 float sAngle(float a1, float a2){
     float diff = a2 - a1;
     if(diff > PI) diff -= 2 * PI;
@@ -20,20 +45,21 @@ float sAngle(float a1, float a2){
 Vector2 VfromAngle(float angle) {return (Vector2){cos(angle), sin(angle)};};
 
 float PixelsToWorld(float pixels) {                     
-    return 2 *  pixels / HEIGHT;                                      
+    return (2 * pixels / HEIGHT) * worldScale;                                      
 }                                                                                                                        
    
 float WorldToPixels(float world) {                                                                                       
-    return world * HEIGHT * 0.5;                              
+    return (world * HEIGHT * 0.5) / worldScale;                              
 }          
 
 Vector2 WorldToScreen(Vector2 worldPos){
-    return (Vector2){(0.5 * worldPos.x + 0.5) * HEIGHT, (0.5 * -worldPos.y + 0.5) * HEIGHT};
+    Vector2 secondary = Vector2Subtract(worldPos, cameraPosition);
+    return (Vector2){(0.5 * secondary.x / worldScale + 0.5) * HEIGHT, (0.5 * -secondary.y / worldScale + 0.5) * HEIGHT};
 }
 Vector2 ScreenToWorld(Vector2 screenPos){
-    screenPos = Vector2Scale(Vector2SubtractValue(Vector2Scale(screenPos, (float)1 / HEIGHT), 0.5), 2);
+    screenPos = Vector2Scale(Vector2SubtractValue(Vector2Scale(screenPos, (float)1 / HEIGHT), 0.5), 2 * worldScale);
     screenPos.y *= -1;
-    return screenPos;
+    return Vector2Add(cameraPosition, screenPos);
 }
 
 bool WithinSegment(float xPos, Edge segment){
@@ -68,4 +94,36 @@ Hit Intersect(Edge ab, Edge cd){
     bool hit = WithinSegment(xIntercept, ab) && WithinSegment(xIntercept, cd);
     // printf("hit (%f, %f)\n", xIntercept, yIntercept);
     return (Hit){hit,(Vector2){xIntercept, yIntercept}};
+}
+
+bool PointIslandCheck(Vector2 point, Island *is){
+
+    float cross = 0;
+    bool neg = false;
+    Vector2 toPoint;
+    Vector2 edgeVec;
+    for(int i = 0; i < is->edgeCount; i++){
+        toPoint = Vector2Subtract(point, is->edges[i].a);
+        edgeVec = Vector2Subtract(is->edges[i].b, is->edges[i].a);
+        cross = toPoint.x * edgeVec.y - toPoint.y * edgeVec.x;
+
+        // printf("cross %f\n", cross);
+        if(i != 0){
+            if((neg && cross > 0) || (!neg && cross < 0)) {
+                return false;
+            }
+        }
+        neg = cross < 0;
+    }
+    return true;
+}
+
+bool IsPointWithinIslands(Vector2 wPoint){
+
+    for(int i = 0; i < ISLANDCOUNT; i++){
+        if(PointIslandCheck(wPoint, &island[i])){
+            return true;
+        }
+    }
+    return false;
 }
