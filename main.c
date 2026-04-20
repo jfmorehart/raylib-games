@@ -167,7 +167,7 @@ void InputLoop(){
             if(isZoomed){
                 endZoom = 1;
             }else{
-                endZoom = 0.1;
+                endZoom = 0.3;
             }
 
 
@@ -181,17 +181,23 @@ void InputLoop(){
     // }else{
     //     worldScale = 1;
     // }
+    if(IsKeyDown(KEY_E)){
+        worldScale += fixedDeltaTime * (worldScale / 0.3) * 0.1;
+    }
+    if(IsKeyDown(KEY_Q)){
+        worldScale -= fixedDeltaTime * (worldScale / 0.3) * 0.1;
+    }
     if(IsKeyDown(KEY_D)){
-        cameraPosition.x += fixedDeltaTime;
+        cameraPosition.x += fixedDeltaTime * worldScale;
     }
     if(IsKeyDown(KEY_A)){
-        cameraPosition.x -= fixedDeltaTime;
+        cameraPosition.x -= fixedDeltaTime * worldScale;
     }
      if(IsKeyDown(KEY_W)){
-        cameraPosition.y += fixedDeltaTime;
+        cameraPosition.y += fixedDeltaTime * worldScale;
     }
     if(IsKeyDown(KEY_S)){
-        cameraPosition.y -= fixedDeltaTime;
+        cameraPosition.y -= fixedDeltaTime * worldScale;
     }
 
     if(IsKeyPressed(KEY_R)){

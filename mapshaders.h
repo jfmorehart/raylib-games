@@ -63,6 +63,11 @@ void PrepOceanPass(Vector2 mousePos){
     
     DrawRectangle(0, 0, WIDTH, HEIGHT, BLACK);
 
+    resLoc = GetShaderLocation(islandShader_frag, "worldScale");   
+    SetShaderValue(islandShader_frag, resLoc, &worldScale, SHADER_UNIFORM_FLOAT);
+    resLoc = GetShaderLocation(islandShader_frag, "cameraPosition");   
+    SetShaderValue(islandShader_frag, resLoc, &cameraPosition, SHADER_UNIFORM_VEC2);
+
 }
 void EndOceanPass(){
     EndShaderMode();

@@ -8,8 +8,12 @@ uniform float dotsize = 1;
 uniform vec2 mpos;
 uniform float _Time;
 
+uniform float worldScale;
+uniform vec2 cameraPosition;
+
 float hash(float n) { return fract(sin(n) * 1e4); }
 float hash(vec2 p) { return fract(1e4 * sin(17.0 * p.x + p.y * 0.1) * (0.1 + abs(sin(p.y * 13.0 + p.x)))); }
+
 float rand(vec2 x) {
 	vec2 i = floor(x);
 	vec2 f = fract(x);
@@ -51,11 +55,20 @@ float scale(float toscale, float factor){
 void main()                                                                                                                                                                                        
 {
 
-    vec2 uv = gl_FragCoord.xy / resolution.x;   
+    vec2 screenCoords = vec2(gl_FragCoord.x, gl_FragCoord.y);
+    screenCoords -= (resolution);
+    screenCoords *= worldScale;
+    vec2 ns = (screenCoords + cameraPosition * vec2(resolution.y, resolution.y));
+    // ns /= resolution.x;
+    // ns -= 0.5;
+    // ns *= worldScale;
+    // ns *= resolution.x;
+
+    vec2 uv = (gl_FragCoord.xy / resolution.x);   
 
     float stime = _Time * 1;//sin(_Time * 3);
     float baseFreq = 1;
-    float n1 = octaves(130 + (vec2(gl_FragCoord.x * 0.5, gl_FragCoord.y)) * 0.005 * baseFreq, 5);
+    float n1 = octaves(130 + (ns) * 0.005 * baseFreq, 5);
     // float n2 = (octaves(130 + (vec2(gl_FragCoord.x * 0.5, gl_FragCoord.y)) * 0.015 * baseFreq, 5)) * 1;
 
 
