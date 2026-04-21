@@ -39,17 +39,15 @@ int ShaderInit(){
     return 0;
 }
 
-void PrepOceanPass(Vector2 mousePos){
+void PrepOceanPass(Vector2 mousePos, int multiplier, float dotsize){
 
     int mousePosLoc = GetShaderLocation(oceanShader_frag, "mpos");   
 
     //setup OCEAN CONSTANTS
     int resLoc = GetShaderLocation(oceanShader_frag, "multiplier");   
-    int multiplier = 40;
     SetShaderValue(oceanShader_frag, resLoc, &multiplier, SHADER_UNIFORM_INT);
 
     resLoc = GetShaderLocation(oceanShader_frag, "dotsize");   
-    float dotsize = 0.028;
     SetShaderValue(oceanShader_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
 
     timeLoc = GetShaderLocation(oceanShader_frag, "_Time"); 

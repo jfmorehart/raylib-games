@@ -3,9 +3,11 @@
 #include "helpers.h"
 #include "globals.h"
 #include "islands.h"
+#include "routines.h"
 
 #include <stdio.h>
 #include <string.h>
+
 
 float R01(){
     return (float)rand() / RAND_MAX;
@@ -132,28 +134,12 @@ bool IsPointWithinIslands(Vector2 wPoint){
     return false;
 }
 
-
-bool FindRoutineFromName(const char* routineName, Routine **routine){
-    for(int i = 0; i < routineCount; i++){
-        if(strcmp(routines[i].name,routineName) == 0){
-            printf("found %s\n", routineName);
-            *routine = &routines[i];
-            return true;
+void SwitchScenes(SceneName to){ //temp
+    currentScene = to;
+    EndAllRoutines();
+    for(int i = 0 ; i < SCENECOUNT; i++){
+        if(scenes[i].name == to){
+            scenes[i].RunOnInit();
         }
     }
-    return false;
-}
-
-bool RunRoutine(const char* routineName){
-    Routine *routine = NULL;
-    if(FindRoutineFromName(routineName, &routine)){
-        //todo fix time
-        printf("found smth");
-        if(unscaledTime - routine->startTime < routine->delay) return false;
-        printf("activating");
-        routine->startTime = unscaledTime;
-        routine->isActive = true;
-        return true;
-    }
-    return false;
 }

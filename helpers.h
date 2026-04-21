@@ -36,9 +36,6 @@ typedef struct{
 
 Hit Intersect(Edge ab, Edge cd);
 
-bool FindRoutineFromName(const char* routineName, Routine **routine);
-
-bool RunRoutine(const char* routineName);
-
+void SwitchScenes(SceneName to);
 
 

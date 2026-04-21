@@ -8,6 +8,7 @@
 #include "ships.h"
 #include "UI.h"
 #include "mapscene.h"
+#include "routines.h"
 
 #include <alloca.h>
 #include <math.h>       
@@ -15,34 +16,39 @@
 #include <stdlib.h>
 #include <time.h>
 
-typedef enum Scene{
-    Menu,
-    Map,
-    Battle
-}Scene;
-Scene currentScene = Map;
-
 Font font;
 Window hello = {BOTTOM_RIGHT, {300, 150}, "Yooo", 32, "whats up", 12};
+Vector2 worldZero;
 
 void RunOnStart(){
 
+    scenes[0] = (Scene){Menu, NULL};
+    scenes[1] = (Scene){Map, InitMapScene};
+    scenes[2] = (Scene){Battle, InitBattleScene};
+
+    currentScene = Map;
+
     routines[0] = (Routine){"TimeRoutine", false, true, -999, 2, 2, TimeRoutine};
     routines[1] = (Routine){"FocusRoutine", false, true, -999, 1, 1, FocusRoutine};
-    routineCount = 2; //update with full number!
+    routines[2] = (Routine){"SwitchToBattleRoutine", false, true, -999, 1, 1, SwitchToBattleRoutine};
+    routineCount = 3; //update with full number!
 
     InitWindow(WIDTH, HEIGHT, "raylib");
 
     font = LoadFont("mecha.ttf");
     // font = LoadFont("resources/sprite_fonts/alpha_beta.png");
 
-    worldScale = 1;
     WIDTH = GetMonitorWidth(0);
     HEIGHT = GetMonitorHeight(0) -30;
 
     screenVec = (Vector2){WIDTH, HEIGHT};
     SetTargetFPS(FRAMERATE);
     SetWindowSize(WIDTH, HEIGHT);
+
+    worldScale = 1;
+    cameraPosition = ScreenToWorld((Vector2){WIDTH * 0.5, HEIGHT * 0.5});    
+    worldZero = cameraPosition;
+
     xBounds = (Vector2){ScreenToWorld((Vector2){0, 0}).x, ScreenToWorld((Vector2){WIDTH, 0}).x}; 
     yBounds = (Vector2){ScreenToWorld((Vector2){0, 0}).y, ScreenToWorld((Vector2){0, HEIGHT}).y}; 
 
@@ -57,17 +63,11 @@ void RunOnStart(){
 
     srand(time(NULL));
 
+    RandomizeMap();
     InitMapScene();
     ShaderInit();
 }
 
-void ExecuteRoutines(){
-    for(int i = 0; i < routineCount; i++){
-        if(routines[i].isActive){
-            routines[i].runWhileActive(&routines[i]);
-        }
-    }
-}
 
 int main(void)
 {
@@ -85,9 +85,24 @@ int main(void)
         BeginDrawing();
 
         if(IsKeyDown(KEY_B)){
+            InitBattleScene();
             currentScene = Battle;
         }
         if(IsKeyDown(KEY_M)){
+            InitMapScene();
+            bool run = RunRoutine("FocusRoutine");
+
+            if(run){
+                startingCameraPos = cameraPosition;
+                startingZoom = worldScale;
+                focusTarget = worldZero;
+                if(startingZoom < 0.3){
+                    endZoom = 1;
+                }else{
+                    endZoom = 0.2;
+                }
+            }
+
             currentScene = Map;
         }
         switch(currentScene){

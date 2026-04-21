@@ -4,13 +4,14 @@ LIBS = $(shell pkg-config --libs raylib) -framework OpenGL -framework Cocoa -fra
 
 all: raylibtest
 
-HFILES = mapshaders.h helpers.h islands.h globals.h ships.h UI.h mapscene.h battlescene.h
+HFILES = mapshaders.h helpers.h islands.h globals.h ships.h UI.h mapscene.h battlescene.h routines.h
 
 main.o : main.c $(HFILES)
 helpers.o : helpers.c $(HFILES)
 islands.o : islands.c $(HFILES)
+routines.o : routines.c $(HFILES)
 
-NEEDSCOMPILE = main.o helpers.o islands.o
+NEEDSCOMPILE = main.o helpers.o islands.o routines.o
 
 raylibtest: $(NEEDSCOMPILE)
 	cc $(CFLAGS) -o raylibtest $(NEEDSCOMPILE) $(LIBS)

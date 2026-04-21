@@ -1,4 +1,5 @@
 #pragma once
+#include "battlescene.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "mapshaders.h"
@@ -7,6 +8,7 @@
 #include "globals.h"
 #include "ships.h"
 #include "UI.h"
+#include "routines.h"
 
 #include <alloca.h>
 #include <math.h>       
@@ -17,7 +19,7 @@
 extern Island island[ISLANDCOUNT];
 
 int shipCount = 5;
-Ship ships[5];
+Ship ships[MAX_SHIPS];
 
 int detectablesCount = 10;
 Vector2 detectables[10];
@@ -43,6 +45,14 @@ float endZoom;
 Vector2 focusTarget;
 bool isZoomed;
 
+void SwitchToBattleRoutine(Routine * routine){
+    float runtime = (unscaledTime - routine->startTime);
+    if(runtime >= routine->duration){
+        routine->isActive= false;
+        SwitchScenes(Battle);
+    }
+}
+
 void FocusRoutine(Routine *routine){
     float runtime = (unscaledTime - routine->startTime);
     float pct = runtime / routine->duration;
@@ -53,17 +63,11 @@ void FocusRoutine(Routine *routine){
     if(pct > 1){
         isZoomed = !isZoomed;
         routine->isActive= false;
-        printf("End Time Routine");
+        printf("End Focus Routine");
     }
 }
 
-
-void InitMapScene(){
-
-    worldScale = 1;
-    cameraPosition = ScreenToWorld((Vector2){WIDTH * 0.5, HEIGHT * 0.5});
-    timeScale = 0.1;
-
+void RandomizeMap(){
 
     srand(time(NULL));
     for(int i = 0; i < ISLANDCOUNT; i++){
@@ -77,6 +81,14 @@ void InitMapScene(){
     for(int i = 0; i < detectablesCount; i++){
         detectables[i] = RandomWorldPoint();
     } 
+}
+
+
+void InitMapScene(){
+
+    // worldScale = 1;
+    // cameraPosition = ScreenToWorld((Vector2){WIDTH * 0.5, HEIGHT * 0.5});
+    timeScale = 0.1;
 
     ShaderInit();
 }
@@ -115,7 +127,7 @@ void MapInputLoop(){
         bool run = RunRoutine("TimeRoutine");
         printf("pressed space %u\n", run);
     }
-     if(IsKeyPressed(KEY_F)){
+    if(IsKeyPressed(KEY_F)){
 
         bool run = RunRoutine("FocusRoutine");
 
@@ -123,13 +135,13 @@ void MapInputLoop(){
             startingCameraPos = cameraPosition;
             startingZoom = worldScale;
             focusTarget = ScreenToWorld(GetMousePosition());
-            if(isZoomed){
+            RunRoutine("SwitchToBattleRoutine");
+            if(startingZoom < 0.3){
                 endZoom = 1;
             }else{
-                endZoom = 0.3;
+                endZoom = 0.2;
             }
         }
-        printf("pressed F %u\n", run);
     }
 
     // if(IsKeyDown(KEY_Z)){
@@ -187,7 +199,7 @@ void MapFrameLoop(){
     mousePos_ScreenCoords = Vector2Scale(mousePos_ScreenCoords, 2); 
 
     //Set shader variables and draw ocean
-    PrepOceanPass(mousePos_ScreenCoords);
+    PrepOceanPass(mousePos_ScreenCoords, 40, 0.025);
     EndOceanPass(); //flush buffer
 
     for(int d = 0; d < detectablesCount; d++){

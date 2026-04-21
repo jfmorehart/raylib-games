@@ -13,8 +13,8 @@ Vector2 mousePos;
 Vector2 xBounds;
 Vector2 yBounds;
 
-#define ISLANDCOUNT  10
-
+#define ISLANDCOUNT  40
+#define MAX_SHIPS 10
 #define FRAMERATE 120
 int frameCount;
 float frames_fudged;
@@ -25,18 +25,20 @@ float scaledTime;
 float unscaledTime;
 float timeScale;
 
+typedef enum SceneName{
+    Menu,
+    Map,
+    Battle
+}SceneName;
+SceneName currentScene;
 
-typedef struct Routine{
-    const char* name;
-    bool isActive;
-    bool useUnscaledTime;
-    float startTime;
-    float duration;
-    float delay;
-    void (*runWhileActive)(struct Routine *routine);
-} Routine;
+typedef struct Scene{
+    SceneName name;
+    void (*RunOnInit)(void);
+}Scene;
 
 
-int routineCount;
-Routine routines[10];
+#define SCENECOUNT 3
+Scene scenes[SCENECOUNT];
+
 

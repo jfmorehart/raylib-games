@@ -30,7 +30,7 @@ int FindNextPoint(int current, const Vector2 *points){
 }
 Island CreateIsland(){
     Island is;
-    is.scale = 0.5 * (float)rand()/ RAND_MAX;
+    is.scale = 0.3 * (float)rand()/ RAND_MAX;
     is.relativePosition =  RandomWorldPoint();
 
     Vector2 points[MAXHULLPOINTS];
