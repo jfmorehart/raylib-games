@@ -54,13 +54,16 @@ float WorldToPixels(float world) {
 }          
 
 Vector2 WorldToScreen(Vector2 worldPos){
-    Vector2 secondary = Vector2Subtract(worldPos, cameraPosition);
-    return (Vector2){(0.5 * secondary.x / worldScale + 0.5) * HEIGHT, (0.5 * -secondary.y / worldScale + 0.5) * HEIGHT};
+    Vector2 screen = Vector2Subtract(worldPos, cameraPosition);
+    screen.x = screen.x / worldScale * (HEIGHT * 0.5) + WIDTH * 0.5;
+    screen.y = -screen.y / worldScale * (HEIGHT * 0.5) + HEIGHT * 0.5;
+    return screen;
 }
 Vector2 ScreenToWorld(Vector2 screenPos){
-    screenPos = Vector2Scale(Vector2SubtractValue(Vector2Scale(screenPos, (float)1 / HEIGHT), 0.5), 2 * worldScale);
-    screenPos.y *= -1;
-    return Vector2Add(cameraPosition, screenPos);
+    screenPos.x = (screenPos.x - WIDTH * 0.5) / (HEIGHT * 0.5) * worldScale;
+    screenPos.y = -(screenPos.y - HEIGHT * 0.5) / (HEIGHT * 0.5) * worldScale;
+    screenPos = Vector2Add(screenPos, cameraPosition);
+    return screenPos;
 }
 
 bool WithinSegment(float xPos, Edge segment){
