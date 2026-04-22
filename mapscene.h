@@ -199,7 +199,7 @@ void MapFrameLoop(){
     mousePos_ScreenCoords = Vector2Scale(mousePos_ScreenCoords, 2); 
 
     //Set shader variables and draw ocean
-    PrepOceanPass(mousePos_ScreenCoords, 40, 0.025);
+    PrepOceanPass(mousePos_ScreenCoords, 90, 0.08);
     EndOceanPass(); //flush buffer
 
     for(int d = 0; d < detectablesCount; d++){

@@ -20,7 +20,7 @@ int ShaderInit(){
 
     //set RESOLUTION
     int resLoc = GetShaderLocation(islandShader_frag, "resolution");        
-    float res[2] = { (float)WIDTH, (float)HEIGHT };                                                                                                                                                    
+    float res[2] = { (float)GetRenderWidth(), (float)GetRenderHeight()};                                                                                                                                                   
     SetShaderValue(islandShader_frag, resLoc, res, SHADER_UNIFORM_VEC2);     
 
     resLoc = GetShaderLocation(oceanShader_frag, "resolution");                                                                                                                                               

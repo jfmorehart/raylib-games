@@ -46,21 +46,20 @@ float octaves(vec2 uv, int octaveCount){
         amplitude *= 0.5;
         frequency *= 2;
     }
-    return value;
+    return value - 0.5;
 }
 
 void main()                                                                                                                                                                                        
 {
-
     vec2 screenCoords = vec2(gl_FragCoord.x, gl_FragCoord.y);
-    screenCoords -= (resolution);
+    screenCoords -= (resolution * 0.5);
     screenCoords *= worldScale;
-    vec2 ns = (screenCoords + cameraPosition * vec2(resolution.y, resolution.y));
+    vec2 ns = (screenCoords + cameraPosition * vec2(resolution.y, resolution.y) * 0.5);
 
     vec3 col;// = vec3(1, 1, 1);
 
     float distRaw = distance(mpos, gl_FragCoord.xy);
-    float pDist = distRaw / resolution.y;
+    float pDist = distRaw / (resolution.y * 0.5);
 
     pDist += octaves(ns * 0.005, 2) * 0.4;
     pDist = pow(pDist, 0.5);
@@ -68,16 +67,17 @@ void main()
     pDist = 0.7 - pDist;
 
 
-    vec2 uv = (ns / resolution.x);   
+    vec2 uv = (ns / resolution.y * 0.5);   
 
-    float stime = sin(_Time * 2) * 3;
-    float ono = octaves(130 + (4 * stime + ns) * 0.004, 2) * 0.1;
-    float ono2 = octaves(130 + (8 * _Time + stime + ns) * 0.01, 2) * 0.05;
+    float stime = sin(_Time * 0.005) * 3;
+    float ono = octaves(stime * vec2(0.8, 0) * 130 + ns * 0.04, 2) * 0.01;
+    float ono2 = 1;//octaves(130 + (8 * _Time + stime + ns) * 0.01, 2) * 0.02;
+    
     uv += ono + ono2;
 
     vec2 towardsPointer = mpos - gl_FragCoord.xy;
     towardsPointer = (towardsPointer / length(towardsPointer));
-    pDist *= 0.05;
+    pDist *= 0.02;
 
     //pDist = pDist *  step(distRaw, 1000);
 
@@ -88,11 +88,7 @@ void main()
     // val = pDist;
     //val = octaves(gl_FragCoord.xy * 0.01, 10);
 
-    // val = stime;
-    col = vec3(val, val, val);
-
-    //col += step(pDist, 300);
-    //col += pDist;
-    //finalColor = vec4(pDist, pDist, pDist, 1);     
+    val *= 0.5;
+    col = vec3(val, val, val) ;
     finalColor = vec4(col.xyz, val); 
 }                                                                                                                                                                                                  

@@ -54,24 +54,28 @@ float scale(float toscale, float factor){
 
 void main()                                                                                                                                                                                        
 {
-
     vec2 screenCoords = vec2(gl_FragCoord.x, gl_FragCoord.y);
-    screenCoords -= (resolution);
+    screenCoords -= (resolution * 0.5);
+    screenCoords /= (resolution.y * 0.5);
     screenCoords *= worldScale;
-    vec2 ns = (screenCoords + cameraPosition * vec2(resolution.y, resolution.y));
+    // screenCoords.y *= -1;
+    screenCoords += cameraPosition;
+    // screenCoords *= resolution.y;
+
+    vec2 ns = screenCoords;
+
     // ns /= resolution.x;
     // ns -= 0.5;
     // ns *= worldScale;
-    // ns *= resolution.x;
 
-    vec2 uv = (gl_FragCoord.xy / resolution.x);   
+    vec2 uv = ns * 0.8;//(gl_FragCoord.xy / resolution.y);   
 
     float stime = _Time * 1;//sin(_Time * 3);
     float baseFreq = 1;
-    float n1 = octaves(130 + (ns) * 0.005 * baseFreq, 5);
+    float n1 = octaves(130 + (ns) * 4 * baseFreq, 5);
     // float n2 = (octaves(130 + (vec2(gl_FragCoord.x * 0.5, gl_FragCoord.y)) * 0.015 * baseFreq, 5)) * 1;
-
-
+    uv += n1 * 0.05;
+    n1 = octaves(130 + (ns) * 4 * baseFreq, 5); 
 
     uv = fract(uv * multiplier);
     float noise = n1;// + n2;
@@ -83,12 +87,16 @@ void main()
     float rdot = dotsize + noise;
 
 
-    // rdot = 
-
     rdot = clamp(rdot, 0.03, 0.4);
     
-    float val = step(length(uv - 0.5), rdot);
-    // val = n1 * 100;
-    // val = 0;
-    finalColor = vec4(val, val, val, 1); 
+    vec2 uvContinuous = (ns * 0.8 + n1 * 0.05) * multiplier;
+    vec2 uvCell = fract(uvContinuous);
+
+    float d = length(uvCell - 0.5);
+    float w = length(fwidth(uvContinuous));
+    float val = 1 - smoothstep(rdot - w , rdot + w, d);
+    
+    val *= mix(0.5, 1, (n1 * n1) + 0.1);
+
+    finalColor = vec4(val, val, val, 1);
 }                                                                                                                                                                                                  

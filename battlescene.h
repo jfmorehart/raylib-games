@@ -38,7 +38,7 @@ void BattleFrameLoop(){
     mousePos_ScreenCoords = Vector2Scale(mousePos_ScreenCoords, 2); 
 
     //Set shader variables and draw ocean
-    PrepOceanPass(mousePos_ScreenCoords, 100, 0.01);
+    PrepOceanPass(mousePos_ScreenCoords, 100, 0.02);
     EndOceanPass(); //flush buffer
 
     float gridSize = 0.2;
