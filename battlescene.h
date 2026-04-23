@@ -22,7 +22,7 @@ extern Ship ships[MAX_SHIPS];
 
 void InitBattleScene(){
 
-    timeScale = 1;
+    timeScale = 0.2;
     //cameraPosition = ScreenToWorld((Vector2){WIDTH * 0.5, HEIGHT * 0.5});
     //timeScale = 0.1;
     //srand(time(NULL));
@@ -30,7 +30,7 @@ void InitBattleScene(){
 }
 
 void BattleFrameLoop(){
-    ClearBackground((Color){ 1, 1, 1, 255 });
+    ClearBackground((Color){ 5, 5, 20, 255 });
 
     Vector2 mousePos_ScreenCoords = GetMousePosition();
     mousePos = ScreenToWorld(mousePos_ScreenCoords);
@@ -49,10 +49,12 @@ void BattleFrameLoop(){
         DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), GRAY);
     }
 
+    BeginShaderMode(ship_frag);
     for(int i = 0; i < shipCount; i++){
         RenderShip(&ships[i]);
         SteerShip(&ships[i]);
     }
+    EndShaderMode();
 
     BeginShaderMode(islandShader_frag);
     for(int i = 0; i < ISLANDCOUNT; i++){
@@ -80,6 +82,19 @@ void BattleFrameLoop(){
             }
         }   
     }
+        if(IsKeyDown(KEY_D)){
+        cameraPosition.x += fixedDeltaTime * worldScale;
+    }
+    if(IsKeyDown(KEY_A)){
+        cameraPosition.x -= fixedDeltaTime * worldScale;
+    }
+     if(IsKeyDown(KEY_W)){
+        cameraPosition.y += fixedDeltaTime * worldScale;
+    }
+    if(IsKeyDown(KEY_S)){
+        cameraPosition.y -= fixedDeltaTime * worldScale;
+    }
+
     if(IsMouseButtonDown(1)){
         for(int i = 0; i < shipCount; i++){
             if(ships[i].selected){

@@ -136,10 +136,10 @@ void MapInputLoop(){
             startingZoom = worldScale;
             focusTarget = ScreenToWorld(GetMousePosition());
             RunRoutine("SwitchToBattleRoutine");
-            if(startingZoom < 0.3){
-                endZoom = 1;
+            if(startingZoom < 0.5){
+                endZoom = 2;
             }else{
-                endZoom = 0.2;
+                endZoom = 0.4;
             }
         }
     }
@@ -155,18 +155,18 @@ void MapInputLoop(){
     if(IsKeyDown(KEY_Q)){
         worldScale -= fixedDeltaTime * (worldScale / 0.3) * 0.1;
     }
-    if(IsKeyDown(KEY_D)){
-        cameraPosition.x += fixedDeltaTime * worldScale;
-    }
-    if(IsKeyDown(KEY_A)){
-        cameraPosition.x -= fixedDeltaTime * worldScale;
-    }
-     if(IsKeyDown(KEY_W)){
-        cameraPosition.y += fixedDeltaTime * worldScale;
-    }
-    if(IsKeyDown(KEY_S)){
-        cameraPosition.y -= fixedDeltaTime * worldScale;
-    }
+    // if(IsKeyDown(KEY_D)){
+    //     cameraPosition.x += fixedDeltaTime * worldScale;
+    // }
+    // if(IsKeyDown(KEY_A)){
+    //     cameraPosition.x -= fixedDeltaTime * worldScale;
+    // }
+    //  if(IsKeyDown(KEY_W)){
+    //     cameraPosition.y += fixedDeltaTime * worldScale;
+    // }
+    // if(IsKeyDown(KEY_S)){
+    //     cameraPosition.y -= fixedDeltaTime * worldScale;
+    // }
 
     if(IsKeyPressed(KEY_R)){
         for(int i = 0; i < ISLANDCOUNT; i++){
@@ -183,9 +183,10 @@ void MapInputLoop(){
 
 void MapFrameLoop(){
 
-    ClearBackground((Color){ 1, 1, 1, 255 });
+    int grey = 10;
+    ClearBackground((Color){ grey, grey, grey, 255 });
 
-    float gridSize = 0.2;
+    float gridSize = 1;
     for(float x = xBounds.x; x < xBounds.y; x+= gridSize){
         DrawLineV(WorldToScreen((Vector2){x, -3}), WorldToScreen((Vector2){x, 3}), GRAY);
     }
@@ -225,10 +226,12 @@ void MapFrameLoop(){
         }
     }
    
+    BeginShaderMode(ship_frag);
     for(int i = 0; i < shipCount; i++){
         RenderShip(&ships[i]);
         SteerShip(&ships[i]);
     }
+    EndShaderMode();
 
     BeginShaderMode(islandShader_frag);
     for(int i = 0; i < ISLANDCOUNT; i++){

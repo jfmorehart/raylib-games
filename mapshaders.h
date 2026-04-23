@@ -7,7 +7,7 @@
 
 Shader islandShader_frag;
 Shader oceanShader_frag;
-
+Shader ship_frag;
 
 int timeLoc;
 int landTime;
@@ -17,6 +17,7 @@ int ShaderInit(){
 
     islandShader_frag = LoadShader(0, "island.fs");
     oceanShader_frag = LoadShader(0, "ocean.fs");
+    ship_frag = LoadShader(0, "ship.fs");
 
     //set RESOLUTION
     int resLoc = GetShaderLocation(islandShader_frag, "resolution");        
@@ -26,6 +27,8 @@ int ShaderInit(){
     resLoc = GetShaderLocation(oceanShader_frag, "resolution");                                                                                                                                               
     SetShaderValue(oceanShader_frag, resLoc, res, SHADER_UNIFORM_VEC2);     
 
+    resLoc = GetShaderLocation(islandShader_frag, "resolution");
+    SetShaderValue(ship_frag, resLoc, res, SHADER_UNIFORM_VEC2);     
 
     //setup ISLAND CONSTANTS
     resLoc = GetShaderLocation(islandShader_frag, "multiplier");   
@@ -35,6 +38,16 @@ int ShaderInit(){
     resLoc = GetShaderLocation(islandShader_frag, "dotsize");   
     float dotsize = 0.1;
     SetShaderValue(islandShader_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
+
+
+    //setup Ship CONSTANTS
+    resLoc = GetShaderLocation(ship_frag, "multiplier");   
+    multiplier = 80;
+    SetShaderValue(ship_frag, resLoc, &multiplier, SHADER_UNIFORM_INT);
+
+    resLoc = GetShaderLocation(ship_frag, "dotsize");   
+    dotsize = 0.3;
+    SetShaderValue(ship_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
 
     return 0;
 }
@@ -57,15 +70,24 @@ void PrepOceanPass(Vector2 mousePos, int multiplier, float dotsize){
     SetShaderValue(oceanShader_frag, timeLoc, &unscaledTime, SHADER_UNIFORM_FLOAT);
     SetShaderValue(islandShader_frag, landTime, &unscaledTime, SHADER_UNIFORM_FLOAT);
 
+    //ocean
     resLoc = GetShaderLocation(oceanShader_frag, "worldScale");   
     SetShaderValue(oceanShader_frag, resLoc, &worldScale, SHADER_UNIFORM_FLOAT);
     resLoc = GetShaderLocation(oceanShader_frag, "cameraPosition");   
     SetShaderValue(oceanShader_frag, resLoc, &cameraPosition, SHADER_UNIFORM_VEC2);
 
+    //ship
+    resLoc = GetShaderLocation(ship_frag, "worldScale");   
+    SetShaderValue(ship_frag, resLoc, &worldScale, SHADER_UNIFORM_FLOAT);
+    resLoc = GetShaderLocation(ship_frag, "cameraPosition");   
+    SetShaderValue(ship_frag, resLoc, &cameraPosition, SHADER_UNIFORM_VEC2);
+
+
     BeginShaderMode(oceanShader_frag);
     
     DrawRectangle(0, 0, WIDTH, HEIGHT, BLACK);
 
+    //island
     resLoc = GetShaderLocation(islandShader_frag, "worldScale");   
     SetShaderValue(islandShader_frag, resLoc, &worldScale, SHADER_UNIFORM_FLOAT);
     resLoc = GetShaderLocation(islandShader_frag, "cameraPosition");   
@@ -78,11 +100,11 @@ void EndOceanPass(){
 }
 void PrepShipRangePass(){
     int resLoc = GetShaderLocation(oceanShader_frag, "multiplier");   
-    int multiplier = 60;
+    int multiplier = 100;
     SetShaderValue(oceanShader_frag, resLoc, &multiplier, SHADER_UNIFORM_INT);
 
     resLoc = GetShaderLocation(oceanShader_frag, "dotsize");   
-    float dotsize = 0.04;
+    float dotsize = 0.1;
     SetShaderValue(oceanShader_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
 
     BeginShaderMode(oceanShader_frag);

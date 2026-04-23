@@ -33,24 +33,30 @@ void RunOnStart(){
     routines[2] = (Routine){"SwitchToBattleRoutine", false, true, -999, 1, 1, SwitchToBattleRoutine};
     routineCount = 3; //update with full number!
 
+
     InitWindow(WIDTH, HEIGHT, "raylib");
 
     font = LoadFont("mecha.ttf");
     // font = LoadFont("resources/sprite_fonts/alpha_beta.png");
 
     WIDTH = GetMonitorWidth(0);
-    HEIGHT = GetMonitorHeight(0) -30;
+    HEIGHT = GetMonitorHeight(0);
 
     screenVec = (Vector2){WIDTH, HEIGHT};
     SetTargetFPS(FRAMERATE);
     SetWindowSize(WIDTH, HEIGHT);
+    
+    ToggleBorderlessWindowed();
 
-    worldScale = 1;
+    worldScale = 2;
     cameraPosition = ScreenToWorld((Vector2){WIDTH * 0.5, HEIGHT * 0.5});    
     worldZero = cameraPosition;
 
-    xBounds = (Vector2){ScreenToWorld((Vector2){0, 0}).x, ScreenToWorld((Vector2){WIDTH, 0}).x}; 
-    yBounds = (Vector2){ScreenToWorld((Vector2){0, 0}).y, ScreenToWorld((Vector2){0, HEIGHT}).y}; 
+    float diff = (WIDTH - HEIGHT) * 0.3;
+    int border = 30;
+
+    xBounds = (Vector2){ScreenToWorld((Vector2){diff, 0}).x, ScreenToWorld((Vector2){WIDTH - diff, 0}).x}; 
+    yBounds = (Vector2){ScreenToWorld((Vector2){border, 0}).y, ScreenToWorld((Vector2){0, HEIGHT - border}).y}; 
 
     cameraPosition = ScreenToWorld((Vector2){WIDTH * 0.5, HEIGHT * 0.5});
 
@@ -96,10 +102,10 @@ int main(void)
                 startingCameraPos = cameraPosition;
                 startingZoom = worldScale;
                 focusTarget = worldZero;
-                if(startingZoom < 0.3){
-                    endZoom = 1;
+                if(startingZoom < 0.5){
+                    endZoom = 2;
                 }else{
-                    endZoom = 0.2;
+                    endZoom = 0.4;
                 }
             }
 
@@ -117,6 +123,13 @@ int main(void)
         }
 
         RenderWindow(&hello, &font);
+
+        float diff = (WIDTH - HEIGHT) * 0.3;
+        int border = 30;
+        DrawRectangle(0, 0, diff, HEIGHT, BLACK);//, int posY, int width, int height, Color color)
+        DrawRectangle(WIDTH-  diff, 0, diff, HEIGHT, BLACK);
+        DrawRectangle(diff, 0, WIDTH - diff * 2,border, BLACK);
+        DrawRectangle(diff, HEIGHT - border, WIDTH - diff * 2, border, BLACK);
         EndDrawing();
     }
 

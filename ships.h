@@ -90,7 +90,7 @@ float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target){
 void RenderShip(const Ship *ship){
     Vector2 forward = VfromAngle(ship->angle);
     // Vector2 forwardNormal = Vector2Normalize(forward);
-    forward = Vector2Scale(forward, ship->scale * 3);
+    forward = Vector2Scale(forward, ship->scale * 5);
 
     Vector2 right = {cos(ship->angle + PI * 0.5) * ship->scale, sin(ship->angle +PI * 0.5) * ship->scale};
 
@@ -104,10 +104,13 @@ void RenderShip(const Ship *ship){
         DrawTriangle(WorldToScreen(tail), WorldToScreen(leftWing), WorldToScreen(rightWing), BLUE);
     }else{
         DrawTriangle(WorldToScreen(nose), WorldToScreen(rightWing),WorldToScreen(leftWing), WHITE);
-    DrawTriangle(WorldToScreen(tail), WorldToScreen(leftWing), WorldToScreen(rightWing), WHITE);
+        DrawTriangle(WorldToScreen(tail), WorldToScreen(leftWing), WorldToScreen(rightWing), WHITE);
     }
-
     
+    if(ship->hasTarget){
+        DrawLineV(WorldToScreen(ship->wPos), WorldToScreen(ship->tPos), WHITE);
+
+    }
 }
 
 void SteerShip(Ship *ship){

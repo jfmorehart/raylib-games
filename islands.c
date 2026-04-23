@@ -72,7 +72,7 @@ void Render (const Island *island){
         Vector2 screenPoint1 = WorldToScreen(IslandPointToWorld(island, island->points[i]));
         Vector2 screenPoint2 = WorldToScreen(IslandPointToWorld(island, island->points[(i + 1) % island->edgeCount]));
 
-        DrawLineEx(WorldToScreen(island->edges[i].a), WorldToScreen(island->edges[i].b), 5, WHITE);
+        // DrawLineEx(WorldToScreen(island->edges[i].a), WorldToScreen(island->edges[i].b), 5, WHITE);
         DrawTriangle(screenPoint0, screenPoint1, screenPoint2, BLUE);
     }
 }

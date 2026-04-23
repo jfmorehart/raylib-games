@@ -69,9 +69,9 @@ void main()
 
     vec2 uv = (ns / resolution.y * 0.5);   
 
-    float stime = sin(_Time * 0.005) * 3;
-    float ono = octaves(stime * vec2(0.8, 0) * 130 + ns * 0.04, 2) * 0.01;
-    float ono2 = 1;//octaves(130 + (8 * _Time + stime + ns) * 0.01, 2) * 0.02;
+    float stime = sin(_Time * 0.001) * 3;
+    float ono = octaves(stime * vec2(0.8, 0) * 130 + uv * 50, 2) * 0.01;
+    float ono2 = octaves(stime * vec2(0.8, 0) * 130 + uv * 10, 2) * 0.01;
     
     uv += ono + ono2;
 
@@ -88,7 +88,7 @@ void main()
     // val = pDist;
     //val = octaves(gl_FragCoord.xy * 0.01, 10);
 
-    val *= 0.5;
+    val *= 0.3;
     col = vec3(val, val, val) ;
     finalColor = vec4(col.xyz, val); 
 }                                                                                                                                                                                                  
