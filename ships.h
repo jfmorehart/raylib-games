@@ -87,12 +87,12 @@ float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target){
     return bestAngle;
 }
 
-void RenderShip(const Ship *ship){
+void RenderShip(const Ship *ship, float scaleMult){
     Vector2 forward = VfromAngle(ship->angle);
     // Vector2 forwardNormal = Vector2Normalize(forward);
-    forward = Vector2Scale(forward, ship->scale * 5);
+    forward = Vector2Scale(forward, ship->scale * 5 * scaleMult);
 
-    Vector2 right = {cos(ship->angle + PI * 0.5) * ship->scale, sin(ship->angle +PI * 0.5) * ship->scale};
+    Vector2 right = {cos(ship->angle + PI * 0.5) * ship->scale * scaleMult, sin(ship->angle +PI * 0.5) * ship->scale * scaleMult};
 
     Vector2 nose = Vector2Add(ship->wPos, forward);
     Vector2 rightWing = Vector2Add(ship->wPos, right);//Vector2Add(, Vector2Scale(forward, -0.5));

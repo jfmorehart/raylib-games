@@ -1,6 +1,6 @@
 MAKEFLAGS += --warn-undefined-variables
 CFLAGS = -Wall -O2 $(shell pkg-config --cflags raylib)                                                                                
-LIBS = $(shell pkg-config --libs raylib) -framework OpenGL -framework Cocoa -framework IOKit
+LIBS = /opt/homebrew/opt/raylib/lib/libraylib.a -framework OpenGL -framework Cocoa -framework IOKit
 
 all: raylibtest
 

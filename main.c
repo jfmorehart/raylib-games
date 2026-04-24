@@ -35,7 +35,8 @@ void RunOnStart(){
 
 
     InitWindow(WIDTH, HEIGHT, "raylib");
-
+    
+    ChangeDirectory(GetApplicationDirectory());
     font = LoadFont("mecha.ttf");
     // font = LoadFont("resources/sprite_fonts/alpha_beta.png");
 

@@ -18,12 +18,12 @@
 
 extern Island island[ISLANDCOUNT];
 
-int shipCount = 5;
+int shipCount = 0;
 Ship ships[MAX_SHIPS];
 
-int detectablesCount = 10;
-Vector2 detectables[10];
-bool isdetected[10];
+int eshipCount = 0;
+Ship eships[MAX_SHIPS];
+
 
 void TimeRoutine(Routine *routine){
 
@@ -74,12 +74,14 @@ void RandomizeMap(){
         island[i] = CreateIsland(); 
     }
 
+    shipCount = MAX_SHIPS;
     for(int i = 0; i < shipCount; i++){
         ships[i] = (Ship){true, RandomWorldPoint(), R01() * 5, 0.01};
     }   
 
-    for(int i = 0; i < detectablesCount; i++){
-        detectables[i] = RandomWorldPoint();
+    eshipCount= MAX_SHIPS;
+    for(int i = 0; i < eshipCount; i++){
+        eships[i] = (Ship){false, RandomWorldPoint(), R01() * 5, 0.01};
     } 
 }
 
@@ -90,13 +92,21 @@ void InitMapScene(){
     // cameraPosition = ScreenToWorld((Vector2){WIDTH * 0.5, HEIGHT * 0.5});
     timeScale = 0.1;
 
-    ShaderInit();
+    //setup Ship CONSTANTS (overwrite from battlescene)
+    int resLoc = GetShaderLocation(ship_frag, "multiplier");   
+    int multiplier = 80;
+    SetShaderValue(ship_frag, resLoc, &multiplier, SHADER_UNIFORM_INT);
+
+    resLoc = GetShaderLocation(ship_frag, "dotsize");   
+    float dotsize = 0.3;
+    SetShaderValue(ship_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
 }
 
 void MapInputLoop(){
 
     if(IsMouseButtonDown(0)){
 
+        // printf("click \n");
         if(!IsKeyDown(KEY_LEFT_SHIFT)){
             for(int i = 0; i < shipCount; i++){
                 ships[i].selected = false;
@@ -111,15 +121,18 @@ void MapInputLoop(){
 
         for(int i = 0; i < shipCount; i++){
            if(Vector2Distance(ships[i].wPos, mousePos) < 0.3){
+                printf("sel \n");
                 ships[i].selected = true;
             }
         }   
     }
     if(IsMouseButtonDown(1)){
+        // printf("rclick \n");
         for(int i = 0; i < shipCount; i++){
             if(ships[i].selected){
                 ships[i].tPos = mousePos;
                 ships[i].hasTarget = true;
+                printf("oreer \n");
             }
         }   
     }
@@ -169,15 +182,7 @@ void MapInputLoop(){
     // }
 
     if(IsKeyPressed(KEY_R)){
-        for(int i = 0; i < ISLANDCOUNT; i++){
-            island[i] = CreateIsland(); 
-        }
-        for(int i = 0; i < shipCount; i++){
-            ships[i] = (Ship){true,  RandomWorldPointNoIsland(), RVec(5).x, 0.01};
-        }   
-        for(int i = 0; i < detectablesCount; i++){
-            detectables[i] = RandomWorldPointNoIsland();
-        } 
+        RandomizeMap();
     }
 }
 
@@ -203,32 +208,40 @@ void MapFrameLoop(){
     PrepOceanPass(mousePos_ScreenCoords, 90, 0.08);
     EndOceanPass(); //flush buffer
 
-    for(int d = 0; d < detectablesCount; d++){
-        isdetected[d] = false;
+    for(int d = 0; d < eshipCount; d++){
+        eships[d].selected = false;
     }
 
     PrepShipRangePass();
     for(int i = 0; i < shipCount; i++){
         DrawCircleV(WorldToScreen(ships[i].wPos), WorldToPixels(SHIP_SEARCHRANGE), WHITE);
 
-        for(int d = 0; d < detectablesCount; d++){
-            if(Vector2Distance(ships[i].wPos, detectables[d]) < SHIP_SEARCHRANGE){
-                isdetected[d] = true;
+        for(int d = 0; d < eshipCount; d++){
+            if(Vector2Distance(ships[i].wPos, eships[d].wPos) < SHIP_SEARCHRANGE){
+                eships[d].selected = true;
             }
         }
     }
     EndOceanPass();
 
-
-    for(int d = 0; d < detectablesCount; d++){
-        if(isdetected[d]){
-            DrawCircleV(WorldToScreen(detectables[d]), 8, RED);
+    //Set color red
+    int resLoc = GetShaderLocation(ship_frag, "team");   
+    int team = 1;
+    SetShaderValue(ship_frag, resLoc, &team, SHADER_UNIFORM_INT);
+    BeginShaderMode(ship_frag);
+    for(int d = 0; d < eshipCount; d++){
+        if(eships[d].selected){
+            RenderShip(&eships[d], 0.7);
         }
     }
-   
+    EndShaderMode();
+
+    //Set color white
+    team = 0;
+    SetShaderValue(ship_frag, resLoc, &team, SHADER_UNIFORM_INT);
     BeginShaderMode(ship_frag);
     for(int i = 0; i < shipCount; i++){
-        RenderShip(&ships[i]);
+        RenderShip(&ships[i], 1);
         SteerShip(&ships[i]);
     }
     EndShaderMode();

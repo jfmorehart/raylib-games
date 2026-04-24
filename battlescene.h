@@ -23,10 +23,15 @@ extern Ship ships[MAX_SHIPS];
 void InitBattleScene(){
 
     timeScale = 0.2;
-    //cameraPosition = ScreenToWorld((Vector2){WIDTH * 0.5, HEIGHT * 0.5});
-    //timeScale = 0.1;
-    //srand(time(NULL));
-    //ShaderInit();
+
+        //setup Ship CONSTANTS (overwrite from mapscene)
+    int resLoc = GetShaderLocation(ship_frag, "multiplier");   
+    int multiplier = 120;
+    SetShaderValue(ship_frag, resLoc, &multiplier, SHADER_UNIFORM_INT);
+
+    resLoc = GetShaderLocation(ship_frag, "dotsize");   
+    float dotsize = 0.2;
+    SetShaderValue(ship_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
 }
 
 void BattleFrameLoop(){
@@ -49,9 +54,23 @@ void BattleFrameLoop(){
         DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), GRAY);
     }
 
+    //Set color red
+    int resLoc = GetShaderLocation(ship_frag, "team");   
+    int team = 1;
+    SetShaderValue(ship_frag, resLoc, &team, SHADER_UNIFORM_INT);
+    BeginShaderMode(ship_frag);
+    for(int d = 0; d < eshipCount; d++){
+        if(eships[d].selected){
+            RenderShip(&eships[d], 0.4);
+        }
+    }
+    EndShaderMode();
+
+    team = 0;
+    SetShaderValue(ship_frag, resLoc, &team, SHADER_UNIFORM_INT);
     BeginShaderMode(ship_frag);
     for(int i = 0; i < shipCount; i++){
-        RenderShip(&ships[i]);
+        RenderShip(&ships[i], 0.4);
         SteerShip(&ships[i]);
     }
     EndShaderMode();
