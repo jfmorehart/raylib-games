@@ -23,5 +23,7 @@ extern Smoke smokePool[];
 Smoke *NextSmoke(Smoke *array, int poolSize, int *cham);
 
 void FireSmoke(Vector2 position, float radius);
+void FireSplash(Vector2 position, float radius);
 
-void UpdateAndRenderSmokes();
+//all smoke-likes (smokes, splashes)
+void UpdateAndRenderBlobs(Smoke *pool, int count);

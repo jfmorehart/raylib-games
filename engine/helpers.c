@@ -4,10 +4,12 @@
 #include "globals.h"
 #include "islands.h"
 #include "routines.h"
+#include "stb_perlin.h"
 
 #include <stdio.h>
 #include <string.h>
 
+#define STB_PERLIN_IMPLEMENTATION
 
 float R01(){
     return (float)rand() / RAND_MAX;
@@ -17,6 +19,12 @@ Vector2 RVec(float scale){
     Vector2 rvec =(Vector2){scale * ((float) 2 * rand() / RAND_MAX - 1), scale * ((float) 2 * rand() / RAND_MAX - 1)};
     //printf("rvec: (%f, %f)\n", rvec.x, rvec.y);  
     return rvec;
+}
+
+Vector2 RVec_Perlin(float index, float wobbleFreq){
+    float a = stb_perlin_noise3(index * 413 + 123 + scaledTime * wobbleFreq, 0, 0, 0, 0, 0);
+    float b = stb_perlin_noise3(index * 214 + 8976+ scaledTime * wobbleFreq, 0, 0, 0, 0, 0);
+    return (Vector2){a, b};
 }
 Vector2 RandomWorldPoint(){
     Vector2 r01 = (Vector2){(float)rand() / RAND_MAX,  (float) rand() / RAND_MAX};

@@ -23,15 +23,29 @@ extern Gun FiveInch;// = {0.18, 2, 0.1, 0.05};
 extern Gun EightInch;// = {0.25, 4, 0.13, 0.04};
 extern Gun SixteenInch;// = {0.4, 8, 0.2, 0.03};
 
+typedef struct Ship Ship;
 typedef struct Battery{
+    //stats
     int gunCount;
     Gun BatteryType;
+    float batterySpread;
+
+    //hk
     float lastFireTimes[MAX_GUNS_PER_BATTERY];
-    Vector2 batteryOffset;
+
+    //physical
+    float batteryOffset_Y;
     Vector2 batteryForward;
     float traverseAmount;
-    // Vector2 offsets[MAX_GUNS_PER_BATTERY]; //ship-space (-1 to 1)?
-    // Vector2 forwardVectors[MAX_GUNS_PER_BATTERY]; //ship space (f b l r)
+
+    //targeting
+    Ship *shipTarget;
+    float lastSearch;
+    float searchCooldown;
+    int timesTargeted; //for bracketing
+
+    //for noise smoothing
+    float _r_index;
 }Battery;
 
 typedef struct{
@@ -48,7 +62,8 @@ extern int bulletCham;
 extern Bullet bulletPool[];
 
 typedef struct Ship Ship;
-void DamageShips(Vector2 position, float radius, Ship *enemyShips, int count, int damage);
+
+bool DamageShips(Vector2 position, float radius, Ship *enemyShips, int count, int damage);
 
 void UpdateAndRenderBullets(Bullet *array, int bulletCount, Ship *canDamageArray, int canDamageLength);
 //copy and paste of Pools Next
@@ -56,5 +71,10 @@ Bullet *NextBullet(Bullet *array, int poolSize, int *cham);
 
 void FireBullet(Vector2 start, Vector2 target, Gun btype);
 
-bool CanBatterySeeThis(Vector2 batteryPosition, float batteryAngle, Battery *battery, Vector2 target, bool drawRanges);
-void BatteryEngageTarget(const Ship *ship, Battery *battery, Vector2 target);
+bool CanBatterySeeThis(Vector2 batteryPosition, float batteryAngle, Battery *battery, Vector2 target);
+
+Ship *BatteryAquireTarget(const Ship *ship, Ship *targetShipsArray, int arrayLen, Battery *battery, Vector2 batteryPosition);
+
+void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 target);
+
+void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *battery);

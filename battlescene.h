@@ -28,8 +28,12 @@ int bulletCount = 100;
 Bullet bulletPool[100];
 
 int smokeCham;
-int smokeCount = 200;
-Smoke smokePool[200];
+int smokeCount = 100;
+Smoke smokePool[100];
+
+int splashCham;
+int splashCount = 100;
+Smoke splashPool[100];
 
 void InitBattleScene(){
 
@@ -77,8 +81,11 @@ void BattleFrameLoop(){
         eships[d].selected = false;
     }
 
+    PrepShipRangePass();
     for(int i = 0; i < shipCount; i++){
         if(!ships[i].alive || !ships[i].includedInScene)continue;
+        DrawCircleV(WorldToScreen(ships[i].wPos), WorldToPixels(SHIP_SEARCHRANGE), WHITE);
+
         for(int d = 0; d < eshipCount; d++){
             if(!eships[d].alive || !eships[d].includedInScene)continue;
             if(Vector2Distance(ships[i].wPos, eships[d].wPos) < SHIP_SEARCHRANGE){
@@ -86,10 +93,15 @@ void BattleFrameLoop(){
             }
         }
     }
+    EndShaderMode();
 
     int mLoc = GetShaderLocation(ship_frag, "multiplier");   
     int mult = 150;
     SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
+
+    int dLoc = GetShaderLocation(ship_frag, "dotsize");   
+    float dotsize = 0.2;
+    SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
 
     //Set color red
     int resLoc = GetShaderLocation(ship_frag, "color");   
@@ -116,8 +128,8 @@ void BattleFrameLoop(){
 
     mLoc = GetShaderLocation(ship_frag, "multiplier");   
     mult = 90;
-    float dotsize = 0.03;
-    int dLoc = GetShaderLocation(ship_frag, "dotsize");   
+    dotsize = 0.03;
+    dLoc = GetShaderLocation(ship_frag, "dotsize");   
     SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
     SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
     col = (Vector3){0.8, 0.8, 0.8};
@@ -152,7 +164,17 @@ void BattleFrameLoop(){
     col = (Vector3){1, 0.8, 0};
     SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
-    UpdateAndRenderSmokes();
+    UpdateAndRenderBlobs(smokePool, smokeCount);
+    EndShaderMode();
+
+    dotsize = 0.3;
+    SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
+    mult = 100;
+    SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
+    col = (Vector3){0, 0, 0.2};
+    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
+    BeginShaderMode(ship_frag);
+    UpdateAndRenderBlobs(splashPool, splashCount);
     EndShaderMode();
 
     if(IsMouseButtonDown(0)){

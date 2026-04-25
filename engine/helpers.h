@@ -8,6 +8,7 @@
 
 float R01();
 Vector2 RVec(float scale);
+Vector2 RVec_Perlin(float index, float wobbleFreq);
 Vector2 RandomWorldPoint();
 
 float SignedAngle(float a1, float a2);

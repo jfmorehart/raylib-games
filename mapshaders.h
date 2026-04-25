@@ -12,6 +12,7 @@ Shader ship_frag;
 int timeLoc;
 int landTime;
 
+extern SceneName currentScene;
 
 int ShaderInit(){
 
@@ -99,13 +100,31 @@ void EndOceanPass(){
     EndShaderMode();
 }
 void PrepShipRangePass(){
-    int resLoc = GetShaderLocation(oceanShader_frag, "multiplier");   
-    int multiplier = 100;
-    SetShaderValue(oceanShader_frag, resLoc, &multiplier, SHADER_UNIFORM_INT);
+    int mLoc = GetShaderLocation(oceanShader_frag, "multiplier"); 
+    int dLoc = GetShaderLocation(oceanShader_frag, "dotsize");   
+    switch (currentScene) {
+        case Menu: {
+        break;
+        }
+        case Map:{
+            int multiplier = 100;
+            SetShaderValue(oceanShader_frag, mLoc, &multiplier, SHADER_UNIFORM_INT);
 
-    resLoc = GetShaderLocation(oceanShader_frag, "dotsize");   
-    float dotsize = 0.1;
-    SetShaderValue(oceanShader_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
+            float dotsize = 0.1;
+            SetShaderValue(oceanShader_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
+        }
+        break;
+
+        case Battle:{
+             int multiplier = 250;
+            SetShaderValue(oceanShader_frag, mLoc, &multiplier, SHADER_UNIFORM_INT);
+
+            float dotsize = 0.07;
+            SetShaderValue(oceanShader_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
+        }
+        break;
+    }
+
 
     BeginShaderMode(oceanShader_frag);
 }

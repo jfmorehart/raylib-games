@@ -7,7 +7,7 @@ Claude must NOT write, edit, or modify any .c, .h, .glsl, or Makefile files in t
 
 Claude CAN:
 - Answer questions about C, raylib, GLSL, and general programming concepts
-- Provide pseudocode when the user is stuck (maximum level of specificity)
+- Provide pseudocode when the user is stuck (unspecific to C, but still helpful)
 - Copy-paste from official docs or boilerplate when asked
 - Read files to review/debug when asked
 - Run `make` or other build/run commands when asked

@@ -117,46 +117,14 @@ void SteerShip(Ship *ship, float speedMult){
 
 //runs every frame
 void ShipCombat(Ship *ship, Ship *targetShipsArray, int arrayLen){
-
-    if(ship->targetShip){
-            //check if its still valid
-            if(!ship->targetShip->alive){
-                ship->targetShip = 0; //null it
-                return;
-            } 
-            if(Vector2DistanceSqr(ship->targetShip->wPos, ship->wPos) > ship->searchRange){
-                //out of range, null it
-                ship->targetShip = 0;
-                return;
-            }
-            //valid target, see if each battery can fire
-            for(int i = 0; i < ship->batteryCount; i++){
-                BatteryEngageTarget(ship, &ship->batteries[i], ship->targetShip->wPos);
-            }
-            
-    }else{
-        //aquire
-        //for now, simple aquire
-        for(int i = 0; i < arrayLen; i++){
-            if(!targetShipsArray[i].alive)continue;
-            if(Vector2DistanceSqr(targetShipsArray[i].wPos, ship->wPos) < ship->searchRange){
-                //this is my target!
-                printf("target aquire!");
-                ship->targetShip = &targetShipsArray[i];
-
-                //valid target, see if each battery can fire
-                for(int i = 0; i < ship->batteryCount; i++){
-                    BatteryEngageTarget(ship, &ship->batteries[i], ship->targetShip->wPos);
-                }
-                break;
-            }
-        }
+    for(int i = 0; i < ship->batteryCount; i++){
+        BatteryUpdate(ship, targetShipsArray, arrayLen, &ship->batteries[i]);
     }
 }
 
 // void ShipCombatOld(Ship *ship, Ship *targetShipsArray, int arrayLen){
 
-//     // DrawCircleV(WorldToScreen(ship->wPos), WorldToPixels(sqrtf(ship->guns[0].range)), WHITE);
+//     // 
 
 //     for(int g = 0; g < ship->battery.gunCount; g++){
 //         Gun *gun = &ship->battery.guns[g];

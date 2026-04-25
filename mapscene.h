@@ -26,6 +26,7 @@ int eshipCount = 0;
 Ship eships[MAX_SHIPS];
 
 
+
 void TimeRoutine(Routine *routine){
 
     float runtime = (unscaledTime - routine->startTime);
@@ -75,33 +76,98 @@ void RandomizeMap(){
         island[i] = CreateIsland(); 
     }
 
-    Battery batLeft = {
-        3, 
+    /*typedef struct Battery{
+    //stats
+    int gunCount;
+    Gun BatteryType;
+    float batterySpread;
+
+    //hk
+    float lastFireTimes[MAX_GUNS_PER_BATTERY];
+
+    //physical
+    float batteryOffset_Y;
+    Vector2 batteryForward;
+    float traverseAmount;
+
+    //targeting
+    Ship *shipTarget;
+    float lastSearch;
+    float searchCooldown;
+    int timesTargeted; //for bracketing
+
+    //for noise smoothing
+    int _r_index;
+}Battery;*/
+
+    Battery batLeft_A = {
+        3, // <= MAX GUNS PER BATTERY 
         FiveInch,
+        0.3,
         {0, 0, 0},
-        (Vector2){0, 0},
-        (Vector2){0, -1},
-       45
+        1,
+        (Vector2){0.2, -1},
+        45,
+        0, 
+        0, 
+        1, 
+        0, 
+        R01() * 10
     };
-        Battery batRight = {
-        3, 
+
+    Battery batLeft_B = {
+        3,// <= MAX GUNS PER BATTERY  
         FiveInch,
+        0.3,
         {0, 0, 0},
-        (Vector2){0, 0},
-        (Vector2){0, 1},
-       45
+        -1,
+        (Vector2){-0.2, -1},
+        45,
+        0, 
+        0, 
+        1, 
+        0, 
+        R01() * 10
+    };
+    Battery batRightA = {
+        3,// <= MAX GUNS PER BATTERY  
+        FiveInch,
+        0.3,
+        {0, 0, 0},
+        1,
+        (Vector2){0.2, 1},
+        45, 
+        0, 
+        0, 
+        1, 
+        0, 
+        R01() * 10
+    };
+        Battery batRightB = {
+        3,// <= MAX GUNS PER BATTERY  
+        FiveInch,
+        0.3,
+        {0, 0, 0},
+        -1,
+        (Vector2){-0.2, 1},
+        45, 
+        0, 
+        0, 
+        1, 
+        0,
+        R01() * 10
     };
 
 
     shipCount = MAX_SHIPS;
     for(int i = 0; i < shipCount; i++){
 
-        ships[i] = (Ship){true, true, true, RandomWorldPointNoIsland(), R01() * 5, 0.01, 100, false, Vector2Zero(), false, 0.5, -1, SHIP_SEARCHRANGE * SHIP_SEARCHRANGE, 0 , 2, {batLeft, batRight, {0}, {0}, {0}}};
+        ships[i] = (Ship){true, true, true, RandomWorldPointNoIsland(), R01() * 5, 0.01, 100, false, Vector2Zero(), false, 0.5, -1, SHIP_SEARCHRANGE * SHIP_SEARCHRANGE, 0 , 4, {batLeft_A, batLeft_B, batRightA, batRightB, {0}}};
     }   
 
     eshipCount= MAX_SHIPS;
     for(int i = 0; i < eshipCount; i++){
-        eships[i] = (Ship){true, true, false, RandomWorldPointNoIsland(), R01() * 5, 0.01, 100, false, Vector2Zero(), false, 0.5, -1, SHIP_SEARCHRANGE * SHIP_SEARCHRANGE, 0 , 2, {batLeft, batRight, {0}, {0}, {0}}};
+        eships[i] = (Ship){true, true, false, RandomWorldPointNoIsland(), R01() * 5, 0.01, 100, false, Vector2Zero(), false, 0.5, -1, SHIP_SEARCHRANGE * SHIP_SEARCHRANGE, 0 , 4, {batLeft_A, batLeft_B, batRightA, batRightB, {0}}};
     } 
 }
 
