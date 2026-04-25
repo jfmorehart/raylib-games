@@ -32,6 +32,9 @@ typedef struct Ship{
     float lastShot;
     float rangeSqr;
     struct Ship *targetShip;
+
+    Gun guns[3];
+    
 } Ship;
 
 extern Island island[ISLANDCOUNT];
@@ -123,7 +126,7 @@ void RenderShip(const Ship *ship, float scaleMult){
     }
 }
 
-void SteerShip(Ship *ship){
+void SteerShip(Ship *ship, float speedMult){
     //Steer Ship
     if(ship->hasMoveTarget){
         float angle = Path2Target(ship, 4, PI * 0.5, ship->moveTargetPosition);
@@ -133,29 +136,32 @@ void SteerShip(Ship *ship){
         }else if(diff >= 0.01){
             ship->angle += scaledDeltaTime * SHIPTURN;
         }
-        ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), scaledDeltaTime * 0.1 * SHIPSPEED));
+        ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), scaledDeltaTime * 0.1 * SHIPSPEED * speedMult));
     }
 
 }
 
 void ShipCombat(Ship *ship, Ship *targetShipsArray, int arrayLen){
-    if(scaledTime - ship->lastShot > ship->reloadTime){
-        ship->lastShot = scaledTime;
-        if(ship->targetShip){
-            //fire
-            FireBullet(ship->wPos, ship->targetShip->wPos);
-        }else{
-            //aquire
-            //for now, simple aquire
-            for(int i = 0; i < arrayLen; i++){
-                printf("target search");
-                if(Vector2DistanceSqr(targetShipsArray[i].wPos, ship->wPos) < ship->rangeSqr){
-                    //this is my target!
-                    printf("target aquire!");
-                    ship->targetShip = &targetShipsArray[i];
-                    //fire
-                    FireBullet(ship->wPos, ship->targetShip->wPos);
-                    return;
+
+    for(int g = 0; g < 3; g++){
+        Gun *gun = &ship->guns[g];
+        if(scaledTime - gun->lastShot > gun->reloadTime){
+            ship->guns[g].lastShot = scaledTime;
+            if(ship->targetShip){
+                //fire
+                FireBullet(ship->wPos, ship->targetShip->wPos, gun);
+            }else{
+                //aquire
+                //for now, simple aquire
+                for(int i = 0; i < arrayLen; i++){
+                    if(Vector2DistanceSqr(targetShipsArray[i].wPos, ship->wPos) < gun->range){
+                        //this is my target!
+                        printf("target aquire!");
+                        ship->targetShip = &targetShipsArray[i];
+                        //fire
+                        FireBullet(ship->wPos, ship->targetShip->wPos, gun);
+                        break;
+                    }
                 }
             }
         }

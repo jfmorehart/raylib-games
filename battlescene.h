@@ -10,6 +10,7 @@
 #include "UI.h"
 #include "pools.h"
 #include "bullets.h"
+#include "vfx.h"
 
 #include <alloca.h>
 #include <math.h>       
@@ -26,9 +27,13 @@ int bulletCham;
 int bulletCount = 100;
 Bullet bulletPool[100];
 
+int smokeCham;
+int smokeCount = 200;
+Smoke smokePool[200];
+
 void InitBattleScene(){
 
-    timeScale = 0.2;
+    timeScale = 1;
 
     //setup Ship CONSTANTS (overwrite from mapscene)
     int resLoc = GetShaderLocation(ship_frag, "multiplier");   
@@ -52,18 +57,22 @@ void BattleFrameLoop(){
     PrepOceanPass(mousePos_ScreenCoords, 100, 0.02);
     EndOceanPass(); //flush buffer
 
-    float gridSize = 0.2;
-    for(float x = xBounds.x; x < xBounds.y; x+= gridSize){
-        DrawLineV(WorldToScreen((Vector2){x, -3}), WorldToScreen((Vector2){x, 3}), GRAY);
-    }
-    for(float x = yBounds.y; x < yBounds.x; x+= gridSize){
-        DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), GRAY);
-    }
+    // float gridSize = 0.2;
+    // for(float x = xBounds.x; x < xBounds.y; x+= gridSize){
+    //     DrawLineV(WorldToScreen((Vector2){x, -3}), WorldToScreen((Vector2){x, 3}), GRAY);
+    // }
+    // for(float x = yBounds.y; x < yBounds.x; x+= gridSize){
+    //     DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), GRAY);
+    // }
+
+    int mLoc = GetShaderLocation(ship_frag, "multiplier");   
+    int mult = 150;
+    SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
 
     //Set color red
-    int resLoc = GetShaderLocation(ship_frag, "team");   
-    int team = 1;
-    SetShaderValue(ship_frag, resLoc, &team, SHADER_UNIFORM_INT);
+    int resLoc = GetShaderLocation(ship_frag, "color");   
+    Vector3 col = (Vector3){1, 0, 0};
+    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int d = 0; d < eshipCount; d++){
         if(eships[d].selected){
@@ -72,12 +81,13 @@ void BattleFrameLoop(){
     }
     EndShaderMode();
 
-    team = 0;
-    SetShaderValue(ship_frag, resLoc, &team, SHADER_UNIFORM_INT);
+    //Set color white
+    col = (Vector3){1, 1, 1};
+    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int i = 0; i < shipCount; i++){
         RenderShip(&ships[i], 0.4);
-        SteerShip(&ships[i]);
+        SteerShip(&ships[i], 0.2);
         ShipCombat(&ships[i], eships, eshipCount);
     }
     EndShaderMode();
@@ -88,7 +98,23 @@ void BattleFrameLoop(){
     }
     EndShaderMode();
 
+        //Set color yellow
+
+    mLoc = GetShaderLocation(ship_frag, "multiplier");   
+    mult = 200;
+    SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
+    col = (Vector3){0.7, 0.7, 0.7};
+    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
+
+    BeginShaderMode(ship_frag);
     UpdateAndRenderBullets(bulletPool, bulletCount);
+    EndShaderMode();
+
+    col = (Vector3){1, 0.8, 0};
+    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
+    BeginShaderMode(ship_frag);
+    UpdateAndRenderSmokes();
+    EndShaderMode();
 
     if(IsMouseButtonDown(0)){
 
@@ -110,7 +136,7 @@ void BattleFrameLoop(){
             }
         }   
     }
-        if(IsKeyDown(KEY_D)){
+    if(IsKeyDown(KEY_D)){
         cameraPosition.x += fixedDeltaTime * worldScale;
     }
     if(IsKeyDown(KEY_A)){

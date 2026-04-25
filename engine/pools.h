@@ -7,14 +7,15 @@ typedef struct PooledObject{
     bool active;
     float lifeTime;
     float lastSpawn;
+    Vector2 wPos;
     // void (*onUpdate) (struct PooledObject *obj);
     // void (*onComplete) (struct PooledObject *obj);
 } PooledObject;
 
-bool Overdue(float time, PooledObject *obj){
+bool Overdue(float time, const PooledObject *obj){
     return(time - obj->lastSpawn) > obj->lifeTime;
 }
-float LifePct(float time, PooledObject *obj){
+float LifePct(float time, const PooledObject *obj){
     return (time - obj->lastSpawn) / obj->lifeTime;
 }
 
@@ -32,3 +33,4 @@ PooledObject *Next(PooledObject *array, int poolSize, int *cham){
     }
     return &array[*cham];
 }
+

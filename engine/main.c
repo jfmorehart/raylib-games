@@ -125,7 +125,7 @@ int main(void)
                 BattleFrameLoop();
         }
 
-        RenderWindow(&hello, &font);
+        // RenderWindow(&hello, &font);
 
         float diff = (WIDTH - HEIGHT) * 0.4;
         int border = 30;

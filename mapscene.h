@@ -76,12 +76,12 @@ void RandomizeMap(){
 
     shipCount = MAX_SHIPS;
     for(int i = 0; i < shipCount; i++){
-        ships[i] = (Ship){true, RandomWorldPoint(), R01() * 5, 0.01, false, Vector2Zero(), false, 0.1, -1, 0.5, 0};
+        ships[i] = (Ship){true, RandomWorldPoint(), R01() * 5, 0.01, false, Vector2Zero(), false, 0.5, -1, SHIP_SEARCHRANGE * SHIP_SEARCHRANGE, 0, {FiveInch, FiveInch, FiveInch}};
     }   
 
     eshipCount= MAX_SHIPS;
     for(int i = 0; i < eshipCount; i++){
-        eships[i] = (Ship){false, RandomWorldPoint(), R01() * 5, 0.01, false, Vector2Zero(), false, 0.1, -1, 0.5, 0};
+        eships[i] = (Ship){false, RandomWorldPoint(), R01() * 5, 0.01, false, Vector2Zero(), false, 0.5, -1, SHIP_SEARCHRANGE * SHIP_SEARCHRANGE, 0, {FiveInch, FiveInch, FiveInch}};
     } 
 }
 
@@ -222,9 +222,9 @@ void MapFrameLoop(){
     EndOceanPass();
 
     //Set color red
-    int resLoc = GetShaderLocation(ship_frag, "team");   
-    int team = 1;
-    SetShaderValue(ship_frag, resLoc, &team, SHADER_UNIFORM_INT);
+    int resLoc = GetShaderLocation(ship_frag, "color");   
+    Vector3 col = (Vector3){1, 0, 0};
+    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int d = 0; d < eshipCount; d++){
         if(eships[d].selected){
@@ -234,12 +234,12 @@ void MapFrameLoop(){
     EndShaderMode();
 
     //Set color white
-    team = 0;
-    SetShaderValue(ship_frag, resLoc, &team, SHADER_UNIFORM_INT);
+    col = (Vector3){1, 1, 1};
+    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int i = 0; i < shipCount; i++){
         RenderShip(&ships[i], 1);
-        SteerShip(&ships[i]);
+        SteerShip(&ships[i], 1);
     }
     EndShaderMode();
 
