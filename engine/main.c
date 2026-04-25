@@ -10,6 +10,7 @@
 #include "mapscene.h"
 #include "routines.h"
 
+
 #include <alloca.h>
 #include <math.h>       
 #include <stdio.h>
@@ -21,6 +22,7 @@ Window hello = {BOTTOM_RIGHT, {300, 150}, "Yooo", 32, "whats up", 12};
 Vector2 worldZero;
 
 void RunOnStart(){
+
 
     scenes[0] = (Scene){Menu, NULL};
     scenes[1] = (Scene){Map, InitMapScene};
@@ -125,7 +127,7 @@ int main(void)
 
         RenderWindow(&hello, &font);
 
-        float diff = (WIDTH - HEIGHT) * 0.3;
+        float diff = (WIDTH - HEIGHT) * 0.4;
         int border = 30;
         DrawRectangle(0, 0, diff, HEIGHT, BLACK);//, int posY, int width, int height, Color color)
         DrawRectangle(WIDTH-  diff, 0, diff, HEIGHT, BLACK);

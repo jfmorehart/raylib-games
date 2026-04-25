@@ -8,11 +8,13 @@
 #include "globals.h"
 #include "ships.h"
 #include "UI.h"
+#include "pools.h"
+#include "bullets.h"
 
 #include <alloca.h>
 #include <math.h>       
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> 
 #include <time.h>
 
 extern Island island[ISLANDCOUNT];
@@ -20,11 +22,15 @@ extern Island island[ISLANDCOUNT];
 extern int shipCount;
 extern Ship ships[MAX_SHIPS];
 
+int bulletCham;
+int bulletCount = 100;
+Bullet bulletPool[100];
+
 void InitBattleScene(){
 
     timeScale = 0.2;
 
-        //setup Ship CONSTANTS (overwrite from mapscene)
+    //setup Ship CONSTANTS (overwrite from mapscene)
     int resLoc = GetShaderLocation(ship_frag, "multiplier");   
     int multiplier = 120;
     SetShaderValue(ship_frag, resLoc, &multiplier, SHADER_UNIFORM_INT);
@@ -72,6 +78,7 @@ void BattleFrameLoop(){
     for(int i = 0; i < shipCount; i++){
         RenderShip(&ships[i], 0.4);
         SteerShip(&ships[i]);
+        ShipCombat(&ships[i], eships, eshipCount);
     }
     EndShaderMode();
 
@@ -81,7 +88,9 @@ void BattleFrameLoop(){
     }
     EndShaderMode();
 
-        if(IsMouseButtonDown(0)){
+    UpdateAndRenderBullets(bulletPool, bulletCount);
+
+    if(IsMouseButtonDown(0)){
 
         if(!IsKeyDown(KEY_LEFT_SHIFT)){
             for(int i = 0; i < shipCount; i++){
@@ -117,8 +126,8 @@ void BattleFrameLoop(){
     if(IsMouseButtonDown(1)){
         for(int i = 0; i < shipCount; i++){
             if(ships[i].selected){
-                ships[i].tPos = mousePos;
-                ships[i].hasTarget = true;
+                ships[i].moveTargetPosition = mousePos;
+                ships[i].hasMoveTarget = true;
             }
         }   
     }

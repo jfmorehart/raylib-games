@@ -15,9 +15,9 @@ int landTime;
 
 int ShaderInit(){
 
-    islandShader_frag = LoadShader(0, "island.fs");
-    oceanShader_frag = LoadShader(0, "ocean.fs");
-    ship_frag = LoadShader(0, "ship.fs");
+    islandShader_frag = LoadShader(0, "shaders/island.fs");
+    oceanShader_frag = LoadShader(0, "shaders/ocean.fs");
+    ship_frag = LoadShader(0, "shaders/ship.fs");
 
     //set RESOLUTION
     int resLoc = GetShaderLocation(islandShader_frag, "resolution");        

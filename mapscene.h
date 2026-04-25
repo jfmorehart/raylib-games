@@ -76,12 +76,12 @@ void RandomizeMap(){
 
     shipCount = MAX_SHIPS;
     for(int i = 0; i < shipCount; i++){
-        ships[i] = (Ship){true, RandomWorldPoint(), R01() * 5, 0.01};
+        ships[i] = (Ship){true, RandomWorldPoint(), R01() * 5, 0.01, false, Vector2Zero(), false, 0.1, -1, 0.5, 0};
     }   
 
     eshipCount= MAX_SHIPS;
     for(int i = 0; i < eshipCount; i++){
-        eships[i] = (Ship){false, RandomWorldPoint(), R01() * 5, 0.01};
+        eships[i] = (Ship){false, RandomWorldPoint(), R01() * 5, 0.01, false, Vector2Zero(), false, 0.1, -1, 0.5, 0};
     } 
 }
 
@@ -121,7 +121,6 @@ void MapInputLoop(){
 
         for(int i = 0; i < shipCount; i++){
            if(Vector2Distance(ships[i].wPos, mousePos) < 0.3){
-                printf("sel \n");
                 ships[i].selected = true;
             }
         }   
@@ -130,15 +129,13 @@ void MapInputLoop(){
         // printf("rclick \n");
         for(int i = 0; i < shipCount; i++){
             if(ships[i].selected){
-                ships[i].tPos = mousePos;
-                ships[i].hasTarget = true;
-                printf("oreer \n");
+                ships[i].moveTargetPosition = mousePos;
+                ships[i].hasMoveTarget = true;
             }
         }   
     }
     if(IsKeyPressed(KEY_SPACE)){
         bool run = RunRoutine("TimeRoutine");
-        printf("pressed space %u\n", run);
     }
     if(IsKeyPressed(KEY_F)){
 

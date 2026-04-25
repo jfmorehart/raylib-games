@@ -1,4 +1,6 @@
 raylibtest
 breakout
 *.o
+*.d
 *.dSYM/
+.cache/

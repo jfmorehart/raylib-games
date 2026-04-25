@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "bullets.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "helpers.h"
@@ -14,14 +15,23 @@
 #define SHIP_BLEND_MAX 0.15
 #define SHIP_SEARCHRANGE 0.35
 
-typedef struct{
+typedef struct Ship{
+    //basics
     bool team;
     Vector2 wPos;
     float angle;
     float scale;
-    bool hasTarget;
-    Vector2 tPos;
+
+    //movement
+    bool hasMoveTarget;
+    Vector2 moveTargetPosition;
     bool selected;
+
+    //combat
+    float reloadTime;
+    float lastShot;
+    float rangeSqr;
+    struct Ship *targetShip;
 } Ship;
 
 extern Island island[ISLANDCOUNT];
@@ -87,7 +97,7 @@ float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target){
     return bestAngle;
 }
 
-void RenderShip(const Ship *ship, float scaleMult){
+void RenderShip(const Ship *ship, float scaleMult){ 
     Vector2 forward = VfromAngle(ship->angle);
     // Vector2 forwardNormal = Vector2Normalize(forward);
     forward = Vector2Scale(forward, ship->scale * 5 * scaleMult);
@@ -107,16 +117,16 @@ void RenderShip(const Ship *ship, float scaleMult){
         DrawTriangle(WorldToScreen(tail), WorldToScreen(leftWing), WorldToScreen(rightWing), WHITE);
     }
     
-    if(ship->hasTarget){
-        DrawLineV(WorldToScreen(ship->wPos), WorldToScreen(ship->tPos), WHITE);
+    if(ship->hasMoveTarget){
+        DrawLineV(WorldToScreen(ship->wPos), WorldToScreen(ship->moveTargetPosition), WHITE);
 
     }
 }
 
 void SteerShip(Ship *ship){
     //Steer Ship
-    if(ship->hasTarget){
-        float angle = Path2Target(ship, 4, PI * 0.5, ship->tPos);
+    if(ship->hasMoveTarget){
+        float angle = Path2Target(ship, 4, PI * 0.5, ship->moveTargetPosition);
         float diff = sAngle(ship->angle, angle);
         if(diff < -0.01){
             ship->angle -= scaledDeltaTime * SHIPTURN;
@@ -126,4 +136,28 @@ void SteerShip(Ship *ship){
         ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), scaledDeltaTime * 0.1 * SHIPSPEED));
     }
 
+}
+
+void ShipCombat(Ship *ship, Ship *targetShipsArray, int arrayLen){
+    if(scaledTime - ship->lastShot > ship->reloadTime){
+        ship->lastShot = scaledTime;
+        if(ship->targetShip){
+            //fire
+            FireBullet(ship->wPos, ship->targetShip->wPos);
+        }else{
+            //aquire
+            //for now, simple aquire
+            for(int i = 0; i < arrayLen; i++){
+                printf("target search");
+                if(Vector2DistanceSqr(targetShipsArray[i].wPos, ship->wPos) < ship->rangeSqr){
+                    //this is my target!
+                    printf("target aquire!");
+                    ship->targetShip = &targetShipsArray[i];
+                    //fire
+                    FireBullet(ship->wPos, ship->targetShip->wPos);
+                    return;
+                }
+            }
+        }
+    }
 }
