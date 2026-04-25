@@ -1,11 +1,8 @@
 [
   {
-    "directory": "/Users/jackmorehart/Projects/raylib-games",
     "file": "engine/main.c",
     "arguments": [
       "/usr/bin/cc",
-      "-isysroot",
-      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
       "-Wall",
       "-O2",
       "-I/opt/homebrew/Cellar/raylib/5.5/include",
@@ -15,18 +12,17 @@
       "-Iengine",
       "-Ientities",
       "-c",
-      "engine/main.c",
       "-o",
-      "engine/main.o"
-    ]
+      "engine/main.o",
+      "engine/main.c"
+    ],
+    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "output": "engine/main.o"
   },
   {
-    "directory": "/Users/jackmorehart/Projects/raylib-games",
     "file": "engine/helpers.c",
     "arguments": [
       "/usr/bin/cc",
-      "-isysroot",
-      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
       "-Wall",
       "-O2",
       "-I/opt/homebrew/Cellar/raylib/5.5/include",
@@ -36,60 +32,17 @@
       "-Iengine",
       "-Ientities",
       "-c",
-      "engine/helpers.c",
       "-o",
-      "engine/helpers.o"
-    ]
+      "engine/helpers.o",
+      "engine/helpers.c"
+    ],
+    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "output": "engine/helpers.o"
   },
   {
-    "directory": "/Users/jackmorehart/Projects/raylib-games",
-    "file": "engine/routines.c",
-    "arguments": [
-      "/usr/bin/cc",
-      "-isysroot",
-      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
-      "-Wall",
-      "-O2",
-      "-I/opt/homebrew/Cellar/raylib/5.5/include",
-      "-MMD",
-      "-MP",
-      "-I.",
-      "-Iengine",
-      "-Ientities",
-      "-c",
-      "engine/routines.c",
-      "-o",
-      "engine/routines.o"
-    ]
-  },
-  {
-    "directory": "/Users/jackmorehart/Projects/raylib-games",
-    "file": "engine/pools.c",
-    "arguments": [
-      "/usr/bin/cc",
-      "-isysroot",
-      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
-      "-Wall",
-      "-O2",
-      "-I/opt/homebrew/Cellar/raylib/5.5/include",
-      "-MMD",
-      "-MP",
-      "-I.",
-      "-Iengine",
-      "-Ientities",
-      "-c",
-      "engine/pools.c",
-      "-o",
-      "engine/pools.o"
-    ]
-  },
-  {
-    "directory": "/Users/jackmorehart/Projects/raylib-games",
     "file": "entities/islands.c",
     "arguments": [
       "/usr/bin/cc",
-      "-isysroot",
-      "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk",
       "-Wall",
       "-O2",
       "-I/opt/homebrew/Cellar/raylib/5.5/include",
@@ -99,9 +52,91 @@
       "-Iengine",
       "-Ientities",
       "-c",
-      "entities/islands.c",
       "-o",
-      "entities/islands.o"
-    ]
+      "entities/islands.o",
+      "entities/islands.c"
+    ],
+    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "output": "entities/islands.o"
+  },
+  {
+    "file": "engine/routines.c",
+    "arguments": [
+      "/usr/bin/cc",
+      "-Wall",
+      "-O2",
+      "-I/opt/homebrew/Cellar/raylib/5.5/include",
+      "-MMD",
+      "-MP",
+      "-I.",
+      "-Iengine",
+      "-Ientities",
+      "-c",
+      "-o",
+      "engine/routines.o",
+      "engine/routines.c"
+    ],
+    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "output": "engine/routines.o"
+  },
+  {
+    "file": "entities/ships.c",
+    "arguments": [
+      "/usr/bin/cc",
+      "-Wall",
+      "-O2",
+      "-I/opt/homebrew/Cellar/raylib/5.5/include",
+      "-MMD",
+      "-MP",
+      "-I.",
+      "-Iengine",
+      "-Ientities",
+      "-c",
+      "-o",
+      "entities/ships.o",
+      "entities/ships.c"
+    ],
+    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "output": "entities/ships.o"
+  },
+  {
+    "file": "entities/bullets.c",
+    "arguments": [
+      "/usr/bin/cc",
+      "-Wall",
+      "-O2",
+      "-I/opt/homebrew/Cellar/raylib/5.5/include",
+      "-MMD",
+      "-MP",
+      "-I.",
+      "-Iengine",
+      "-Ientities",
+      "-c",
+      "-o",
+      "entities/bullets.o",
+      "entities/bullets.c"
+    ],
+    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "output": "entities/bullets.o"
+  },
+  {
+    "file": "engine/vfx.c",
+    "arguments": [
+      "/usr/bin/cc",
+      "-Wall",
+      "-O2",
+      "-I/opt/homebrew/Cellar/raylib/5.5/include",
+      "-MMD",
+      "-MP",
+      "-I.",
+      "-Iengine",
+      "-Ientities",
+      "-c",
+      "-o",
+      "engine/vfx.o",
+      "engine/vfx.c"
+    ],
+    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "output": "engine/vfx.o"
   }
 ]

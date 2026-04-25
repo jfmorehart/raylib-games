@@ -43,6 +43,13 @@ void InitBattleScene(){
     resLoc = GetShaderLocation(ship_frag, "dotsize");   
     float dotsize = 0.2;
     SetShaderValue(ship_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
+
+
+    //determine which ships are included in the scene
+    for(int i = 0; i < shipCount; i++){
+        if(!ships[i].alive)continue;
+        ships[i].includedInScene = IsOnScreen(ships[i].wPos);
+    }
 }
 
 void BattleFrameLoop(){
@@ -65,6 +72,21 @@ void BattleFrameLoop(){
     //     DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), GRAY);
     // }
 
+
+    for(int d = 0; d < eshipCount; d++){
+        eships[d].selected = false;
+    }
+
+    for(int i = 0; i < shipCount; i++){
+        if(!ships[i].alive || !ships[i].includedInScene)continue;
+        for(int d = 0; d < eshipCount; d++){
+            if(!eships[d].alive || !eships[d].includedInScene)continue;
+            if(Vector2Distance(ships[i].wPos, eships[d].wPos) < SHIP_SEARCHRANGE){
+                eships[d].selected = true;
+            }
+        }
+    }
+
     int mLoc = GetShaderLocation(ship_frag, "multiplier");   
     int mult = 150;
     SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
@@ -75,7 +97,7 @@ void BattleFrameLoop(){
     SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int d = 0; d < eshipCount; d++){
-        if(eships[d].selected){
+        if(eships[d].selected && eships[d].alive && eships[d].includedInScene){
             RenderShip(&eships[d], 0.4);
         }
     }
@@ -86,8 +108,23 @@ void BattleFrameLoop(){
     SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int i = 0; i < shipCount; i++){
+        if(!ships[i].alive || !ships[i].includedInScene)continue;
         RenderShip(&ships[i], 0.4);
         SteerShip(&ships[i], 0.2);
+    }
+    EndShaderMode();
+
+    mLoc = GetShaderLocation(ship_frag, "multiplier");   
+    mult = 90;
+    float dotsize = 0.03;
+    int dLoc = GetShaderLocation(ship_frag, "dotsize");   
+    SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
+    col = (Vector3){0.8, 0.8, 0.8};
+    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
+    BeginShaderMode(ship_frag);
+    for(int i = 0; i < shipCount; i++){
+        if(!ships[i].alive || !ships[i].includedInScene)continue;
         ShipCombat(&ships[i], eships, eshipCount);
     }
     EndShaderMode();
@@ -102,12 +139,14 @@ void BattleFrameLoop(){
 
     mLoc = GetShaderLocation(ship_frag, "multiplier");   
     mult = 200;
+    dotsize = 0.2;
+    SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
     SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
     col = (Vector3){0.7, 0.7, 0.7};
     SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
 
     BeginShaderMode(ship_frag);
-    UpdateAndRenderBullets(bulletPool, bulletCount);
+    UpdateAndRenderBullets(bulletPool, bulletCount, eships, eshipCount);
     EndShaderMode();
 
     col = (Vector3){1, 0.8, 0};
@@ -131,7 +170,8 @@ void BattleFrameLoop(){
         }
 
         for(int i = 0; i < shipCount; i++){
-           if(Vector2Distance(ships[i].wPos, mousePos) < 0.3){
+            if(!ships[i].alive)continue;
+            if(Vector2Distance(ships[i].wPos, mousePos) < 0.1){
                 ships[i].selected = true;
             }
         }   

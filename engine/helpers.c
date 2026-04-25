@@ -38,7 +38,7 @@ Vector2 RandomWorldPointNoIsland(){
     return Vector2Zero();
 }
 
-float sAngle(float a1, float a2){
+float SignedAngle(float a1, float a2){
     float diff = a2 - a1;
     if(diff > PI) diff -= 2 * PI;
     if(diff < -PI) diff += 2 * PI;
@@ -66,6 +66,15 @@ Vector2 ScreenToWorld(Vector2 screenPos){
     screenPos.y = -(screenPos.y - HEIGHT * 0.5) / (HEIGHT * 0.5) * worldScale;
     screenPos = Vector2Add(screenPos, cameraPosition);
     return screenPos;
+}
+
+bool IsOnScreen(Vector2 worldPoint){
+    Vector2 screenPoint = WorldToScreen(worldPoint);
+    if(screenPoint.x < 0) return false;
+    if(screenPoint.y < 0) return false;
+    if(screenPoint.x > WIDTH) return false;
+    if(screenPoint.y > HEIGHT) return false;
+    return true;
 }
 
 bool WithinSegment(float xPos, Edge segment){

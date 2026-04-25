@@ -13,7 +13,7 @@ all: raylibtest
 #routines.o : routines.c #$(HFILES)
 
 
-NEEDSCOMPILE = engine/main.o engine/helpers.o entities/islands.o engine/routines.o
+NEEDSCOMPILE = engine/main.o engine/helpers.o entities/islands.o engine/routines.o entities/ships.o entities/bullets.o engine/vfx.o
 DEPS = $(NEEDSCOMPILE:.o=.d)
 
 raylibtest: $(NEEDSCOMPILE)

@@ -1,5 +1,6 @@
 #pragma once
 #include "battlescene.h"
+#include "bullets.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "mapshaders.h"
@@ -74,14 +75,33 @@ void RandomizeMap(){
         island[i] = CreateIsland(); 
     }
 
+    Battery batLeft = {
+        3, 
+        FiveInch,
+        {0, 0, 0},
+        (Vector2){0, 0},
+        (Vector2){0, -1},
+       45
+    };
+        Battery batRight = {
+        3, 
+        FiveInch,
+        {0, 0, 0},
+        (Vector2){0, 0},
+        (Vector2){0, 1},
+       45
+    };
+
+
     shipCount = MAX_SHIPS;
     for(int i = 0; i < shipCount; i++){
-        ships[i] = (Ship){true, RandomWorldPoint(), R01() * 5, 0.01, false, Vector2Zero(), false, 0.5, -1, SHIP_SEARCHRANGE * SHIP_SEARCHRANGE, 0, {FiveInch, FiveInch, FiveInch}};
+
+        ships[i] = (Ship){true, true, true, RandomWorldPointNoIsland(), R01() * 5, 0.01, 100, false, Vector2Zero(), false, 0.5, -1, SHIP_SEARCHRANGE * SHIP_SEARCHRANGE, 0 , 2, {batLeft, batRight, {0}, {0}, {0}}};
     }   
 
     eshipCount= MAX_SHIPS;
     for(int i = 0; i < eshipCount; i++){
-        eships[i] = (Ship){false, RandomWorldPoint(), R01() * 5, 0.01, false, Vector2Zero(), false, 0.5, -1, SHIP_SEARCHRANGE * SHIP_SEARCHRANGE, 0, {FiveInch, FiveInch, FiveInch}};
+        eships[i] = (Ship){true, true, false, RandomWorldPointNoIsland(), R01() * 5, 0.01, 100, false, Vector2Zero(), false, 0.5, -1, SHIP_SEARCHRANGE * SHIP_SEARCHRANGE, 0 , 2, {batLeft, batRight, {0}, {0}, {0}}};
     } 
 }
 
@@ -135,7 +155,7 @@ void MapInputLoop(){
         }   
     }
     if(IsKeyPressed(KEY_SPACE)){
-        bool run = RunRoutine("TimeRoutine");
+        RunRoutine("TimeRoutine");
     }
     if(IsKeyPressed(KEY_F)){
 
@@ -211,9 +231,11 @@ void MapFrameLoop(){
 
     PrepShipRangePass();
     for(int i = 0; i < shipCount; i++){
+        if(!ships[i].alive)continue;
         DrawCircleV(WorldToScreen(ships[i].wPos), WorldToPixels(SHIP_SEARCHRANGE), WHITE);
 
         for(int d = 0; d < eshipCount; d++){
+            if(!eships[d].alive)continue;
             if(Vector2Distance(ships[i].wPos, eships[d].wPos) < SHIP_SEARCHRANGE){
                 eships[d].selected = true;
             }
@@ -227,7 +249,7 @@ void MapFrameLoop(){
     SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int d = 0; d < eshipCount; d++){
-        if(eships[d].selected){
+        if(eships[d].selected && eships[d].alive){
             RenderShip(&eships[d], 0.7);
         }
     }
@@ -238,6 +260,7 @@ void MapFrameLoop(){
     SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int i = 0; i < shipCount; i++){
+        if(!ships[i].alive)continue;
         RenderShip(&ships[i], 1);
         SteerShip(&ships[i], 1);
     }
