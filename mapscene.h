@@ -102,7 +102,7 @@ void RandomizeMap(){
     Battery batLeft_A = {
         3, // <= MAX GUNS PER BATTERY 
         FiveInch,
-        0.3,
+        0.2,
         {0, 0, 0},
         1,
         (Vector2){0.2, -1},
@@ -117,7 +117,7 @@ void RandomizeMap(){
     Battery batLeft_B = {
         3,// <= MAX GUNS PER BATTERY  
         FiveInch,
-        0.3,
+        0.2,
         {0, 0, 0},
         -1,
         (Vector2){-0.2, -1},
@@ -131,7 +131,7 @@ void RandomizeMap(){
     Battery batRightA = {
         3,// <= MAX GUNS PER BATTERY  
         FiveInch,
-        0.3,
+        0.2,
         {0, 0, 0},
         1,
         (Vector2){0.2, 1},

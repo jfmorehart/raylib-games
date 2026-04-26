@@ -110,7 +110,7 @@ void BattleFrameLoop(){
     BeginShaderMode(ship_frag);
     for(int d = 0; d < eshipCount; d++){
         if(eships[d].selected && eships[d].alive && eships[d].includedInScene){
-            RenderShip(&eships[d], 0.4);
+            RenderShip(&eships[d], 0.3);
         }
     }
     EndShaderMode();
@@ -121,8 +121,8 @@ void BattleFrameLoop(){
     BeginShaderMode(ship_frag);
     for(int i = 0; i < shipCount; i++){
         if(!ships[i].alive || !ships[i].includedInScene)continue;
-        RenderShip(&ships[i], 0.4);
-        SteerShip(&ships[i], 0.2);
+        RenderShip(&ships[i], 0.3);
+        SteerShip(&ships[i], 0.05);
     }
     EndShaderMode();
 

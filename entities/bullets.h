@@ -9,7 +9,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#define BULLET_SPEED 0.1
+#define BULLET_SPEED 0.05
 #define MAX_GUNS_PER_BATTERY 3
 
 typedef struct {

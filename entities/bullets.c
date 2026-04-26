@@ -19,9 +19,9 @@
     float damage;
 } Gun;*/
 
-Gun FiveInch = {0.3, 2, 0.01, 0.04, 10};
-Gun EightInch = {0.65, 4, 0.013, 0, 10};
-Gun SixteenInch = {1.2, 8, 0.02, 0, 10};
+Gun FiveInch = {0.3, 2, 0.01, 0.03, 10};
+Gun EightInch = {0.65, 4, 0.013, 0.01, 10};
+Gun SixteenInch = {1.2, 8, 0.02, 0.008, 10};
 
 
 
@@ -152,7 +152,7 @@ void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 targ
     Gun btype = battery->BatteryType;
     Vector2 rvec = RVec_Perlin(battery->_r_index, 1);
     float innaccuracy = battery->batterySpread * Vector2Distance(batteryPosition, target);
-    float accuracy = (btype.range * ((battery->timesTargeted + 1) * 0.3));
+    float accuracy = (btype.range * ((battery->timesTargeted + 1) * 0.15));
     Vector2 spreadTarget = Vector2Add(target, Vector2Scale(rvec,  fminf(innaccuracy / accuracy, 0.3)));
     // printf("%f\n", Vector2Distance(batteryPosition, target) / (btype.range * battery->timesTargeted));
 

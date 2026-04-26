@@ -4,3 +4,6 @@ breakout
 *.d
 *.dSYM/
 .cache/
+/dist
+savo
+savo.exe
