@@ -20,6 +20,7 @@ typedef struct Ship{
     //basics
     bool alive;
     bool includedInScene;
+    bool isVisible;// always true 
 
     bool team;
     Vector2 wPos;
@@ -48,6 +49,6 @@ float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target);
 
 void RenderShip(const Ship *ship, float scaleMult);
 
-void SteerShip(Ship *ship, float speedMult);
+void SteerShip(Ship *ship, float speedMult, bool avoidIslands);
 
 void ShipCombat(Ship *ship, Ship *targetShipsArray, int arrayLen);

@@ -53,6 +53,10 @@ void InitBattleScene(){
         if(!ships[i].alive)continue;
         ships[i].includedInScene = IsOnScreen(ships[i].wPos);
     }
+    for(int i = 0; i < eshipCount; i++){
+        if(eships[i].alive)continue;
+        eships[i].includedInScene = IsOnScreen(eships[i].wPos);
+    }
 }
 
 void BattleFrameLoop(){
@@ -77,7 +81,7 @@ void BattleFrameLoop(){
 
 
     for(int d = 0; d < eshipCount; d++){
-        eships[d].selected = false;
+        eships[d].isVisible = false;
     }
 
     PrepShipRangePass();
@@ -88,7 +92,7 @@ void BattleFrameLoop(){
         for(int d = 0; d < eshipCount; d++){
             if(!eships[d].alive || !eships[d].includedInScene)continue;
             if(Vector2Distance(ships[i].wPos, eships[d].wPos) < SHIP_SEARCHRANGE){
-                eships[d].selected = true;
+                eships[d].isVisible = true;
             }
         }
     }
@@ -109,7 +113,7 @@ void BattleFrameLoop(){
     SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int d = 0; d < eshipCount; d++){
-        if(eships[d].selected && eships[d].alive && eships[d].includedInScene){
+        if(eships[d].isVisible && eships[d].alive && eships[d].includedInScene){
             RenderShip(&eships[d], 0.3);
         }
     }
@@ -122,10 +126,11 @@ void BattleFrameLoop(){
     for(int i = 0; i < shipCount; i++){
         if(!ships[i].alive || !ships[i].includedInScene)continue;
         RenderShip(&ships[i], 0.3);
-        SteerShip(&ships[i], 0.05);
+        SteerShip(&ships[i], 0.05, false);
     }
     EndShaderMode();
 
+    //trace ship stuff?
     mLoc = GetShaderLocation(ship_frag, "multiplier");   
     mult = 90;
     dotsize = 0.03;
@@ -138,6 +143,10 @@ void BattleFrameLoop(){
     for(int i = 0; i < shipCount; i++){
         if(!ships[i].alive || !ships[i].includedInScene)continue;
         ShipCombat(&ships[i], eships, eshipCount);
+    }
+    for(int i = 0; i < eshipCount; i++){
+        if(!eships[i].alive || !eships[i].includedInScene)continue;
+        ShipCombat(&eships[i], ships, shipCount);
     }
     EndShaderMode();
 
@@ -182,6 +191,7 @@ void BattleFrameLoop(){
         if(!IsKeyDown(KEY_LEFT_SHIFT)){
             for(int i = 0; i < shipCount; i++){
                 ships[i].selected = false;
+                eships[i].selected = false;
             } 
         }
 

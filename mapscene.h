@@ -10,11 +10,13 @@
 #include "ships.h"
 #include "UI.h"
 #include "routines.h"
+#include "shiploadouts.h"
 
 #include <math.h>       
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <string.h>
 
 extern Island island[ISLANDCOUNT];
 
@@ -24,7 +26,7 @@ Ship ships[MAX_SHIPS];
 int eshipCount = 0;
 Ship eships[MAX_SHIPS];
 
-
+extern Battery DestroyerLoadout[SHIP_MAXBATTERIES];
 
 void TimeRoutine(Routine *routine){
 
@@ -36,7 +38,7 @@ void TimeRoutine(Routine *routine){
     if(pct > 1){
         routine->isActive= false;
         timeScale = 0.1;
-        printf("End Time Routine");
+        // printf("End Time Routine");
     }
 }
 
@@ -64,109 +66,38 @@ void FocusRoutine(Routine *routine){
     if(pct > 1){
         isZoomed = !isZoomed;
         routine->isActive= false;
-        printf("End Focus Routine");
+        // printf("End Focus Routine");
     }
 }
 
 void RandomizeMap(){
+
+    MakeLoadouts();
 
     srand(time(NULL));
     for(int i = 0; i < ISLANDCOUNT; i++){
         island[i] = CreateIsland(); 
     }
 
-    /*typedef struct Battery{
-    //stats
-    int gunCount;
-    Gun BatteryType;
-    float batterySpread;
-
-    //hk
-    float lastFireTimes[MAX_GUNS_PER_BATTERY];
-
-    //physical
-    float batteryOffset_Y;
-    Vector2 batteryForward;
-    float traverseAmount;
-
-    //targeting
-    Ship *shipTarget;
-    float lastSearch;
-    float searchCooldown;
-    int timesTargeted; //for bracketing
-
-    //for noise smoothing
-    int _r_index;
-}Battery;*/
-
-    Battery batLeft_A = {
-        3, // <= MAX GUNS PER BATTERY 
-        FiveInch,
-        0.2,
-        {0, 0, 0},
-        1,
-        (Vector2){0.2, -1},
-        45,
-        0, 
-        0, 
-        1, 
-        0, 
-        R01() * 10
-    };
-
-    Battery batLeft_B = {
-        3,// <= MAX GUNS PER BATTERY  
-        FiveInch,
-        0.2,
-        {0, 0, 0},
-        -1,
-        (Vector2){-0.2, -1},
-        45,
-        0, 
-        0, 
-        1, 
-        0, 
-        R01() * 10
-    };
-    Battery batRightA = {
-        3,// <= MAX GUNS PER BATTERY  
-        FiveInch,
-        0.2,
-        {0, 0, 0},
-        1,
-        (Vector2){0.2, 1},
-        45, 
-        0, 
-        0, 
-        1, 
-        0, 
-        R01() * 10
-    };
-        Battery batRightB = {
-        3,// <= MAX GUNS PER BATTERY  
-        FiveInch,
-        0.3,
-        {0, 0, 0},
-        -1,
-        (Vector2){-0.2, 1},
-        45, 
-        0, 
-        0, 
-        1, 
-        0,
-        R01() * 10
-    };
-
-
     shipCount = MAX_SHIPS;
     for(int i = 0; i < shipCount; i++){
 
-        ships[i] = (Ship){true, true, true, RandomWorldPointNoIsland(), R01() * 5, 0.01, 100, false, Vector2Zero(), false, 0.5, -1, SHIP_SEARCHRANGE * SHIP_SEARCHRANGE, 0 , 4, {batLeft_A, batLeft_B, batRightA, batRightB, {0}}};
+        ships[i] = DestroyerStats;
+        ships[i].wPos = RandomWorldPointNoIsland();
+        ships[i].angle = R01() * 7;
+        ships->team = true;
+        memcpy(ships[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout)); 
+        ships[i].batteryCount = 3;//REMEMBER TO RESET!
     }   
 
     eshipCount= MAX_SHIPS;
     for(int i = 0; i < eshipCount; i++){
-        eships[i] = (Ship){true, true, false, RandomWorldPointNoIsland(), R01() * 5, 0.01, 100, false, Vector2Zero(), false, 0.5, -1, SHIP_SEARCHRANGE * SHIP_SEARCHRANGE, 0 , 4, {batLeft_A, batLeft_B, batRightA, batRightB, {0}}};
+        eships[i] = DestroyerStats;
+        eships[i].wPos = RandomWorldPointNoIsland();
+        eships[i].angle = R01() * 7;
+        eships->team = false;
+        memcpy(eships[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout)); 
+        eships[i].batteryCount = 3; //REMEMBER TO RESET!
     } 
 }
 
@@ -291,7 +222,7 @@ void MapFrameLoop(){
     EndOceanPass(); //flush buffer
 
     for(int d = 0; d < eshipCount; d++){
-        eships[d].selected = false;
+        eships[d].isVisible = false;
     }
 
     PrepShipRangePass();
@@ -302,7 +233,7 @@ void MapFrameLoop(){
         for(int d = 0; d < eshipCount; d++){
             if(!eships[d].alive)continue;
             if(Vector2Distance(ships[i].wPos, eships[d].wPos) < SHIP_SEARCHRANGE){
-                eships[d].selected = true;
+                eships[d].isVisible = true;
             }
         }
     }
@@ -314,7 +245,7 @@ void MapFrameLoop(){
     SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int d = 0; d < eshipCount; d++){
-        if(eships[d].selected && eships[d].alive){
+        if(eships[d].isVisible && eships[d].alive){
             RenderShip(&eships[d], 0.7);
         }
     }
@@ -327,7 +258,7 @@ void MapFrameLoop(){
     for(int i = 0; i < shipCount; i++){
         if(!ships[i].alive)continue;
         RenderShip(&ships[i], 1);
-        SteerShip(&ships[i], 1);
+        SteerShip(&ships[i], 1, true);
     }
     EndShaderMode();
 

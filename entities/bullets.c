@@ -18,12 +18,11 @@
     float spread;
     float damage;
 } Gun;*/
+ #define SHIP_EXPLOSION_RADIUS 0.03
 
 Gun FiveInch = {0.3, 2, 0.01, 0.03, 10};
 Gun EightInch = {0.65, 4, 0.013, 0.01, 10};
 Gun SixteenInch = {1.2, 8, 0.02, 0.008, 10};
-
-
 
 extern int bulletCount;
 extern int bulletCham;
@@ -32,11 +31,13 @@ extern Bullet bulletPool[];
 bool DamageShips(Vector2 position, float radius, Ship *enemyShips, int count, int damage){
     int h = 0;
     for(int i = 0; i < count; i++){
+        if(!enemyShips[i].alive || !enemyShips->includedInScene) continue;
         if(Vector2Distance(enemyShips[i].wPos, position) < radius){
             //hit
             h++;
             enemyShips[i].health -= damage;
             if(enemyShips[i].health < 0){
+                FireSmoke(enemyShips[i].wPos, WorldToPixels(SHIP_EXPLOSION_RADIUS * (R01() * 0.5 + 0.5)));
                 enemyShips[i].alive = false;
             }
         }
@@ -57,7 +58,8 @@ void UpdateAndRenderBullets(Bullet *array, int bulletCount, Ship *canDamageArray
 
             //damage calca
             if(DamageShips(array[i].tPos, array[i].expRadius, canDamageArray, canDamageLength, array[i].damage)){
-                  FireSmoke(array[i].tPos, WorldToPixels(array[i].expRadius)); 
+                float expSize = (R01() * 0.7 + 0.3);
+                FireSmoke(array[i].tPos, WorldToPixels(array[i].expRadius * expSize)); 
             }else{
                 FireSplash(array[i].tPos, WorldToPixels(array[i].expRadius));
             }
@@ -161,7 +163,7 @@ void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 targ
         //fire if reloaded
         if(scaledTime - battery->lastFireTimes[g] > battery->BatteryType.reloadTime){
             //shoot
-            battery->lastFireTimes[g] = scaledTime + (R01() - 0.5) * battery->BatteryType.reloadTime * 0.1;
+            battery->lastFireTimes[g] = scaledTime + (R01() - 0.5) * battery->BatteryType.reloadTime * 0.25;
 
             // Vector2 delta = Vector2Subtract(target, batteryPosition);
             // Vector2 perp = Vector2Scale(VfromAngle(atan2f(delta.y, delta.x) + PI * 0.5), 0.02);
@@ -200,17 +202,16 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
         DrawLineEx(WorldToScreen(left), WorldToScreen(right), 10, RED);
     }
 
+    //valid target?
     if(battery->shipTarget){
+
+        //DEBUG RENDER
         Gun btype = battery->BatteryType;
         Vector2 rvec = RVec_Perlin(battery->_r_index, 1);
         float innaccuracy = battery->batterySpread * Vector2Distance(batteryPosition, battery->shipTarget->wPos);
         float accuracy = (btype.range * ((battery->timesTargeted + 1) * 0.3));
         Vector2 spreadTarget = Vector2Add(battery->shipTarget->wPos, Vector2Scale(rvec,  fmin(innaccuracy / accuracy, 0.3)));
         DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(spreadTarget), 10, GREEN);
-    }
-    
-    //valid target?
-    if(battery->shipTarget){
 
         //alive?
         if(!battery->shipTarget->alive){
@@ -238,7 +239,11 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
         //check if we can find new target
         if(scaledTime - battery->lastSearch > battery->BatteryType.reloadTime){
         //search
-            battery->lastSearch = scaledTime + (R01() - 0.5) * battery->searchCooldown* 0.1;
+            // if(!ship->team){
+            //     printf("conducting search! delay = %f, last search: %f\n", battery->searchCooldown, battery->lastSearch );
+            // }
+
+            battery->lastSearch = scaledTime + battery->searchCooldown * (R01() * 0.4 + 0.8);
             battery->shipTarget = BatteryAquireTarget(ship, targetShips, arrayLen, battery, batteryPosition);
         }
     }

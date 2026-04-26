@@ -99,10 +99,17 @@ void RenderShip(const Ship *ship, float scaleMult){
     }
 }
 
-void SteerShip(Ship *ship, float speedMult){
+void SteerShip(Ship *ship, float speedMult, bool avoidIslands){
     //Steer Ship
     if(ship->hasMoveTarget){
-        float angle = Path2Target(ship, 4, PI * 0.5, ship->moveTargetPosition);
+        float angle;
+        if(avoidIslands){
+            angle = Path2Target(ship, 4, PI * 0.5, ship->moveTargetPosition);
+        }else{
+            Vector2 delta =  Vector2Subtract(ship->moveTargetPosition, ship->wPos);
+            angle = atan2f(delta.y, delta.x);
+        }
+
         float diff = SignedAngle(ship->angle, angle);
         if(diff < -0.01){
             ship->angle -= scaledDeltaTime * SHIPTURN * speedMult;
