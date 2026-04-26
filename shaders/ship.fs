@@ -11,7 +11,7 @@ uniform float _Time;
 
 uniform float worldScale;
 uniform vec2 cameraPosition;
-uniform vec3 color;
+uniform vec3 dotcolor;
 
 float hash(float n) { return fract(sin(n) * 1e4); }
 float hash(vec2 p) { return fract(1e4 * sin(17.0 * p.x + p.y * 0.1) * (0.1 + abs(sin(p.y * 13.0 + p.x)))); }
@@ -68,6 +68,6 @@ void main()
 
     // float mask = step( 0.1, team);
     // veccol = val * color;//mask * vec3(1, 0, 0) + col * (1 - mask);
-    vec3 col = color * val;
+    vec3 col = dotcolor * val;
     finalColor = vec4(col, val);
 }                                                                                                                                                                                                  

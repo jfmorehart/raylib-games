@@ -10,8 +10,6 @@
 #include "mapscene.h"
 #include "routines.h"
 
-
-#include <alloca.h>
 #include <math.h>       
 #include <stdio.h>
 #include <stdlib.h>

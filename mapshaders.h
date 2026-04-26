@@ -28,7 +28,7 @@ int ShaderInit(){
     resLoc = GetShaderLocation(oceanShader_frag, "resolution");                                                                                                                                               
     SetShaderValue(oceanShader_frag, resLoc, res, SHADER_UNIFORM_VEC2);     
 
-    resLoc = GetShaderLocation(islandShader_frag, "resolution");
+    resLoc = GetShaderLocation(ship_frag, "resolution");
     SetShaderValue(ship_frag, resLoc, res, SHADER_UNIFORM_VEC2);     
 
     //setup ISLAND CONSTANTS

@@ -12,7 +12,6 @@
 #include "bullets.h"
 #include "vfx.h"
 
-#include <alloca.h>
 #include <math.h>       
 #include <stdio.h>
 #include <stdlib.h> 
@@ -104,9 +103,10 @@ void BattleFrameLoop(){
     SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
 
     //Set color red
-    int resLoc = GetShaderLocation(ship_frag, "color");   
+    int colorLocation = GetShaderLocation(ship_frag, "dotcolor");   
+
     Vector3 col = (Vector3){1, 0, 0};
-    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
+    SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int d = 0; d < eshipCount; d++){
         if(eships[d].selected && eships[d].alive && eships[d].includedInScene){
@@ -117,7 +117,7 @@ void BattleFrameLoop(){
 
     //Set color white
     col = (Vector3){1, 1, 1};
-    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
+    SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int i = 0; i < shipCount; i++){
         if(!ships[i].alive || !ships[i].includedInScene)continue;
@@ -133,7 +133,7 @@ void BattleFrameLoop(){
     SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
     SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
     col = (Vector3){0.8, 0.8, 0.8};
-    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
+    SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int i = 0; i < shipCount; i++){
         if(!ships[i].alive || !ships[i].includedInScene)continue;
@@ -155,14 +155,14 @@ void BattleFrameLoop(){
     SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
     SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
     col = (Vector3){0.7, 0.7, 0.7};
-    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
+    SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
 
     BeginShaderMode(ship_frag);
     UpdateAndRenderBullets(bulletPool, bulletCount, eships, eshipCount);
     EndShaderMode();
 
     col = (Vector3){1, 0.8, 0};
-    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
+    SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     UpdateAndRenderBlobs(smokePool, smokeCount);
     EndShaderMode();
@@ -171,8 +171,8 @@ void BattleFrameLoop(){
     SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
     mult = 100;
     SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
-    col = (Vector3){0, 0, 0.2};
-    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
+    col = (Vector3){0.1, 0.1, 0.2};
+    SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     UpdateAndRenderBlobs(splashPool, splashCount);
     EndShaderMode();

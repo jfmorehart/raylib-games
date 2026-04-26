@@ -152,7 +152,7 @@ void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 targ
     Vector2 rvec = RVec_Perlin(battery->_r_index, 1);
     float innaccuracy = battery->batterySpread * Vector2Distance(batteryPosition, target);
     float accuracy = (btype.range * ((battery->timesTargeted + 1) * 0.3));
-    Vector2 spreadTarget = Vector2Add(target, Vector2Scale(rvec,  innaccuracy / accuracy));
+    Vector2 spreadTarget = Vector2Add(target, Vector2Scale(rvec,  fminf(innaccuracy / accuracy, 0.3)));
     // printf("%f\n", Vector2Distance(batteryPosition, target) / (btype.range * battery->timesTargeted));
 
     for(int g = 0; g < battery->gunCount; g++){
@@ -204,7 +204,7 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
         Vector2 rvec = RVec_Perlin(battery->_r_index, 1);
         float innaccuracy = battery->batterySpread * Vector2Distance(batteryPosition, battery->shipTarget->wPos);
         float accuracy = (btype.range * ((battery->timesTargeted + 1) * 0.3));
-        Vector2 spreadTarget = Vector2Add(battery->shipTarget->wPos, Vector2Scale(rvec,  innaccuracy / accuracy));
+        Vector2 spreadTarget = Vector2Add(battery->shipTarget->wPos, Vector2Scale(rvec,  fmin(innaccuracy / accuracy, 0.3)));
         DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(spreadTarget), 10, GREEN);
     }
     

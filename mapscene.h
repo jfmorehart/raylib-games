@@ -11,7 +11,6 @@
 #include "UI.h"
 #include "routines.h"
 
-#include <alloca.h>
 #include <math.h>       
 #include <stdio.h>
 #include <stdlib.h>
@@ -310,7 +309,7 @@ void MapFrameLoop(){
     EndOceanPass();
 
     //Set color red
-    int resLoc = GetShaderLocation(ship_frag, "color");   
+    int resLoc = GetShaderLocation(ship_frag, "dotcolor");   
     Vector3 col = (Vector3){1, 0, 0};
     SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);

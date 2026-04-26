@@ -12,15 +12,15 @@ typedef struct PooledObject{
     // void (*onComplete) (struct PooledObject *obj);
 } PooledObject;
 
-bool Overdue(float time, const PooledObject *obj){
+static inline bool Overdue(float time, const PooledObject *obj){
     return(time - obj->lastSpawn) > obj->lifeTime;
 }
-float LifePct(float time, const PooledObject *obj){
+static inline float LifePct(float time, const PooledObject *obj){
     return (time - obj->lastSpawn) / obj->lifeTime;
 }
 
 
-PooledObject *Next(PooledObject *array, int poolSize, int *cham){
+static inline PooledObject *Next(PooledObject *array, int poolSize, int *cham){
     int tries = 0;
     while (array[*cham].active) {
         if(tries >= poolSize) {
