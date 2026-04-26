@@ -81,11 +81,10 @@ int main(void)
     RunOnStart();
     while (!WindowShouldClose()) {
 
-        frameCount++;
-        frames_fudged += 1.0 * timeScale;
-        scaledDeltaTime = (timeScale / (FRAMERATE));
-        scaledTime = (float)frames_fudged / FRAMERATE;
-        unscaledTime = (float)frameCount / FRAMERATE;
+        scaledDeltaTime = GetFrameTime() * timeScale;
+        scaledTime += scaledDeltaTime;
+
+        unscaledTime += GetFrameTime();
 
         ExecuteRoutines();
 

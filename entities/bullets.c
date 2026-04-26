@@ -91,6 +91,7 @@ Bullet *NextBullet(Bullet *array, int poolSize, int *cham){
     }
     Bullet *bul = &array[*cham];
     (*cham)++;
+    if(*cham >= poolSize) *cham = 0;
     return bul;
 }
 
