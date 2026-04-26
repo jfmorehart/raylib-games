@@ -38,7 +38,6 @@ void RunOnStart(){
     
     ChangeDirectory(GetApplicationDirectory());
     font = LoadFont("mecha.ttf");
-    // font = LoadFont("resources/sprite_fonts/alpha_beta.png");
 
     WIDTH = GetMonitorWidth(0);
     HEIGHT = GetMonitorHeight(0);
@@ -90,27 +89,7 @@ int main(void)
 
         BeginDrawing();
 
-        if(IsKeyDown(KEY_B)){
-            InitBattleScene();
-            currentScene = Battle;
-        }
-        if(IsKeyDown(KEY_M)){
-            InitMapScene();
-            bool run = RunRoutine("FocusRoutine");
 
-            if(run){
-                startingCameraPos = cameraPosition;
-                startingZoom = worldScale;
-                focusTarget = worldZero;
-                if(startingZoom < 0.5){
-                    endZoom = 2;
-                }else{
-                    endZoom = 0.4;
-                }
-            }
-
-            currentScene = Map;
-        }
         switch(currentScene){
             case Menu:
             break;

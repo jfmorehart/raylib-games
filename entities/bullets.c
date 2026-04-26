@@ -28,24 +28,24 @@ extern int bulletCount;
 extern int bulletCham;
 extern Bullet bulletPool[];
 
-bool DamageShips(Vector2 position, float radius, Ship *enemyShips, int count, int damage){
+bool DamageShips(Vector2 position, float radius, Ship **allShips, int count, int damage){
     int h = 0;
     for(int i = 0; i < count; i++){
-        if(!enemyShips[i].alive || !enemyShips->includedInScene) continue;
-        if(Vector2Distance(enemyShips[i].wPos, position) < radius){
+        if(!allShips[i]->alive || !allShips[i]->includedInScene) continue;
+        if(Vector2Distance(allShips[i]->wPos, position) < radius){
             //hit
             h++;
-            enemyShips[i].health -= damage;
-            if(enemyShips[i].health < 0){
-                FireSmoke(enemyShips[i].wPos, WorldToPixels(SHIP_EXPLOSION_RADIUS * (R01() * 0.5 + 0.5)));
-                enemyShips[i].alive = false;
+            allShips[i]->health -= damage;
+            if(allShips[i]->health < 0){
+                FireSmoke(allShips[i]->wPos, WorldToPixels(SHIP_EXPLOSION_RADIUS * (R01() * 0.5 + 0.5)));
+                allShips[i]->alive = false;
             }
         }
     }
     return h;
 }
 
-void UpdateAndRenderBullets(Bullet *array, int bulletCount, Ship *canDamageArray, int canDamageLength){
+void UpdateAndRenderBullets(Bullet *array, int bulletCount, Ship **canDamageArray, int canDamageLength){
     for(int i = 0;i < bulletCount; i++){
         if(!array[i].pObj.active) continue;
           

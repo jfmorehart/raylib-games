@@ -22,6 +22,11 @@ extern Island island[ISLANDCOUNT];
 extern int shipCount;
 extern Ship ships[MAX_SHIPS];
 
+extern Vector2 worldZero;
+
+int allShipsIncludedCount;
+Ship *allShipsIncludedInScene[MAX_SHIPS + MAX_SHIPS];
+
 int bulletCham;
 int bulletCount = 100;
 Bullet bulletPool[100];
@@ -47,15 +52,25 @@ void InitBattleScene(){
     float dotsize = 0.2;
     SetShaderValue(ship_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
 
-
     //determine which ships are included in the scene
+    allShipsIncludedCount = 0;
     for(int i = 0; i < shipCount; i++){
+        ships[i].includedInScene = false;
         if(!ships[i].alive)continue;
-        ships[i].includedInScene = IsOnScreen(ships[i].wPos);
+        if(IsOnScreen(ships[i].wPos)){
+            ships[i].includedInScene = true;
+            allShipsIncludedInScene[allShipsIncludedCount] = &ships[i];
+            allShipsIncludedCount++;
+        }
     }
     for(int i = 0; i < eshipCount; i++){
-        if(eships[i].alive)continue;
-        eships[i].includedInScene = IsOnScreen(eships[i].wPos);
+        eships[i].includedInScene = false;
+        if(!eships[i].alive)continue;
+        if(IsOnScreen(eships[i].wPos)){
+            eships[i].includedInScene = true;
+            allShipsIncludedInScene[allShipsIncludedCount] = &eships[i];
+            allShipsIncludedCount++;
+        }
     }
 }
 
@@ -156,31 +171,31 @@ void BattleFrameLoop(){
     }
     EndShaderMode();
 
-        //Set color yellow
-
+    //BULLETS
     mLoc = GetShaderLocation(ship_frag, "multiplier");   
-    mult = 200;
-    dotsize = 0.2;
+    mult = 230;
+    dotsize = 0.15;
     SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
     SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
     col = (Vector3){0.7, 0.7, 0.7};
     SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
-
     BeginShaderMode(ship_frag);
-    UpdateAndRenderBullets(bulletPool, bulletCount, eships, eshipCount);
+    UpdateAndRenderBullets(bulletPool, bulletCount, allShipsIncludedInScene, allShipsIncludedCount);
     EndShaderMode();
 
+    //Explosions!
     col = (Vector3){1, 0.8, 0};
     SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     UpdateAndRenderBlobs(smokePool, smokeCount);
     EndShaderMode();
 
+    //Splashes
     dotsize = 0.3;
     SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
-    mult = 100;
+    mult = 180;
     SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
-    col = (Vector3){0.1, 0.1, 0.2};
+    col = (Vector3){0.1, 0.1, 0.3};
     SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     UpdateAndRenderBlobs(splashPool, splashCount);
@@ -220,6 +235,23 @@ void BattleFrameLoop(){
     if(IsKeyDown(KEY_S)){
         cameraPosition.y -= fixedDeltaTime * worldScale;
     }
+    
+    if(IsKeyDown(KEY_F)){
+        InitMapScene();
+        bool run = RunRoutine("FocusRoutine");
+        if(run){
+            startingCameraPos = cameraPosition;
+            startingZoom = worldScale;
+            focusTarget = worldZero;
+            if(startingZoom < 0.5){
+                endZoom = 2;
+            }else{
+                endZoom = 0.4;
+            }
+        }
+        currentScene = Map;
+    }
+
 
     if(IsMouseButtonDown(1)){
         for(int i = 0; i < shipCount; i++){

@@ -10,7 +10,7 @@ WIN_LIBS = vendor/raylib-win64/lib/libraylib.a -lopengl32 -lgdi32 -lwinmm -stati
 
 all: savo
 
-NEEDSCOMPILE = engine/main.o engine/helpers.o entities/islands.o engine/routines.o entities/ships.o entities/bullets.o engine/vfx.o
+NEEDSCOMPILE = game/main.o engine/helpers.o entities/islands.o engine/routines.o entities/ships.o entities/bullets.o engine/vfx.o
 WINSOURCES = $(NEEDSCOMPILE:.o=.c)    
 DEPS = $(NEEDSCOMPILE:.o=.d)
 
@@ -30,7 +30,7 @@ build-mac: savo
 	mkdir -p dist/MacBuild
 	cp savo dist/MacBuild
 	cp -R shaders dist/MacBuild
-	cp Mecha.ttf dist/MacBuild
+	cp assets/Mecha.ttf dist/MacBuild
 	cd dist && zip -r MacBuild.zip MacBuild
 
 savo.exe: $(WINSOURCES)
@@ -40,7 +40,7 @@ build-windows: savo.exe
 	mkdir -p dist/WinBuild
 	cp savo.exe dist/WinBuild
 	cp -R shaders dist/WinBuild
-	cp Mecha.ttf dist/WinBuild
+	cp assets/Mecha.ttf dist/WinBuild
 	cd dist && zip -r WinBuild.zip WinBuild
 
 builds: build-windows build-mac

@@ -63,9 +63,9 @@ extern Bullet bulletPool[];
 
 typedef struct Ship Ship;
 
-bool DamageShips(Vector2 position, float radius, Ship *enemyShips, int count, int damage);
+bool DamageShips(Vector2 position, float radius, Ship **enemyShips, int count, int damage);
 
-void UpdateAndRenderBullets(Bullet *array, int bulletCount, Ship *canDamageArray, int canDamageLength);
+void UpdateAndRenderBullets(Bullet *array, int bulletCount, Ship **canDamageArray, int canDamageLength);
 //copy and paste of Pools Next
 Bullet *NextBullet(Bullet *array, int poolSize, int *cham);
 
