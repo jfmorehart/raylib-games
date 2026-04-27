@@ -122,6 +122,14 @@ void MapInputLoop(){
 
     if(IsMouseButtonDown(0)){
 
+
+        // Island *click = WhatIslandIsThis(mousePos);
+        // if(click){
+        //     click->relativePosition = mousePos;
+        //     RecalculateEdges2(click);
+        //     printf("dragging %f, %f\n", mousePos.x, mousePos.y);
+        // }
+
         // printf("click \n");
         if(!IsKeyDown(KEY_LEFT_SHIFT)){
             for(int i = 0; i < shipCount; i++){

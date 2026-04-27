@@ -26,8 +26,9 @@ float timeScale;
 
 typedef enum SceneName{
     Menu,
-    Map,
-    Battle
+    MapScene,
+    Battle,
+    Editor
 }SceneName;
 SceneName currentScene;
 
@@ -37,7 +38,7 @@ typedef struct Scene{
 }Scene;
 
 
-#define SCENECOUNT 3
+#define SCENECOUNT 4
 Scene scenes[SCENECOUNT];
 
 

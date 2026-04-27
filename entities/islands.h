@@ -11,10 +11,11 @@
 
 #define MAXHULLPOINTS 15
 
-typedef struct{
+typedef struct Island{
     int edgeCount; //how many are being used;
     Vector2 relativePosition;
     float scale;
+    int pointCount;
     Vector2 points[MAXHULLPOINTS];
     Edge edges[MAXHULLPOINTS];
 } Island;
@@ -25,6 +26,7 @@ Vector2 IslandPointToWorld(const Island *island, Vector2 objectSpace);
 
 int FindNextPoint(int current, const Vector2 *points);
 void Render (const Island *island);
+void RenderObjectSpace (const Island *island);
 
 Island CreateIsland();
 

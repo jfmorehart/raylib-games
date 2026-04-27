@@ -140,6 +140,14 @@ bool PointIslandCheck(Vector2 point, Island *is){
     }
     return true;
 }
+Island *WhatIslandIsThis(Vector2 wPoint, Island *toCheckArray, int islandLength){
+    for(int i = 0; i < islandLength; i++){
+        if(PointIslandCheck(wPoint, &toCheckArray[i])){
+            return &toCheckArray[i];
+        }
+    }
+    return 0;
+}
 
 bool IsPointWithinIslands(Vector2 wPoint){
 

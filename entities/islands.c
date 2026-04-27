@@ -30,6 +30,7 @@ int FindNextPoint(int current, const Vector2 *points){
 }
 Island CreateIsland(){
     Island is;
+    is.pointCount = 0;
     is.scale = 0.3 * (float)rand()/ RAND_MAX;
     is.relativePosition =  RandomWorldPoint();
 
@@ -49,6 +50,7 @@ Island CreateIsland(){
     is.scale *= 1.1;
 
     for(int i = 0; i <MAXHULLPOINTS; i++){
+        is.pointCount++;
         orderedpoints[i] = points[currentPointIndex];
         is.points[i] = orderedpoints[i];
         currentPointIndex = FindNextPoint(currentPointIndex, points);
@@ -72,10 +74,25 @@ void Render (const Island *island){
         Vector2 screenPoint1 = WorldToScreen(IslandPointToWorld(island, island->points[i]));
         Vector2 screenPoint2 = WorldToScreen(IslandPointToWorld(island, island->points[(i + 1) % island->edgeCount]));
 
-        // DrawLineEx(WorldToScreen(island->edges[i].a), WorldToScreen(island->edges[i].b), 5, WHITE);
-        DrawTriangle(screenPoint0, screenPoint1, screenPoint2, BLUE);
+        DrawLineEx(WorldToScreen(island->edges[i].a), WorldToScreen(island->edges[i].b), 5, WHITE);
+        DrawTriangle(screenPoint0, screenPoint1, screenPoint2, WHITE);
     }
 }
+
+void RenderObjectSpace (const Island *island){ 
+
+    for(int i = 0; i < island->edgeCount; i++){
+
+        Vector2 screenPoint0 = WorldToScreen(island->points[0]);
+        Vector2 screenPoint1 = WorldToScreen(island->points[i]);
+        Vector2 screenPoint2 = WorldToScreen(island->points[(i + 1) % island->edgeCount]);
+
+        DrawLineEx(WorldToScreen(island->edges[i].a), WorldToScreen(island->edges[i].b), 5, WHITE);
+        DrawTriangle(screenPoint0, screenPoint1, screenPoint2, GRAY);
+    }
+}
+
+
 
 Hit IslandIntersect(const Island *is, Edge segment){
     Hit current = {false, {0,0}};

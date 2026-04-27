@@ -113,7 +113,7 @@ void PrepOceanPass(Vector2 mousePos, int multiplier, float dotsize){
     
     switch(currentScene){
 
-        case Map:
+        case MapScene:
 
         break;
         case Battle:
@@ -131,7 +131,7 @@ void PrepShipRangePass(){
         case Menu: {
         break;
         }
-        case Map:{
+        case MapScene:{
             int multiplier = 100;
             SetShaderValue(oceanShader_frag, loc_ocean_mult, &multiplier, SHADER_UNIFORM_INT);
 

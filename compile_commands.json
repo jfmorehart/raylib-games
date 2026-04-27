@@ -1,6 +1,6 @@
 [
   {
-    "file": "engine/main.c",
+    "file": "game/main.c",
     "arguments": [
       "/usr/bin/cc",
       "-Wall",
@@ -11,13 +11,14 @@
       "-I.",
       "-Iengine",
       "-Ientities",
+      "-flto",
       "-c",
       "-o",
-      "engine/main.o",
-      "engine/main.c"
+      "game/main.o",
+      "game/main.c"
     ],
-    "directory": "/Users/jackmorehart/Projects/raylib-games",
-    "output": "engine/main.o"
+    "directory": "/Users/jackmorehart/Projects/SAVO",
+    "output": "game/main.o"
   },
   {
     "file": "engine/helpers.c",
@@ -31,12 +32,13 @@
       "-I.",
       "-Iengine",
       "-Ientities",
+      "-flto",
       "-c",
       "-o",
       "engine/helpers.o",
       "engine/helpers.c"
     ],
-    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "directory": "/Users/jackmorehart/Projects/SAVO",
     "output": "engine/helpers.o"
   },
   {
@@ -51,12 +53,13 @@
       "-I.",
       "-Iengine",
       "-Ientities",
+      "-flto",
       "-c",
       "-o",
       "entities/islands.o",
       "entities/islands.c"
     ],
-    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "directory": "/Users/jackmorehart/Projects/SAVO",
     "output": "entities/islands.o"
   },
   {
@@ -71,12 +74,13 @@
       "-I.",
       "-Iengine",
       "-Ientities",
+      "-flto",
       "-c",
       "-o",
       "engine/routines.o",
       "engine/routines.c"
     ],
-    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "directory": "/Users/jackmorehart/Projects/SAVO",
     "output": "engine/routines.o"
   },
   {
@@ -91,12 +95,13 @@
       "-I.",
       "-Iengine",
       "-Ientities",
+      "-flto",
       "-c",
       "-o",
       "entities/ships.o",
       "entities/ships.c"
     ],
-    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "directory": "/Users/jackmorehart/Projects/SAVO",
     "output": "entities/ships.o"
   },
   {
@@ -111,12 +116,13 @@
       "-I.",
       "-Iengine",
       "-Ientities",
+      "-flto",
       "-c",
       "-o",
       "entities/bullets.o",
       "entities/bullets.c"
     ],
-    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "directory": "/Users/jackmorehart/Projects/SAVO",
     "output": "entities/bullets.o"
   },
   {
@@ -131,12 +137,13 @@
       "-I.",
       "-Iengine",
       "-Ientities",
+      "-flto",
       "-c",
       "-o",
       "engine/vfx.o",
       "engine/vfx.c"
     ],
-    "directory": "/Users/jackmorehart/Projects/raylib-games",
+    "directory": "/Users/jackmorehart/Projects/SAVO",
     "output": "engine/vfx.o"
   }
 ]

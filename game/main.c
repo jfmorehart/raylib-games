@@ -9,6 +9,7 @@
 #include "UI.h"
 #include "mapscene.h"
 #include "routines.h"
+#include "editorscene.h"
 
 #include <math.h>       
 #include <stdio.h>
@@ -21,18 +22,17 @@ Vector2 worldZero;
 
 void RunOnStart(){
 
-
     scenes[0] = (Scene){Menu, NULL};
-    scenes[1] = (Scene){Map, InitMapScene};
+    scenes[1] = (Scene){MapScene, InitMapScene};
     scenes[2] = (Scene){Battle, InitBattleScene};
+    scenes[3] = (Scene){Editor, InitEditorScene};
 
-    currentScene = Map;
+    currentScene = MapScene;
 
     routines[0] = (Routine){"TimeRoutine", false, true, -999, 2, 2, TimeRoutine};
     routines[1] = (Routine){"FocusRoutine", false, true, -999, 1, 1, FocusRoutine};
     routines[2] = (Routine){"SwitchToBattleRoutine", false, true, -999, 1, 1, SwitchToBattleRoutine};
     routineCount = 3; //update with full number!
-
 
     InitWindow(WIDTH, HEIGHT, "raylib");
     
@@ -89,16 +89,23 @@ int main(void)
 
         BeginDrawing();
 
+        if(IsKeyPressed(KEY_P)){
+            SwitchScenes(Editor);
+        }
 
         switch(currentScene){
             case Menu:
             break;
-            case Map:
+            case MapScene:
                 MapInputLoop();
                 MapFrameLoop();
                 break;
             case Battle:
                 BattleFrameLoop();
+            break;
+            case Editor:
+               EditorFrameLoop();
+            break;
         }
 
         // RenderWindow(&hello, &font);

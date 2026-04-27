@@ -23,6 +23,9 @@ Vector2 ScreenToWorld(Vector2 screenPos);
 
 bool IsOnScreen(Vector2 worldPoint);
 
+typedef struct Island Island;// name;
+Island *WhatIslandIsThis(Vector2 wPoint, Island *toCheckArray, int islandLength);
+
 bool IsPointWithinIslands(Vector2 wPoint);
 Vector2 RandomWorldPointNoIsland();
 
@@ -40,5 +43,3 @@ typedef struct{
 Hit Intersect(Edge ab, Edge cd);
 
 void SwitchScenes(SceneName to);
-
-

@@ -249,7 +249,7 @@ void BattleFrameLoop(){
                 endZoom = 0.4;
             }
         }
-        currentScene = Map;
+        currentScene = MapScene;
     }
 
 
