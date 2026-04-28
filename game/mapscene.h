@@ -19,7 +19,7 @@
 #include <time.h>
 #include <string.h>
 
-extern Island island[ISLANDCOUNT];
+extern Map currentMap;
 
 int shipCount = 0;
 Ship ships[MAX_SHIPS];
@@ -77,9 +77,10 @@ void RandomizeMap(){
 
     srand(time(NULL));
     for(int i = 0; i < ISLANDCOUNT; i++){
-        island[i] = CreateIsland(); 
+        currentMap.islands[i] = CreateIsland(); 
     }
-
+    currentMap.islandLength  = ISLANDCOUNT;
+    
     shipCount = MAX_SHIPS;
     for(int i = 0; i < shipCount; i++){
 
@@ -272,8 +273,8 @@ void MapFrameLoop(){
     EndShaderMode();
 
     BeginShaderMode(islandShader_frag);
-    for(int i = 0; i < ISLANDCOUNT; i++){
-        Render(&island[i], WHITE);
+    for(int i = 0; i < currentMap.islandLength; i++){
+        Render(&currentMap.islands[i], WHITE);
     }
     EndShaderMode();
 }

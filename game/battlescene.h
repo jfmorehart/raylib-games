@@ -17,7 +17,7 @@
 #include <stdlib.h> 
 #include <time.h>
 
-extern Island island[ISLANDCOUNT];
+extern Map currentMap;
 
 extern int shipCount;
 extern Ship ships[MAX_SHIPS];
@@ -166,8 +166,8 @@ void BattleFrameLoop(){
     EndShaderMode();
 
     BeginShaderMode(islandShader_frag);
-    for(int i = 0; i < ISLANDCOUNT; i++){
-        Render(&island[i], WHITE);
+    for(int i = 0; i < currentMap.islandLength; i++){
+        Render(&currentMap.islands[i], WHITE);
     }
     EndShaderMode();
 

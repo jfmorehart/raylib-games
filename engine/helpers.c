@@ -119,10 +119,10 @@ Hit Intersect(Edge ab, Edge cd){
     return (Hit){hit,(Vector2){xIntercept, yIntercept}};
 }
 
-bool PointIslandCheck(Vector2 point, Island *is){
+bool PointIslandCheck(Vector2 point, const Island *is){
 
     if(is->pointCount < 3) return false;
-    
+
     float cross = 0;
     bool neg = false;
     Vector2 toPoint;
@@ -153,8 +153,8 @@ Island *WhatIslandIsThis(Vector2 wPoint, Island *toCheckArray, int islandLength)
 
 bool IsPointWithinIslands(Vector2 wPoint){
 
-    for(int i = 0; i < ISLANDCOUNT; i++){
-        if(PointIslandCheck(wPoint, &island[i])){
+    for(int i = 0; i < currentMap.islandLength; i++){
+        if(PointIslandCheck(wPoint, &currentMap.islands[i])){
             return true;
         }
     }

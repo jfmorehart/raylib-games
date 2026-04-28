@@ -15,6 +15,10 @@ Vector2 IslandPointToWorld(const Island *island, Vector2 objectSpace){
     //translates from object space to world space
     return Vector2Add(island->relativePosition, Vector2Scale(objectSpace, island->scale));
 }
+Vector2 WorldPointToIsland(const Island *island, Vector2 worldSpace){
+    //translates from object space to world space
+    return  Vector2Scale(Vector2Subtract(worldSpace, island->relativePosition), 1 / island->scale);
+}
 int FindNextPoint(int current, const Vector2 *points){
     int indexOfBest = (current + 1) % MAXHULLPOINTS;
     for(int i = 0; i < MAXHULLPOINTS; i++){
@@ -74,8 +78,17 @@ void Render (const Island *island, Color col){
         Vector2 screenPoint1 = WorldToScreen(IslandPointToWorld(island, island->points[i]));
         Vector2 screenPoint2 = WorldToScreen(IslandPointToWorld(island, island->points[(i + 1) % island->edgeCount]));
 
-        DrawLineEx(WorldToScreen(island->edges[i].a), WorldToScreen(island->edges[i].b), 5, WHITE);
-        DrawTriangle(screenPoint0, screenPoint1, screenPoint2, col);
+        if(i + 1 == island->edgeCount){
+            DrawLineEx(WorldToScreen(island->edges[i].a), WorldToScreen(island->edges[i].b), 5, RED);
+        }else{
+            DrawLineEx(WorldToScreen(island->edges[i].a), WorldToScreen(island->edges[i].b), 5, WHITE);
+        }
+        if(false){//!PointIslandCheck(island->relativePosition, island)){
+            DrawTriangle(screenPoint0, screenPoint1, screenPoint2, RED);
+        }else{
+            DrawTriangle(screenPoint0, screenPoint1, screenPoint2, col);
+        }
+
     }
 }
 
@@ -87,8 +100,22 @@ void RenderObjectSpace (const Island *island){
         Vector2 screenPoint1 = WorldToScreen(island->points[i]);
         Vector2 screenPoint2 = WorldToScreen(island->points[(i + 1) % island->edgeCount]);
 
-        DrawLineEx(WorldToScreen(island->edges[i].a), WorldToScreen(island->edges[i].b), 5, WHITE);
-        DrawTriangle(screenPoint0, screenPoint1, screenPoint2, GRAY);
+
+
+        if(i + 1 == island->edgeCount){
+            DrawLineEx(WorldToScreen(island->edges[i].a), WorldToScreen(island->edges[i].b), 5, RED);
+        }else{
+            DrawLineEx(WorldToScreen(island->edges[i].a), WorldToScreen(island->edges[i].b), 5, WHITE);
+        }
+        if(false){//!PointIslandCheck(island->relativePosition, island) && island->relativePosition.x != 0.00){
+            DrawTriangle(screenPoint0, screenPoint1, screenPoint2, RED);
+        }else{
+            DrawTriangle(screenPoint0, screenPoint1, screenPoint2, GRAY);
+        }
+
+
+
+     
     }
 }
 

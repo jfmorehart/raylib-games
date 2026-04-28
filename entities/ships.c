@@ -10,8 +10,6 @@
 #include <math.h>
 #include <stdio.h>
 
-extern Island island[ISLANDCOUNT];
-
 float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target){
 
     Vector2 d2m = Vector2Subtract(target, ship->wPos);
@@ -43,7 +41,7 @@ float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target){
 
         Vector2 delta = VfromAngle(angle);
         Edge segment = {ship->wPos, Vector2Add(Vector2Scale(delta, tdist), ship->wPos)};
-        Hit hit = AllIslandsIntersect(island, segment);
+        Hit hit = AllIslandsIntersect(currentMap.islands, segment);
 
         if(hit.hit){
 

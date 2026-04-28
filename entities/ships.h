@@ -43,8 +43,6 @@ typedef struct Ship{
     Battery batteries[SHIP_MAXBATTERIES];
 } Ship;
 
-extern Island island[ISLANDCOUNT];
-
 float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target);
 
 void RenderShip(const Ship *ship, float scaleMult);

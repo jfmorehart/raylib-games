@@ -6,22 +6,13 @@
 #include "raylib.h"
 #include "raymath.h"
 #include <stdio.h>
-
- #ifdef _WIN32
-#include <direct.h> //WINDOWS
-#elif __APPLE__
-#include <sys/stat.h> //MACOS
-#endif
+#include "filesystem.h"
 
 typedef enum EditorMode{
     WindIsland,
     PlaceIsland
 } EditorMode;
 
-typedef struct Map{
-    Island islands[ISLANDCOUNT];
-    int islandLength;
-}Map;
 
 EditorMode mode;
 
@@ -47,7 +38,13 @@ Vector2 PointCenter(Island *is){
     }
     return Vector2Scale(avg, 1.00 / is->pointCount);
 }
-void Recenter(Island *is){
+// void SetRelativePositionToAveragePoint(Island *is){
+//     if(!is) {
+//         TraceLog(LOG_FATAL, "island pointer passed was null\n");
+//     }
+//     is->relativePosition = PointCenter(is) + Vector2Scale(c, is->scale);
+// }
+void MoveFromObjectToWorldSpace(Island *is){
     if(!is) {
         TraceLog(LOG_FATAL, "island pointer passed was null\n");
     }
@@ -109,31 +106,7 @@ void InitEditorScene(){
 
     mode = PlaceIsland;
 
-    printf("loading editor scene\n");
-
-    #ifdef _WIN32
-        _mkdir("editor");
-
-    #elif __APPLE__
-    mkdir("editor", 0777);
-    #endif
-
-    FILE *fptr;
-
-
-    // Create a file
-    fptr = fopen("editor/test.campaign", "rb");
-    if(!fptr){
-        fptr = fopen("test.campaign","w");
-        // Close the file
-        fclose(fptr);
-        ResetCanvas();
-        return;
-    }
-    // Write some text to the file
-
-    Map loadMap;
-    fread(&loadMap, sizeof(Map), 1, fptr);
+    Map loadMap = LoadMapFile("editor/test.campaign");
 
     if(loadMap.islandLength > 0 && loadMap.islandLength <  ISLANDCOUNT){
         //good data
@@ -142,31 +115,31 @@ void InitEditorScene(){
         //bad data
         localMap = (Map){0};
     }
-    fclose(fptr);
+    GetMapCount();
 }
 
 void Redraw(Island *is){
-    Recenter(is);
+    MoveFromObjectToWorldSpace(is);
     RecalculateEdges(is);
 }
-void AddNewPoint(){
+void AddNewPoint(Vector2 atPoint){
     if(currentPointCount + 1 < MAXHULLPOINTS){
-        currentIsland->points[currentPointCount] = mousePos;
+        currentIsland->points[currentPointCount] = atPoint;
 
-        printf("(%f,%f)\n", mousePos.x, mousePos.y);
+        // printf("(%f,%f)\n", mousePos.x, mousePos.y);
         if(currentPointCount > 0){
             if(currentIsland->edgeCount > 0){
                 currentIsland->edgeCount--;
             }
-            currentIsland->edges[currentIsland->edgeCount].b = mousePos;
+            currentIsland->edges[currentIsland->edgeCount].b = atPoint;
             currentIsland->edgeCount++;
-            currentIsland->edges[currentIsland->edgeCount].a = mousePos;
+            currentIsland->edges[currentIsland->edgeCount].a = atPoint;
             printf("started next\n");
             currentIsland->edges[currentIsland->edgeCount].b = currentIsland->edges[0].a;
             currentIsland->edgeCount++;
         
         }else{
-            currentIsland->edges[currentIsland->edgeCount].a = mousePos;
+            currentIsland->edges[currentIsland->edgeCount].a = atPoint;
             // is->edges[is.edgeCount].b = is.points[0];
             printf("started first\n");
         }
@@ -174,15 +147,15 @@ void AddNewPoint(){
         currentIsland->pointCount = currentPointCount;
     }   
 }
-float DistanceToPoint(int index, Island *shape){
+float DistanceToPoint(int index, Island *shape, Vector2 point){
     if(index == -1) return 999;
-   return Vector2Distance(shape->points[index], mousePos); 
+   return Vector2Distance(shape->points[index], point); 
 }
-int IndexOfNearestPointInShape(Island *is){
+int IndexOfNearestPointInShape(Island *is, Vector2 point){
     float dist = 999;
     int index = -1;
     for(int i = 0 ; i < is->pointCount; i++){
-        float tdist = DistanceToPoint(i, is);
+        float tdist = DistanceToPoint(i, is, point);
         if(tdist < dist){
             dist = tdist;
             index = i;
@@ -200,10 +173,12 @@ void EditorFrameLoop(){
     Vector2 mousePos_ScreenCoords = GetMousePosition();
     mousePos = ScreenToWorld(mousePos_ScreenCoords);
 
-    if(IsKeyPressed(KEY_L)){
+    //BACK
+    if(IsKeyPressed(KEY_B)){
         SwitchScenes(MapScene);
     }
 
+    //GROW
     if(IsKeyPressed(KEY_EQUAL)){
         //increase scale
         if(currentIsland){
@@ -215,6 +190,7 @@ void EditorFrameLoop(){
             }
         }
     }
+    //SHRINK
     if(IsKeyPressed(KEY_MINUS)){
         if(currentIsland) {
             currentIsland->scale *= 0.9;
@@ -226,6 +202,7 @@ void EditorFrameLoop(){
         }
 
     }
+    //EDIT
     if(IsKeyPressed(KEY_E)){
         mode = WindIsland;
         ResetCanvas();
@@ -242,6 +219,7 @@ void EditorFrameLoop(){
         }
     }
 
+    //RESET
     if(IsKeyPressed(KEY_R)){
         if(currentIsland){
             currentIsland->pointCount = 0;
@@ -250,6 +228,7 @@ void EditorFrameLoop(){
     }
 
 
+    //QUIT
     if(IsKeyPressed(KEY_Q)){
 
         FILE* fptr = fopen("test.campaign","w");
@@ -263,6 +242,7 @@ void EditorFrameLoop(){
     }
 
 
+    //SAVE
     if(IsKeyPressed(KEY_S)){
 
         if(currentIsland){
@@ -290,11 +270,11 @@ void EditorFrameLoop(){
         FILE *fptr = fopen("editor/test.campaign", "wb");
         // Write some text to the file
         fwrite(&localMap, sizeof(Map), 1, fptr);   
-
         // Close the file
         fclose(fptr); 
 
         printf("saved to editor folder");
+        currentMap = localMap; 
         mode = PlaceIsland;
         ResetCanvas();
     }
@@ -307,36 +287,43 @@ void EditorFrameLoop(){
                 currentIsland = NextFreeIsland();
             }
             lastClicked = 0;
-
             for(int i= 0; i < localMap.islandLength; i++){
-                if(&localMap.islands[i] == currentIsland) continue;
+                // if(&localMap.islands[i] == currentIsland) continue;
                 Render(&localMap.islands[i], GRAY);
             }
-
-            RenderObjectSpace(currentIsland);
-            for(int i = 0; i < currentIsland->pointCount; i++){
-                DrawCircleV(WorldToScreen(currentIsland->points[i]), 10, RED);
+            if(currentIsland->relativePosition.x == 0.00){
+                RenderObjectSpace(currentIsland);
             }
 
-            int indexOfNearest = IndexOfNearestPointInShape(currentIsland);
-            float distToNearestPoint = DistanceToPoint(indexOfNearest, currentIsland);
+            for(int i = 0; i < currentIsland->pointCount; i++){
+                DrawCircleV(WorldToScreen(IslandPointToWorld(currentIsland, currentIsland->points[i])), 10, RED);
+            }
+
+            Vector2 islandSpaceMousePos = WorldPointToIsland(currentIsland, mousePos);
+            int indexOfNearest = IndexOfNearestPointInShape(currentIsland, islandSpaceMousePos);
+            float distToNearestPoint = DistanceToPoint(indexOfNearest, currentIsland, islandSpaceMousePos);
 
             if(IsMouseButtonPressed(0)){
                 if(distToNearestPoint > 0.1){
-                    AddNewPoint();
+                    AddNewPoint(islandSpaceMousePos);
+                    // SetRelativePositionToAveragePoint(currentIsland);
+                    RecalculateEdges(currentIsland);
+   
+                    // Redraw(currentIsland);
+
                 }else{
                     indexClicked = indexOfNearest;
                 }
             }
             if(IsMouseButtonDown(0)){
                 if(indexClicked > -1){
-                    currentIsland->points[indexClicked] = mousePos;
-                    RecalculateEdgesObjectSpace(currentIsland);
+                    currentIsland->points[indexClicked] = islandSpaceMousePos;
+                    RecalculateEdges(currentIsland);
                 }
             }
             if(distToNearestPoint < 0.1){
                  //draw over point
-                DrawCircleV(WorldToScreen(currentIsland->points[indexOfNearest]), 10, GREEN);
+                DrawCircleV(WorldToScreen(IslandPointToWorld(currentIsland, currentIsland->points[indexOfNearest])), 10, GREEN);
             }
 
             if(IsMouseButtonReleased(0)){
