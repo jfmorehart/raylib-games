@@ -121,6 +121,8 @@ Hit Intersect(Edge ab, Edge cd){
 
 bool PointIslandCheck(Vector2 point, Island *is){
 
+    if(is->pointCount < 3) return false;
+    
     float cross = 0;
     bool neg = false;
     Vector2 toPoint;

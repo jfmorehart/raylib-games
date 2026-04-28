@@ -3,6 +3,8 @@ MAKEFLAGS += --warn-undefined-variables
 CFLAGS = -Wall -O2 $(shell pkg-config --cflags raylib) -MMD -MP -I. -Iengine -Ientities -flto                                                   
 LIBS = /opt/homebrew/opt/raylib/lib/libraylib.a -framework OpenGL -framework Cocoa -framework IOKit
 
+CBUILDFLAGS = -Wall $(shell pkg-config --cflags raylib) -MMD -MP -I. -Iengine -Ientities -g -O0    
+
 #WIN
 WIN_CC = x86_64-w64-mingw32-gcc
 WIN_CFLAGS =  -Wall -O2 -I. -Iengine -Ientities -Ivendor/raylib-win64/include -fcommon -flto -ffunction-sections -fdata-sections -fno-asynchronous-unwind-tables
@@ -17,6 +19,9 @@ DEPS = $(NEEDSCOMPILE:.o=.d)
 savo: $(NEEDSCOMPILE)
 	cc $(CFLAGS) -o savo $(NEEDSCOMPILE) $(LIBS)  -Wl,-x, -dead_strip
 	strip -x savo
+
+debug: $(NEEDSCOMPILE:.o=.c)               
+	cc $(CBUILDFLAGS) -o savo  $(NEEDSCOMPILE:.o=.c) $(LIBS) 
 
 run: savo
 	./savo
@@ -45,6 +50,6 @@ build-windows: savo.exe
 
 builds: build-windows build-mac
 
-.PHONY: savo.exe all run clean build-mac build-windows builds
+.PHONY: savo.exe all run clean build-mac build-windows builds debug
 
 -include $(DEPS)  

@@ -1,6 +1,7 @@
 #pragma once
 #include "battlescene.h"
 #include "bullets.h"
+#include "game/editorscene.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "mapshaders.h"
@@ -272,7 +273,7 @@ void MapFrameLoop(){
 
     BeginShaderMode(islandShader_frag);
     for(int i = 0; i < ISLANDCOUNT; i++){
-        Render(&island[i]);
+        Render(&island[i], WHITE);
     }
     EndShaderMode();
 }

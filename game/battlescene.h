@@ -167,7 +167,7 @@ void BattleFrameLoop(){
 
     BeginShaderMode(islandShader_frag);
     for(int i = 0; i < ISLANDCOUNT; i++){
-        Render(&island[i]);
+        Render(&island[i], WHITE);
     }
     EndShaderMode();
 

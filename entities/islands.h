@@ -25,7 +25,7 @@ Island island[ISLANDCOUNT];
 Vector2 IslandPointToWorld(const Island *island, Vector2 objectSpace);
 
 int FindNextPoint(int current, const Vector2 *points);
-void Render (const Island *island);
+void Render (const Island *island, Color col);
 void RenderObjectSpace (const Island *island);
 
 Island CreateIsland();

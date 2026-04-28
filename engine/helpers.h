@@ -26,6 +26,7 @@ bool IsOnScreen(Vector2 worldPoint);
 typedef struct Island Island;// name;
 Island *WhatIslandIsThis(Vector2 wPoint, Island *toCheckArray, int islandLength);
 
+bool PointIslandCheck(Vector2 point, Island *is);
 bool IsPointWithinIslands(Vector2 wPoint);
 Vector2 RandomWorldPointNoIsland();
 
