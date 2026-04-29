@@ -84,13 +84,9 @@ void InitBattleScene(){
 void BattleFrameLoop(){
     ClearBackground((Color){ 5, 5, 20, 255 });
 
-    Vector2 mousePos_ScreenCoords = GetMousePosition();
-    mousePos = ScreenToWorld(mousePos_ScreenCoords);
-    mousePos_ScreenCoords.y = HEIGHT - mousePos_ScreenCoords.y;
-    mousePos_ScreenCoords = Vector2Scale(mousePos_ScreenCoords, 2); 
-
     //Set shader variables and draw ocean
-    PrepOceanPass(mousePos_ScreenCoords, 100, 0.02);
+    PrepOceanPass(mousePos_fragCoords, 100, 0.02);
+    
     EndOceanPass(); //flush buffer
 
     // float gridSize = 0.2;
@@ -217,10 +213,10 @@ void BattleFrameLoop(){
             } 
         }
 
-        if(IsPointWithinIslands(ScreenToWorld(GetMousePosition()))){
-            DrawCircleV(GetMousePosition(), 5, RED);
+        if(IsPointWithinIslands(mousePos)){
+            DrawCircleV(mousePos_ScreenCoords, 5, RED);
         }else{
-            DrawCircleV(GetMousePosition(), 5, GREEN);
+            DrawCircleV(mousePos_ScreenCoords, 5, GREEN);
         }
 
         for(int i = 0; i < currentMap.fcount; i++){

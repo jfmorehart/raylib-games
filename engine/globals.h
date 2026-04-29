@@ -9,6 +9,9 @@ int HEIGHT;
 Vector2 cameraPosition;
 Vector2 screenVec;
 Vector2 mousePos;
+Vector2 mousePos_ScreenCoords;
+Vector2 mousePos_fragCoords;
+
 Vector2 xBounds;
 Vector2 yBounds;
 

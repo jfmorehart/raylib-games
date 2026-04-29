@@ -272,7 +272,7 @@ void GenericInput(){
 }
 
 void EditIslandMode(){
-                if(!currentIsland){
+            if(!currentIsland){
                 TraceLog(LOG_WARNING, "No current island set in wind mode!");
                 currentIsland = NextFreeIsland();
             }
@@ -322,6 +322,30 @@ void EditIslandMode(){
             DrawText("Edit Island", WIDTH * 0.5, HEIGHT * 0.3, 20, WHITE);
             // RenderWindow(w, )
 }
+
+float distToNearestShip;
+Ship *shipClicked;
+
+Ship* NearestShip(Vector2 point){
+    Ship* nearest = 0;
+    float dist = 999;
+    for(int i = 0 ; i < localMap.fcount; i++){
+        float testDist = Vector2DistanceSqr(localMap.friendlies[i].wPos, point);
+        if(testDist < dist){
+            dist = testDist;
+            nearest = &localMap.friendlies[i];
+        }
+    }
+    for(int i = 0 ; i < localMap.ecount; i++){
+        float testDist = Vector2DistanceSqr(localMap.enemies[i].wPos, point);
+        if(testDist < dist){
+            dist = testDist;
+            nearest = &localMap.enemies[i];
+        }
+    }
+    return nearest;
+}
+
 void PlaceIslandMode(){
     DrawText("Place Islands", WIDTH * 0.5, HEIGHT * 0.3, 20, WHITE);
     currentIsland = 0;
@@ -348,8 +372,29 @@ void PlaceIslandMode(){
             printf("dragging %f, %f\n", mousePos.x, mousePos.y);
         }
     }
+
+    Ship *nearestShip = NearestShip(mousePos);
+    distToNearestShip = Vector2Distance(nearestShip->wPos,mousePos);
+
+    if(IsMouseButtonPressed(0)){
+        if(distToNearestShip < 0.1){
+            shipClicked = nearestShip;
+        }
+    }
+    if(IsMouseButtonDown(0)){
+        if(shipClicked){
+            shipClicked->wPos = mousePos;
+        }
+    }
+
+    if(IsMouseButtonReleased(0)){
+        indexClicked = -1;
+        shipClicked = 0;
+    }
+
+
     if(lastClicked){
-        DrawCircleV(WorldToScreen(lastClicked->relativePosition), 50 * lastClicked->scale, BLUE);
+        DrawCircleV(WorldToScreen(lastClicked->relativePosition), 20 * lastClicked->scale, BLUE);
     }
     if(IsKeyPressed(KEY_K)){
         localMap.friendlies[localMap.fcount] = defaultShip;
@@ -373,10 +418,6 @@ void PlaceIslandMode(){
 }
 void EditorFrameLoop(){
     ClearBackground(BLACK);
-
-    Vector2 mousePos_ScreenCoords = GetMousePosition();
-    mousePos = ScreenToWorld(mousePos_ScreenCoords);
-
     GenericInput();
 
     switch (mode) {

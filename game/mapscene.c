@@ -137,7 +137,7 @@ void MapInputLoop(){
             } 
         }
 
-        if(IsPointWithinIslands(ScreenToWorld(GetMousePosition()))){
+        if(IsPointWithinIslands(mousePos)){
             DrawCircleV(GetMousePosition(), 5, RED);
         }else{
             DrawCircleV(GetMousePosition(), 5, GREEN);
@@ -168,7 +168,7 @@ void MapInputLoop(){
         if(run){
             startingCameraPos = cameraPosition;
             startingZoom = worldScale;
-            focusTarget = ScreenToWorld(GetMousePosition());
+            focusTarget = mousePos;
             RunRoutine("SwitchToBattleRoutine");
             if(startingZoom < 0.5){
                 endZoom = 2;
@@ -220,13 +220,9 @@ void MapFrameLoop(){
         DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), GRAY);
     }
 
-    Vector2 mousePos_ScreenCoords = GetMousePosition();
-    mousePos = ScreenToWorld(mousePos_ScreenCoords);
-    mousePos_ScreenCoords.y = HEIGHT - mousePos_ScreenCoords.y;
-    mousePos_ScreenCoords = Vector2Scale(mousePos_ScreenCoords, 2); 
 
     //Set shader variables and draw ocean
-    PrepOceanPass(mousePos_ScreenCoords, 90, 0.08);
+    PrepOceanPass(mousePos_fragCoords, 90, 0.08);
     EndOceanPass(); //flush buffer
 
     for(int d = 0; d < currentMap.ecount; d++){

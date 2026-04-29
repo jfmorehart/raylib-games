@@ -80,14 +80,12 @@ void main()
     uv = fract(uv * multiplier);
     float noise = n1;// + n2;
     // noise = pow(noise + 0.01, 0.5);
-    noise += 0.2;
-    noise *= 0.4;
 
-    noise = scale(noise, 4) * 0.4;
+    noise = scale(noise, 3) * 0.4;
     float rdot = dotsize + noise;
 
 
-    rdot = clamp(rdot, 0.03, 0.4);
+    rdot = clamp(rdot, 0.03, 0.6);
     
     vec2 uvContinuous = (ns * 0.8 + n1 * 0.001) * multiplier;
     vec2 uvCell = fract(uvContinuous);
@@ -96,7 +94,6 @@ void main()
     float w = length(fwidth(uvContinuous));
     float val = 1 - smoothstep(rdot - w , rdot + w, d);
     
-    val *= mix(0.4, 0.8, (n1 * n1) + 0.1);
-    val *= 0.7;
+    val *= mix(0.2, 0.9, (n1 * n1) + 0.1);
     finalColor = vec4(val, val, val, 1);
 }                                                                                                                                                                                                  

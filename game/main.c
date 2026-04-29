@@ -19,6 +19,9 @@
 Font font;
 Window hello = {BOTTOM_RIGHT, {300, 150}, "Yooo", 32, "whats up", 12};
 Vector2 worldZero;
+RenderTexture2D targetTex;
+
+#define RSCALE 2
 
 void RunOnStart(){
 
@@ -45,6 +48,12 @@ void RunOnStart(){
     screenVec = (Vector2){WIDTH, HEIGHT};
     SetTargetFPS(FRAMERATE);
     SetWindowSize(WIDTH, HEIGHT);
+
+
+    WIDTH = WIDTH / RSCALE;
+    HEIGHT = HEIGHT / RSCALE;
+    targetTex = LoadRenderTexture(WIDTH, HEIGHT);
+    SetTextureFilter(targetTex.texture, TEXTURE_FILTER_POINT);
     
     ToggleBorderlessWindowed();
 
@@ -74,16 +83,25 @@ void RunOnStart(){
     ShaderInit();
 }
 
-
 int main(void)
 {
     RunOnStart();
     while (!WindowShouldClose()) {
 
+        BeginTextureMode(targetTex);
+
         scaledDeltaTime = GetFrameTime() * timeScale;
         scaledTime += scaledDeltaTime;
 
         unscaledTime += GetFrameTime();
+
+
+        mousePos_ScreenCoords = GetMousePosition();
+        mousePos_ScreenCoords = Vector2Scale(mousePos_ScreenCoords, 1.00 / RSCALE);
+        mousePos = ScreenToWorld(mousePos_ScreenCoords);
+
+        mousePos_fragCoords.y = HEIGHT * RSCALE - mousePos_ScreenCoords.y;
+        mousePos_fragCoords = Vector2Scale(mousePos_fragCoords, 2 * RSCALE); 
 
         ExecuteRoutines();
 
@@ -111,12 +129,19 @@ int main(void)
         // RenderWindow(&hello, &font);
 
         float diff = (WIDTH - HEIGHT) * 0.4;
-        int border = 30;
+        int border = 3;
         DrawRectangle(0, 0, diff, HEIGHT, BLACK);//, int posY, int width, int height, Color color)
         DrawRectangle(WIDTH-  diff, 0, diff, HEIGHT, BLACK);
         DrawRectangle(diff, 0, WIDTH - diff * 2,border, BLACK);
         DrawRectangle(diff, HEIGHT - border, WIDTH - diff * 2, border, BLACK);
+
+        EndTextureMode();
+        int ws = WIDTH * RSCALE; 
+        int hs = HEIGHT * RSCALE;
+        Rectangle dest = (Rectangle){0, 0, ws, hs};
+        DrawTexturePro(targetTex.texture, (Rectangle){0, 0, WIDTH, -HEIGHT}, dest, Vector2Zero(), 0, WHITE);
         EndDrawing();
+
     }
 
     UnloadShaders();

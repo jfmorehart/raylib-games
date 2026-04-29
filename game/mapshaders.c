@@ -68,7 +68,7 @@ int ShaderInit(){
     
 
     //setup ISLAND CONSTANTS
-    int multiplier = 200;
+    int multiplier = 100;
     SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
 
     float dotsize = 0.15;
@@ -81,9 +81,8 @@ int ShaderInit(){
     SetShaderValue(ship_frag, loc_ship_dot, &dotsize, SHADER_UNIFORM_FLOAT);
 
 
-    float resolutionVector[2] = { (float)GetRenderWidth(), (float)GetRenderHeight()};  
+    float resolutionVector[2] = {WIDTH, HEIGHT};  
     //set RESOLUTIONS
-                                                                                                                                                 
     SetShaderValue(islandShader_frag, loc_land_res, resolutionVector, SHADER_UNIFORM_VEC2);     
     SetShaderValue(oceanShader_frag, loc_ocean_res, resolutionVector, SHADER_UNIFORM_VEC2);     
     SetShaderValue(ship_frag, loc_ship_res, resolutionVector, SHADER_UNIFORM_VEC2);     
