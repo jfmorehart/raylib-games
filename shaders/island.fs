@@ -89,7 +89,7 @@ void main()
 
     rdot = clamp(rdot, 0.03, 0.4);
     
-    vec2 uvContinuous = (ns * 0.8 + n1 * 0.01) * multiplier;
+    vec2 uvContinuous = (ns * 0.8 + n1 * 0.001) * multiplier;
     vec2 uvCell = fract(uvContinuous);
 
     float d = length(uvCell - 0.5);
@@ -97,6 +97,6 @@ void main()
     float val = 1 - smoothstep(rdot - w , rdot + w, d);
     
     val *= mix(0.4, 0.8, (n1 * n1) + 0.1);
-
+    val *= 0.7;
     finalColor = vec4(val, val, val, 1);
 }                                                                                                                                                                                                  

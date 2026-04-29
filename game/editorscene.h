@@ -7,12 +7,14 @@
 #include "raymath.h"
 #include <stdio.h>
 #include "filesystem.h"
+#include "UI.h"
 
 typedef enum EditorMode{
     WindIsland,
     PlaceIsland
 } EditorMode;
 
+extern Map currentMap;
 
 EditorMode mode;
 
@@ -21,12 +23,11 @@ Island *currentIsland;
 
 Map localMap;
 
-// int islandLength;
-// Island islands[ISLANDCOUNT];
-
 Vector2 dragOffset;
 Island *lastClicked;
 int indexClicked;
+
+extern Ship defaultShip;
 
 Vector2 PointCenter(Island *is){
     if(!is) {
@@ -38,12 +39,7 @@ Vector2 PointCenter(Island *is){
     }
     return Vector2Scale(avg, 1.00 / is->pointCount);
 }
-// void SetRelativePositionToAveragePoint(Island *is){
-//     if(!is) {
-//         TraceLog(LOG_FATAL, "island pointer passed was null\n");
-//     }
-//     is->relativePosition = PointCenter(is) + Vector2Scale(c, is->scale);
-// }
+
 void MoveFromObjectToWorldSpace(Island *is){
     if(!is) {
         TraceLog(LOG_FATAL, "island pointer passed was null\n");
@@ -166,14 +162,8 @@ int IndexOfNearestPointInShape(Island *is, Vector2 point){
     // }
     return index;
 }
-void EditorFrameLoop(){
-    ClearBackground(BLACK);
-
-
-    Vector2 mousePos_ScreenCoords = GetMousePosition();
-    mousePos = ScreenToWorld(mousePos_ScreenCoords);
-
-    //BACK
+void GenericInput(){
+        //BACK
     if(IsKeyPressed(KEY_B)){
         SwitchScenes(MapScene);
     }
@@ -279,17 +269,17 @@ void EditorFrameLoop(){
         ResetCanvas();
     }
 
+}
 
-    switch (mode) {
-        case WindIsland:
-            if(!currentIsland){
+void EditIslandMode(){
+                if(!currentIsland){
                 TraceLog(LOG_WARNING, "No current island set in wind mode!");
                 currentIsland = NextFreeIsland();
             }
             lastClicked = 0;
             for(int i= 0; i < localMap.islandLength; i++){
                 // if(&localMap.islands[i] == currentIsland) continue;
-                Render(&localMap.islands[i], GRAY);
+                RenderWithEdges(&localMap.islands[i], GRAY);
             }
             if(currentIsland->relativePosition.x == 0.00){
                 RenderObjectSpace(currentIsland);
@@ -329,38 +319,72 @@ void EditorFrameLoop(){
             if(IsMouseButtonReleased(0)){
                 indexClicked = -1;
             }
+            DrawText("Edit Island", WIDTH * 0.5, HEIGHT * 0.3, 20, WHITE);
+            // RenderWindow(w, )
+}
+void PlaceIslandMode(){
+    DrawText("Place Islands", WIDTH * 0.5, HEIGHT * 0.3, 20, WHITE);
+    currentIsland = 0;
+    for(int i= 0; i < localMap.islandLength; i++){
+        RenderWithEdges(&localMap.islands[i], WHITE);
+    }
+    if(IsMouseButtonPressed(0)){
+        Island *click = WhatIslandIsThis(mousePos, localMap.islands, localMap.islandLength);
+        if(click){
+            lastClicked = click;
+            dragOffset = Vector2Subtract(click->relativePosition, mousePos);
+        }else{
+            lastClicked = 0;
+        }
+    }
+    if(IsMouseButtonReleased(0)){
+        dragOffset = Vector2Zero();
+    }
 
+    if(IsMouseButtonDown(0)){
+        if(lastClicked){
+            lastClicked->relativePosition = Vector2Add(mousePos, dragOffset);
+            RecalculateEdges(lastClicked);
+            printf("dragging %f, %f\n", mousePos.x, mousePos.y);
+        }
+    }
+    if(lastClicked){
+        DrawCircleV(WorldToScreen(lastClicked->relativePosition), 50 * lastClicked->scale, BLUE);
+    }
+    if(IsKeyPressed(KEY_K)){
+        localMap.friendlies[localMap.fcount] = defaultShip;
+        localMap.friendlies[localMap.fcount].wPos = mousePos;
+        localMap.fcount++;
+    }
+        if(IsKeyPressed(KEY_L)){
+        localMap.enemies[localMap.ecount] = defaultShip;
+        localMap.enemies[localMap.ecount].wPos = mousePos;
+        localMap.enemies[localMap.ecount].team = false;
+        localMap.ecount++;
+    }
+
+
+    for(int i = 0; i < localMap.fcount; i++){
+        DrawCircleV(WorldToScreen(localMap.friendlies[i].wPos), 5, BLUE);
+    }
+    for(int i = 0 ; i < localMap.ecount; i++){
+        DrawCircleV(WorldToScreen(localMap.enemies[i].wPos), 5, RED);
+    }
+}
+void EditorFrameLoop(){
+    ClearBackground(BLACK);
+
+    Vector2 mousePos_ScreenCoords = GetMousePosition();
+    mousePos = ScreenToWorld(mousePos_ScreenCoords);
+
+    GenericInput();
+
+    switch (mode) {
+        case WindIsland:
+            EditIslandMode();
         break;
         case PlaceIsland:
-
-            currentIsland = 0;
-            for(int i= 0; i < localMap.islandLength; i++){
-                Render(&localMap.islands[i], WHITE);
-            }
-            if(IsMouseButtonPressed(0)){
-                Island *click = WhatIslandIsThis(mousePos, localMap.islands, localMap.islandLength);
-                if(click){
-                    lastClicked = click;
-                    dragOffset = Vector2Subtract(click->relativePosition, mousePos);
-                }else{
-                    lastClicked = 0;
-                }
-            }
-            if(IsMouseButtonReleased(0)){
-                dragOffset = Vector2Zero();
-            }
-
-            if(IsMouseButtonDown(0)){
-                if(lastClicked){
-                    lastClicked->relativePosition = Vector2Add(mousePos, dragOffset);
-                    RecalculateEdges(lastClicked);
-                    printf("dragging %f, %f\n", mousePos.x, mousePos.y);
-                }
-            }
-            if(lastClicked){
-                DrawCircleV(WorldToScreen(lastClicked->relativePosition), 50 * lastClicked->scale, BLUE);
-            }
-
+           PlaceIslandMode();
         break;
     }
     DrawText(TextFormat("Islands: %d", localMap.islandLength), 400, 400, 20, BLUE);

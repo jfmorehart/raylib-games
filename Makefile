@@ -1,18 +1,18 @@
 #MAC OS
 MAKEFLAGS += --warn-undefined-variables
-CFLAGS = -Wall -O2 $(shell pkg-config --cflags raylib) -MMD -MP -I. -Iengine -Ientities -flto                                                   
+CFLAGS = -Wall -O2 $(shell pkg-config --cflags raylib) -MMD -MP -I. -Iengine -Ientities -Igame -flto                                                   
 LIBS = /opt/homebrew/opt/raylib/lib/libraylib.a -framework OpenGL -framework Cocoa -framework IOKit
 
-CBUILDFLAGS = -Wall $(shell pkg-config --cflags raylib) -MMD -MP -I. -Iengine -Ientities -g -O0    
+CBUILDFLAGS = -Wall $(shell pkg-config --cflags raylib) -MMD -MP -I. -Iengine -Ientities -Igame -g -O0    
 
 #WIN
 WIN_CC = x86_64-w64-mingw32-gcc
-WIN_CFLAGS =  -Wall -O2 -I. -Iengine -Ientities -Ivendor/raylib-win64/include -fcommon -flto -ffunction-sections -fdata-sections -fno-asynchronous-unwind-tables
+WIN_CFLAGS =  -Wall -O2 -I. -Iengine -Ientities -Igame -Ivendor/raylib-win64/include -fcommon -flto -ffunction-sections -fdata-sections -fno-asynchronous-unwind-tables
 WIN_LIBS = vendor/raylib-win64/lib/libraylib.a -lopengl32 -lgdi32 -lwinmm -static -Wl,-s
 
 all: savo
 
-NEEDSCOMPILE = game/main.o engine/helpers.o entities/islands.o engine/routines.o entities/ships.o entities/bullets.o engine/vfx.o
+NEEDSCOMPILE = game/main.o engine/helpers.o entities/islands.o engine/routines.o entities/ships.o entities/bullets.o engine/vfx.o game/mapscene.o engine/filesystem.o game/mapshaders.o
 WINSOURCES = $(NEEDSCOMPILE:.o=.c)    
 DEPS = $(NEEDSCOMPILE:.o=.d)
 

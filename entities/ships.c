@@ -10,7 +10,7 @@
 #include <math.h>
 #include <stdio.h>
 
-float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target){
+float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target, Island *obstacles){
 
     Vector2 d2m = Vector2Subtract(target, ship->wPos);
     float angleToTarget= atan2(d2m.y, d2m.x);
@@ -41,7 +41,7 @@ float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target){
 
         Vector2 delta = VfromAngle(angle);
         Edge segment = {ship->wPos, Vector2Add(Vector2Scale(delta, tdist), ship->wPos)};
-        Hit hit = AllIslandsIntersect(currentMap.islands, segment);
+        Hit hit = AllIslandsIntersect(obstacles, segment);
 
         if(hit.hit){
 
@@ -97,12 +97,12 @@ void RenderShip(const Ship *ship, float scaleMult){
     }
 }
 
-void SteerShip(Ship *ship, float speedMult, bool avoidIslands){
+void SteerShip(Ship *ship, float speedMult, bool avoidIslands, Island *islandsToAvoid){
     //Steer Ship
     if(ship->hasMoveTarget){
         float angle;
         if(avoidIslands){
-            angle = Path2Target(ship, 4, PI * 0.5, ship->moveTargetPosition);
+            angle = Path2Target(ship, 4, PI * 0.5, ship->moveTargetPosition, islandsToAvoid);
         }else{
             Vector2 delta =  Vector2Subtract(ship->moveTargetPosition, ship->wPos);
             angle = atan2f(delta.y, delta.x);

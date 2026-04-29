@@ -69,8 +69,23 @@ Island CreateIsland(){
     is.scale *= 0.909;
     return is;
 }
+void Render(const Island *island){ 
 
-void Render (const Island *island, Color col){ 
+    // float timeComponent = (0.5 * (sinf(unscaledTime) + 1)) * 0.01;
+    float timeComponent = (0.5 * (sinf(unscaledTime) + 1));
+    for(int i = 0; i < island->edgeCount; i++){
+
+        Vector2 screenPoint0 = WorldToScreen(IslandPointToWorld(island, island->points[0]));
+        Vector2 screenPoint1 = WorldToScreen(IslandPointToWorld(island, island->points[i]));
+        Vector2 screenPoint2 = WorldToScreen(IslandPointToWorld(island, island->points[(i + 1) % island->edgeCount]));
+
+        Vector2 foam1 = Vector2Add(island->relativePosition, Vector2Scale(island->points[i], island->scale));
+        Vector2 foam2 = Vector2Add(island->relativePosition, Vector2Scale(island->points[(i + 1) % island->edgeCount], island->scale));
+        DrawLineEx(WorldToScreen(foam1), WorldToScreen(foam2), 1 + timeComponent * 10, WHITE);
+        DrawTriangle(screenPoint0, screenPoint1, screenPoint2, WHITE);
+    }
+}
+void RenderWithEdges (const Island *island, Color col){ 
 
     for(int i = 0; i < island->edgeCount; i++){
 
@@ -99,8 +114,6 @@ void RenderObjectSpace (const Island *island){
         Vector2 screenPoint0 = WorldToScreen(island->points[0]);
         Vector2 screenPoint1 = WorldToScreen(island->points[i]);
         Vector2 screenPoint2 = WorldToScreen(island->points[(i + 1) % island->edgeCount]);
-
-
 
         if(i + 1 == island->edgeCount){
             DrawLineEx(WorldToScreen(island->edges[i].a), WorldToScreen(island->edges[i].b), 5, RED);

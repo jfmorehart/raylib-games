@@ -7,9 +7,9 @@
 #include "globals.h"
 #include "ships.h"
 #include "UI.h"
-#include "mapscene.h"
 #include "routines.h"
 #include "editorscene.h"
+#include "mapscene.h"
 
 #include <math.h>       
 #include <stdio.h>

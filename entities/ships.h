@@ -43,10 +43,11 @@ typedef struct Ship{
     Battery batteries[SHIP_MAXBATTERIES];
 } Ship;
 
-float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target);
+
+float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target, Island *obstacles);
 
 void RenderShip(const Ship *ship, float scaleMult);
 
-void SteerShip(Ship *ship, float speedMult, bool avoidIslands);
+void SteerShip(Ship *ship, float speedMult, bool avoidIslands, Island *islandsToAvoid);
 
 void ShipCombat(Ship *ship, Ship *targetShipsArray, int arrayLen);

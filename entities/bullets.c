@@ -20,7 +20,13 @@
 } Gun;*/
  #define SHIP_EXPLOSION_RADIUS 0.03
 
-Gun FiveInch = {0.3, 2, 0.01, 0.03, 10};
+Gun FiveInch = {
+    .range = 0.3,
+    .reloadTime = 5,
+    .explosionRadius = 0.01,
+    .spread = 0.03,
+    .damage = 10
+};
 Gun EightInch = {0.65, 4, 0.013, 0.01, 10};
 Gun SixteenInch = {1.2, 8, 0.02, 0.008, 10};
 
@@ -58,8 +64,8 @@ void UpdateAndRenderBullets(Bullet *array, int bulletCount, Ship **canDamageArra
 
             //damage calca
             if(DamageShips(array[i].tPos, array[i].expRadius, canDamageArray, canDamageLength, array[i].damage)){
-                float expSize = (R01() * 0.7 + 0.3);
-                FireSmoke(array[i].tPos, WorldToPixels(array[i].expRadius * expSize)); 
+                float expSize = (R01() * 0.6 + 0.6);
+                FireSmoke(array[i].tPos, WorldToPixels(array[i].expRadius * expSize * 2)); 
             }else{
                 FireSplash(array[i].tPos, WorldToPixels(array[i].expRadius));
             }
@@ -163,7 +169,7 @@ void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 targ
         //fire if reloaded
         if(scaledTime - battery->lastFireTimes[g] > battery->BatteryType.reloadTime){
             //shoot
-            battery->lastFireTimes[g] = scaledTime + (R01() - 0.5) * battery->BatteryType.reloadTime * 0.25;
+            battery->lastFireTimes[g] = scaledTime + (R01()) * battery->BatteryType.reloadTime * 0.1;
 
             // Vector2 delta = Vector2Subtract(target, batteryPosition);
             // Vector2 perp = Vector2Scale(VfromAngle(atan2f(delta.y, delta.x) + PI * 0.5), 0.02);
@@ -197,9 +203,9 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
         Vector2 left = Vector2Add(Vector2Scale(VfromAngle(batteryAngle - battery->traverseAmount * DEG2RAD * 0.5), battery->BatteryType.range), batteryPosition);
         Vector2 right = Vector2Add(Vector2Scale(VfromAngle(batteryAngle +  battery->traverseAmount * DEG2RAD * 0.5), battery->BatteryType.range), batteryPosition);
 
-        DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(left), 10, GREEN);
-        DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(right), 10, RED);
-        DrawLineEx(WorldToScreen(left), WorldToScreen(right), 10, RED);
+        DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(left), 3, GREEN);
+        DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(right), 3, RED);
+        DrawLineEx(WorldToScreen(left), WorldToScreen(right), 3, RED);
     }
 
     //valid target?
@@ -211,7 +217,7 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
         float innaccuracy = battery->batterySpread * Vector2Distance(batteryPosition, battery->shipTarget->wPos);
         float accuracy = (btype.range * ((battery->timesTargeted + 1) * 0.3));
         Vector2 spreadTarget = Vector2Add(battery->shipTarget->wPos, Vector2Scale(rvec,  fmin(innaccuracy / accuracy, 0.3)));
-        DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(spreadTarget), 10, GREEN);
+        DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(spreadTarget), 3, GREEN);
 
         //alive?
         if(!battery->shipTarget->alive){

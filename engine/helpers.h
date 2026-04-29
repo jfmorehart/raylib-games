@@ -1,9 +1,5 @@
 #pragma once
 #include "raylib.h"
-#include "raymath.h"
-#include <math.h>       
-#include <stdio.h>
-#include <stdlib.h>
 #include "globals.h"
 
 float R01();
@@ -28,6 +24,7 @@ Island *WhatIslandIsThis(Vector2 wPoint, Island *toCheckArray, int islandLength)
 
 bool PointIslandCheck(Vector2 point, const Island *is);
 bool IsPointWithinIslands(Vector2 wPoint);
+
 Vector2 RandomWorldPointNoIsland();
 
 typedef struct{

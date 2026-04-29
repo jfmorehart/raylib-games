@@ -1,12 +1,7 @@
 #pragma once
 #include "raylib.h"
-#include "raymath.h"
 #include "helpers.h"
 #include "globals.h"
-
-#include <math.h>       
-#include <stdio.h>
-#include <stdlib.h>
 
 #define MAXHULLPOINTS 15
 
@@ -19,18 +14,12 @@ typedef struct Island{
     Edge edges[MAXHULLPOINTS];
 } Island;
 
-typedef struct Map{
-    Island islands[ISLANDCOUNT];
-    int islandLength;
-}Map;
-
-Map currentMap;
-
 Vector2 IslandPointToWorld(const Island *island, Vector2 objectSpace);
 Vector2 WorldPointToIsland(const Island *island, Vector2 worldSpace);
 
 int FindNextPoint(int current, const Vector2 *points);
-void Render (const Island *island, Color col);
+void Render(const Island *island);
+void RenderWithEdges (const Island *island, Color col);
 void RenderObjectSpace (const Island *island);
 
 Island CreateIsland();

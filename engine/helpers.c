@@ -5,11 +5,15 @@
 #include "islands.h"
 #include "routines.h"
 #include "stb_perlin.h"
+#include "game/mapscene.h"
+#include "game/map.h"
 
 #include <stdio.h>
 #include <string.h>
 
 #define STB_PERLIN_IMPLEMENTATION
+
+extern Map currentMap;
 
 float R01(){
     return (float)rand() / RAND_MAX;

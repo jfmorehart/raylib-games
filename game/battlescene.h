@@ -1,5 +1,4 @@
 #pragma once
-#include "mapscene.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "mapshaders.h"
@@ -11,6 +10,8 @@
 #include "pools.h"
 #include "bullets.h"
 #include "vfx.h"
+#include "map.h"
+#include "mapscene.h"
 
 #include <math.h>       
 #include <stdio.h>
@@ -18,9 +19,6 @@
 #include <time.h>
 
 extern Map currentMap;
-
-extern int shipCount;
-extern Ship ships[MAX_SHIPS];
 
 extern Vector2 worldZero;
 
@@ -39,6 +37,15 @@ int splashCham;
 int splashCount = 100;
 Smoke splashPool[100];
 
+extern Vector2 startingCameraPos;
+extern float startingZoom;
+extern float endZoom;
+extern Vector2 focusTarget;
+
+extern Shader islandShader_frag;
+extern Shader oceanShader_frag;
+extern Shader ship_frag;
+
 void InitBattleScene(){
 
     timeScale = 1;
@@ -54,21 +61,21 @@ void InitBattleScene(){
 
     //determine which ships are included in the scene
     allShipsIncludedCount = 0;
-    for(int i = 0; i < shipCount; i++){
-        ships[i].includedInScene = false;
-        if(!ships[i].alive)continue;
-        if(IsOnScreen(ships[i].wPos)){
-            ships[i].includedInScene = true;
-            allShipsIncludedInScene[allShipsIncludedCount] = &ships[i];
+    for(int i = 0; i < currentMap.fcount; i++){
+        currentMap.friendlies[i].includedInScene = false;
+        if(!currentMap.friendlies[i].alive)continue;
+        if(IsOnScreen(currentMap.friendlies[i].wPos)){
+            currentMap.friendlies[i].includedInScene = true;
+            allShipsIncludedInScene[allShipsIncludedCount] = &currentMap.friendlies[i];
             allShipsIncludedCount++;
         }
     }
-    for(int i = 0; i < eshipCount; i++){
-        eships[i].includedInScene = false;
-        if(!eships[i].alive)continue;
-        if(IsOnScreen(eships[i].wPos)){
-            eships[i].includedInScene = true;
-            allShipsIncludedInScene[allShipsIncludedCount] = &eships[i];
+    for(int i = 0; i < currentMap.ecount; i++){
+        currentMap.enemies[i].includedInScene = false;
+        if(!currentMap.enemies[i].alive)continue;
+        if(IsOnScreen(currentMap.enemies[i].wPos)){
+            currentMap.enemies[i].includedInScene = true;
+            allShipsIncludedInScene[allShipsIncludedCount] = &currentMap.enemies[i];
             allShipsIncludedCount++;
         }
     }
@@ -95,19 +102,19 @@ void BattleFrameLoop(){
     // }
 
 
-    for(int d = 0; d < eshipCount; d++){
-        eships[d].isVisible = false;
+    for(int d = 0; d < currentMap.ecount; d++){
+        currentMap.enemies[d].isVisible = false;
     }
 
     PrepShipRangePass();
-    for(int i = 0; i < shipCount; i++){
-        if(!ships[i].alive || !ships[i].includedInScene)continue;
-        DrawCircleV(WorldToScreen(ships[i].wPos), WorldToPixels(SHIP_SEARCHRANGE), WHITE);
+    for(int i = 0; i < currentMap.fcount; i++){
+        if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
+        DrawCircleV(WorldToScreen(currentMap.friendlies[i].wPos), WorldToPixels(SHIP_SEARCHRANGE), WHITE);
 
-        for(int d = 0; d < eshipCount; d++){
-            if(!eships[d].alive || !eships[d].includedInScene)continue;
-            if(Vector2Distance(ships[i].wPos, eships[d].wPos) < SHIP_SEARCHRANGE){
-                eships[d].isVisible = true;
+        for(int d = 0; d < currentMap.ecount; d++){
+            if(!currentMap.enemies[d].alive || !currentMap.enemies[d].includedInScene)continue;
+            if(Vector2Distance(currentMap.friendlies[i].wPos, currentMap.enemies[d].wPos) < SHIP_SEARCHRANGE){
+                currentMap.enemies[d].isVisible = true;
             }
         }
     }
@@ -127,9 +134,9 @@ void BattleFrameLoop(){
     Vector3 col = (Vector3){1, 0, 0};
     SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
-    for(int d = 0; d < eshipCount; d++){
-        if(eships[d].isVisible && eships[d].alive && eships[d].includedInScene){
-            RenderShip(&eships[d], 0.3);
+    for(int d = 0; d < currentMap.ecount; d++){
+        if(currentMap.enemies[d].isVisible && currentMap.enemies[d].alive && currentMap.enemies[d].includedInScene){
+            RenderShip(&currentMap.enemies[d], 0.3);
         }
     }
     EndShaderMode();
@@ -138,10 +145,10 @@ void BattleFrameLoop(){
     col = (Vector3){1, 1, 1};
     SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
-    for(int i = 0; i < shipCount; i++){
-        if(!ships[i].alive || !ships[i].includedInScene)continue;
-        RenderShip(&ships[i], 0.3);
-        SteerShip(&ships[i], 0.05, false);
+    for(int i = 0; i < currentMap.fcount; i++){
+        if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
+        RenderShip(&currentMap.friendlies[i], 0.3);
+        SteerShip(&currentMap.friendlies[i], 0.05, false, currentMap.islands);
     }
     EndShaderMode();
 
@@ -155,19 +162,19 @@ void BattleFrameLoop(){
     col = (Vector3){0.8, 0.8, 0.8};
     SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
-    for(int i = 0; i < shipCount; i++){
-        if(!ships[i].alive || !ships[i].includedInScene)continue;
-        ShipCombat(&ships[i], eships, eshipCount);
+    for(int i = 0; i < currentMap.fcount; i++){
+        if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
+        ShipCombat(&currentMap.friendlies[i], currentMap.enemies, currentMap.ecount);
     }
-    for(int i = 0; i < eshipCount; i++){
-        if(!eships[i].alive || !eships[i].includedInScene)continue;
-        ShipCombat(&eships[i], ships, shipCount);
+    for(int i = 0; i < currentMap.ecount; i++){
+        if(!currentMap.enemies[i].alive || !currentMap.enemies[i].includedInScene)continue;
+        ShipCombat(&currentMap.enemies[i], currentMap.friendlies, currentMap.fcount);
     }
     EndShaderMode();
 
     BeginShaderMode(islandShader_frag);
     for(int i = 0; i < currentMap.islandLength; i++){
-        Render(&currentMap.islands[i], WHITE);
+        Render(&currentMap.islands[i]);
     }
     EndShaderMode();
 
@@ -204,9 +211,9 @@ void BattleFrameLoop(){
     if(IsMouseButtonDown(0)){
 
         if(!IsKeyDown(KEY_LEFT_SHIFT)){
-            for(int i = 0; i < shipCount; i++){
-                ships[i].selected = false;
-                eships[i].selected = false;
+            for(int i = 0; i < currentMap.fcount; i++){
+                currentMap.friendlies[i].selected = false;
+                currentMap.enemies[i].selected = false;
             } 
         }
 
@@ -216,10 +223,10 @@ void BattleFrameLoop(){
             DrawCircleV(GetMousePosition(), 5, GREEN);
         }
 
-        for(int i = 0; i < shipCount; i++){
-            if(!ships[i].alive)continue;
-            if(Vector2Distance(ships[i].wPos, mousePos) < 0.1){
-                ships[i].selected = true;
+        for(int i = 0; i < currentMap.fcount; i++){
+            if(!currentMap.friendlies[i].alive)continue;
+            if(Vector2Distance(currentMap.friendlies[i].wPos, mousePos) < 0.1){
+                currentMap.friendlies[i].selected = true;
             }
         }   
     }
@@ -254,10 +261,10 @@ void BattleFrameLoop(){
 
 
     if(IsMouseButtonDown(1)){
-        for(int i = 0; i < shipCount; i++){
-            if(ships[i].selected){
-                ships[i].moveTargetPosition = mousePos;
-                ships[i].hasMoveTarget = true;
+        for(int i = 0; i < currentMap.fcount; i++){
+            if(currentMap.friendlies[i].selected){
+                currentMap.friendlies[i].moveTargetPosition = mousePos;
+                currentMap.friendlies[i].hasMoveTarget = true;
             }
         }   
     }

@@ -39,7 +39,6 @@
         .searchRange = SHIP_SEARCHRANGE * SHIP_SEARCHRANGE,
     };
 
-
     void MakeLoadouts(){
         DestroyerLoadout[0] = twoGun;
         DestroyerLoadout[0].BatteryType = FiveInch;
