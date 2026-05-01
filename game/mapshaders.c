@@ -68,10 +68,10 @@ int ShaderInit(){
     
 
     //setup ISLAND CONSTANTS
-    int multiplier = 100;
+    int multiplier = 60;
     SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
 
-    float dotsize = 0.15;
+    float dotsize = 0.04;
     SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
 
     //setup Ship CONSTANTS

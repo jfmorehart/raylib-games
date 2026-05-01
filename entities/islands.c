@@ -81,7 +81,7 @@ void Render(const Island *island){
 
         Vector2 foam1 = Vector2Add(island->relativePosition, Vector2Scale(island->points[i], island->scale));
         Vector2 foam2 = Vector2Add(island->relativePosition, Vector2Scale(island->points[(i + 1) % island->edgeCount], island->scale));
-        DrawLineEx(WorldToScreen(foam1), WorldToScreen(foam2), 1 + timeComponent * 10, WHITE);
+        DrawLineEx(WorldToScreen(foam1), WorldToScreen(foam2), 1 + timeComponent * 1, WHITE);
         DrawTriangle(screenPoint0, screenPoint1, screenPoint2, WHITE);
     }
 }

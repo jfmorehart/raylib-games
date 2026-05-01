@@ -21,7 +21,7 @@ Window hello = {BOTTOM_RIGHT, {300, 150}, "Yooo", 32, "whats up", 12};
 Vector2 worldZero;
 RenderTexture2D targetTex;
 
-#define RSCALE 2
+#define RSCALE 1.5
 
 void RunOnStart(){
 
@@ -40,7 +40,7 @@ void RunOnStart(){
     InitWindow(WIDTH, HEIGHT, "raylib");
     
     ChangeDirectory(GetApplicationDirectory());
-    font = LoadFont("mecha.ttf");
+    font = LoadFont("assets/jackinput.ttf");
 
     WIDTH = GetMonitorWidth(0);
     HEIGHT = GetMonitorHeight(0);
@@ -126,8 +126,6 @@ int main(void)
             break;
         }
 
-        // RenderWindow(&hello, &font);
-
         float diff = (WIDTH - HEIGHT) * 0.4;
         int border = 3;
         DrawRectangle(0, 0, diff, HEIGHT, BLACK);//, int posY, int width, int height, Color color)
@@ -140,8 +138,8 @@ int main(void)
         int hs = HEIGHT * RSCALE;
         Rectangle dest = (Rectangle){0, 0, ws, hs};
         DrawTexturePro(targetTex.texture, (Rectangle){0, 0, WIDTH, -HEIGHT}, dest, Vector2Zero(), 0, WHITE);
+        // RenderWindow(&hello, &font);
         EndDrawing();
-
     }
 
     UnloadShaders();

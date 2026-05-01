@@ -16,6 +16,7 @@ typedef struct {
     float range;
     float reloadTime;
     float explosionRadius;
+    float shotWidth;
     float spread;
     float damage;
 } Gun;
@@ -55,6 +56,7 @@ typedef struct{
     Vector2 right; //used for triangle
     float damage;
     float expRadius;
+    float shotWidth;
 } Bullet;
 
 extern int bulletCount;

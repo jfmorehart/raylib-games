@@ -72,20 +72,18 @@ void main()
 
     float stime = _Time * 1;//sin(_Time * 3);
     float baseFreq = 1;
-    float n1 = octaves(130 + (ns) * 4 * baseFreq, 5);
+    float n1 = octaves(130 + (ns) * 2 * baseFreq, 5);
     // float n2 = (octaves(130 + (vec2(gl_FragCoord.x * 0.5, gl_FragCoord.y)) * 0.015 * baseFreq, 5)) * 1;
-    uv += n1 * 0.05;
-    n1 = octaves(130 + (ns) * 20 * baseFreq, 5); 
+    n1 = octaves(130 + (ns) * 10 * baseFreq, 5); 
 
-    uv = fract(uv * multiplier);
     float noise = n1;// + n2;
     // noise = pow(noise + 0.01, 0.5);
 
-    noise = scale(noise, 3) * 0.4;
+    noise = scale(noise, 5) * 0.4;
     float rdot = dotsize + noise;
 
 
-    rdot = clamp(rdot, 0.03, 0.6);
+    // rdot = clamp(rdot, 0.03, 0.1);
     
     vec2 uvContinuous = (ns * 0.8 + n1 * 0.001) * multiplier;
     vec2 uvCell = fract(uvContinuous);
@@ -94,6 +92,6 @@ void main()
     float w = length(fwidth(uvContinuous));
     float val = 1 - smoothstep(rdot - w , rdot + w, d);
     
-    val *= mix(0.2, 0.9, (n1 * n1) + 0.1);
-    finalColor = vec4(val, val, val, 1);
+    val *= mix(0.4, 0.8, (n1 * n1) + 0.1);
+    finalColor = vec4(val, val, val, 0.5);
 }                                                                                                                                                                                                  

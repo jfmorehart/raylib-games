@@ -13,8 +13,8 @@
 #define SHIPTURN 2
 #define SHIPSPEED 1
 #define SHIP_BLEND_MAX 0.15
-#define SHIP_SEARCHRANGE 0.35
-#define SHIP_MAXBATTERIES 5
+#define SHIP_SEARCHRANGE 0.2
+#define SHIP_MAXBATTERIES 6
 
 typedef struct Ship{
     //basics

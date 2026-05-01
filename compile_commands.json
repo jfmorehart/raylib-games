@@ -218,5 +218,27 @@
     ],
     "directory": "/Users/jackmorehart/Projects/SAVO",
     "output": "game/mapshaders.o"
+  },
+  {
+    "file": "engine/UI.c",
+    "arguments": [
+      "/usr/bin/cc",
+      "-Wall",
+      "-O2",
+      "-I/opt/homebrew/Cellar/raylib/5.5/include",
+      "-MMD",
+      "-MP",
+      "-I.",
+      "-Iengine",
+      "-Ientities",
+      "-Igame",
+      "-flto",
+      "-c",
+      "-o",
+      "engine/UI.o",
+      "engine/UI.c"
+    ],
+    "directory": "/Users/jackmorehart/Projects/SAVO",
+    "output": "engine/UI.o"
   }
 ]

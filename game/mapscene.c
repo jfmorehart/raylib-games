@@ -25,7 +25,8 @@ extern Shader oceanShader_frag;
 extern Shader ship_frag;
 extern Shader islandShader_frag;
 
-Ship defaultShip;
+Ship destroyerShip;
+// Ship battleShip;
 
 void TimeRoutine(Routine *routine){
 
@@ -86,8 +87,7 @@ void RandomizeMap(){
         currentMap.friendlies[i].angle = R01() * 7;
         currentMap.friendlies->team = true;
         memcpy(currentMap.friendlies[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout)); 
-        currentMap.friendlies[i].batteryCount = 3;//REMEMBER TO RESET!
-        if(i == 0){defaultShip = currentMap.friendlies[i];}
+        if(i == 0){destroyerShip = currentMap.friendlies[i];}
     }   
 
     currentMap.ecount= MAX_SHIPS;
@@ -138,9 +138,9 @@ void MapInputLoop(){
         }
 
         if(IsPointWithinIslands(mousePos)){
-            DrawCircleV(GetMousePosition(), 5, RED);
+            DrawCircleV(mousePos_ScreenCoords, 5, RED);
         }else{
-            DrawCircleV(GetMousePosition(), 5, GREEN);
+            DrawCircleV(mousePos_ScreenCoords, 5, GREEN);
         }
 
         for(int i = 0; i < currentMap.fcount; i++){
@@ -209,16 +209,16 @@ void MapInputLoop(){
 
 void MapFrameLoop(){
 
-    int grey = 10;
-    ClearBackground((Color){ grey, grey, grey, 255 });
+    int grey = 5;
+    ClearBackground((Color){ grey, grey, grey * 2, 255 });
 
-    float gridSize = 1;
-    for(float x = xBounds.x; x < xBounds.y; x+= gridSize){
-        DrawLineV(WorldToScreen((Vector2){x, -3}), WorldToScreen((Vector2){x, 3}), GRAY);
-    }
-    for(float x = yBounds.y; x < yBounds.x; x+= gridSize){
-        DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), GRAY);
-    }
+    // float gridSize = 1;
+    // for(float x = xBounds.x; x < xBounds.y; x+= gridSize){
+    //     DrawLineV(WorldToScreen((Vector2){x, -3}), WorldToScreen((Vector2){x, 3}), GRAY);
+    // }
+    // for(float x = yBounds.y; x < yBounds.x; x+= gridSize){
+    //     DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), GRAY);
+    // }
 
 
     //Set shader variables and draw ocean

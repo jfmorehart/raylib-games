@@ -102,6 +102,10 @@ void BattleFrameLoop(){
         currentMap.enemies[d].isVisible = false;
     }
 
+    for(int d = 0; d < currentMap.ecount; d++){
+        currentMap.friendlies[d].isVisible = false;
+    }
+
     PrepShipRangePass();
     for(int i = 0; i < currentMap.fcount; i++){
         if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
@@ -111,6 +115,7 @@ void BattleFrameLoop(){
             if(!currentMap.enemies[d].alive || !currentMap.enemies[d].includedInScene)continue;
             if(Vector2Distance(currentMap.friendlies[i].wPos, currentMap.enemies[d].wPos) < SHIP_SEARCHRANGE){
                 currentMap.enemies[d].isVisible = true;
+                currentMap.friendlies[i].isVisible = true;
             }
         }
     }
@@ -144,18 +149,18 @@ void BattleFrameLoop(){
     for(int i = 0; i < currentMap.fcount; i++){
         if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
         RenderShip(&currentMap.friendlies[i], 0.3);
-        SteerShip(&currentMap.friendlies[i], 0.05, false, currentMap.islands);
+        SteerShip(&currentMap.friendlies[i], 0.08, false, currentMap.islands);
     }
     EndShaderMode();
 
-    //trace ship stuff?
+    //trace ship lines
     mLoc = GetShaderLocation(ship_frag, "multiplier");   
-    mult = 90;
-    dotsize = 0.03;
+    mult = 200;
+    dotsize = 0.1;
     dLoc = GetShaderLocation(ship_frag, "dotsize");   
     SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
     SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
-    col = (Vector3){0.8, 0.8, 0.8};
+    col = (Vector3){0.1, 0.1, 0.1};
     SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int i = 0; i < currentMap.fcount; i++){
@@ -180,7 +185,7 @@ void BattleFrameLoop(){
     dotsize = 0.15;
     SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
     SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
-    col = (Vector3){0.7, 0.7, 0.7};
+    col = (Vector3){0.4, 0.4, 0.4};
     SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     UpdateAndRenderBullets(bulletPool, bulletCount, allShipsIncludedInScene, allShipsIncludedCount);

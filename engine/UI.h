@@ -1,7 +1,6 @@
 #pragma once
 
 #include <raylib.h>
-
 #include "globals.h"
 
 typedef enum Corner{

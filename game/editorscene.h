@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include "filesystem.h"
 #include "UI.h"
+#include "shiploadouts.h"
+#include <string.h>
 
 typedef enum EditorMode{
     WindIsland,
@@ -27,7 +29,7 @@ Vector2 dragOffset;
 Island *lastClicked;
 int indexClicked;
 
-extern Ship defaultShip;
+extern Ship destroyerShip;
 
 Vector2 PointCenter(Island *is){
     if(!is) {
@@ -222,7 +224,9 @@ void GenericInput(){
     if(IsKeyPressed(KEY_Q)){
 
         FILE* fptr = fopen("test.campaign","w");
-        fclose(fptr);
+        if(fptr){
+            fclose(fptr);
+        }
 
         localMap = (Map){0};
 
@@ -374,7 +378,12 @@ void PlaceIslandMode(){
     }
 
     Ship *nearestShip = NearestShip(mousePos);
-    distToNearestShip = Vector2Distance(nearestShip->wPos,mousePos);
+    if(nearestShip){
+        distToNearestShip = Vector2Distance(nearestShip->wPos,mousePos);
+    }else{
+        distToNearestShip = 999;
+    }
+
 
     if(IsMouseButtonPressed(0)){
         if(distToNearestShip < 0.1){
@@ -397,12 +406,25 @@ void PlaceIslandMode(){
         DrawCircleV(WorldToScreen(lastClicked->relativePosition), 20 * lastClicked->scale, BLUE);
     }
     if(IsKeyPressed(KEY_K)){
-        localMap.friendlies[localMap.fcount] = defaultShip;
+        localMap.friendlies[localMap.fcount] = destroyerShip;
         localMap.friendlies[localMap.fcount].wPos = mousePos;
         localMap.fcount++;
     }
-        if(IsKeyPressed(KEY_L)){
-        localMap.enemies[localMap.ecount] = defaultShip;
+    if(IsKeyPressed(KEY_J)){
+        localMap.friendlies[localMap.fcount] = BattleshipStats;
+        memcpy(localMap.friendlies[localMap.fcount].batteries, BattleshipLoadout, sizeof(BattleshipLoadout)); 
+        localMap.friendlies[localMap.fcount].wPos = mousePos;
+        localMap.fcount++;
+    }
+    if(IsKeyPressed(KEY_L)){
+        localMap.enemies[localMap.ecount] = destroyerShip;
+        localMap.enemies[localMap.ecount].wPos = mousePos;
+        localMap.enemies[localMap.ecount].team = false;
+        localMap.ecount++;
+    }
+        if(IsKeyPressed(KEY_SEMICOLON)){
+        localMap.enemies[localMap.ecount] = BattleshipStats;
+        memcpy(localMap.enemies[localMap.ecount].batteries, BattleshipLoadout, sizeof(BattleshipLoadout)); 
         localMap.enemies[localMap.ecount].wPos = mousePos;
         localMap.enemies[localMap.ecount].team = false;
         localMap.ecount++;
