@@ -1,6 +1,5 @@
 #pragma once
-#include "raylib.h"
-#include "raymath.h"
+// #include "raymath.h"
 #include "mapshaders.h"
 #include "helpers.h"
 #include "islands.h"
@@ -12,6 +11,9 @@
 #include "vfx.h"
 #include "map.h"
 #include "mapscene.h"
+
+#include "rlgl.h"
+
 
 #include <math.h>       
 #include <stdio.h>
@@ -49,7 +51,7 @@ extern Shader ship_frag;
 extern int loc_land_mult;
 extern int loc_land_dot;
 
-
+extern Shader explosionShader;
 
 void InitBattleScene(){
 
@@ -213,9 +215,11 @@ void BattleFrameLoop(){
 
     //Explosions!
     col = (Vector3){1, 1, 1};
-    SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
-    BeginShaderMode(ship_frag);
+    int cloc = GetShaderLocation(explosionShader, "dotcolor");
+    SetShaderValue(explosionShader, cloc, &col, SHADER_UNIFORM_VEC3);
+    BeginShaderMode(explosionShader);
     UpdateAndRenderBlobs(smokePool, smokeCount);
+    EndShaderMode();
     EndShaderMode();
 
     //Splashes
@@ -293,4 +297,23 @@ void BattleFrameLoop(){
             }
         }   
     }
+    
+    // BeginShaderMode(explosionShader);
+    // Vector2 c = mousePos_ScreenCoords;
+    // float r = 30;                     
+    // rlTexCoord2f(0, 0);                                                                                                
+    // rlVertex2f(c.x - r, c.y - r);                                                                                        
+                                                                
+    // // bottom-left                                                                                                     
+    // rlTexCoord2f(0, 1);                         
+    // rlVertex2f(c.x - r, c.y + r);                                 
+                                                                                                                        
+    // // bottom-right
+    // rlTexCoord2f(1, 1);                                                                                                
+    // rlVertex2f(c.x + r, c.y + r);                 
+                                                                
+    // // top-right                                                                                                       
+    // rlTexCoord2f(1, 0);
+    // rlVertex2f(c.x + r, c.y - r);    
+    // EndShaderMode();
 }

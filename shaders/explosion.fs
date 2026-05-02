@@ -1,6 +1,8 @@
 #version 330
 
 in vec4 fragColor;
+in vec2 fragTexCoord;
+
 out vec4 finalColor;  
 uniform vec2 resolution;    
 uniform int multiplier = 1;
@@ -52,6 +54,8 @@ float octaves(vec2 uv, int octaveCount){
 void main()                                                                                                                                                                                        
 {
     
+    vec2 cuv = fragTexCoord;
+
     vec2 screenCoords = vec2(gl_FragCoord.x, gl_FragCoord.y);
     screenCoords -= (resolution * 0.5);
     screenCoords /= (resolution.y * 0.5);
@@ -69,6 +73,14 @@ void main()
     // float mask = step( 0.1, team);
     // veccol = val * color;//mask * vec3(1, 0, 0) + col * (1 - mask);
     // val = 1;
+
+    float n1 = ((octaves((cuv + ns * 100 + _Time * 0.01) * 0.5, 3) + 0.5) * 0.5);
+    float n2 = ((octaves((cuv + ns * 150 + _Time * 0.01) * 0.5, 3) + 0.5) * 0.5);
+
     vec3 col = dotcolor * val;
-    finalColor = vec4(col, val);
+    col.xy = cuv;
+    float len = length((cuv + vec2(n1, n2)) - 0.5);
+    val *= step(len, 0.4);
+    // val = n1 * 10;
+    finalColor = vec4(val, val ,val , val);
 }                                                                                                                                                                                                  

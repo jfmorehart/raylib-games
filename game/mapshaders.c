@@ -1,13 +1,13 @@
-#include "raylib.h"
-#include "raymath.h"
-#include <math.h>       
+// #include "raylib.h"
+// #include "raymath.h"
+// #include <math.h>       
 #include <stdlib.h>
 #include "globals.h"
 
 Shader islandShader_frag;
 Shader oceanShader_frag;
 Shader ship_frag;
-
+Shader explosionShader;
 
 int loc_ocean_time;
 int loc_ocean_dot;
@@ -31,15 +31,26 @@ int loc_ship_dot;
 int loc_ship_worldScale;
 int loc_ship_camPos;
 
+int loc_expl_res;
+int loc_expl_mult;
+int loc_expl_dot;
+int loc_expl_worldScale;
+int loc_expl_camPos;
+int loc_expl_time;
+
 extern SceneName currentScene;
 
 int ShaderInit(){
 
+
+    // int es_colLoc = GetShaderLocation(explosionShader, "color");
+    // SetShaderValue(explosionShader, es_colLoc, &col, SHADER_UNIFORM_VEC3);
+
+
     islandShader_frag = LoadShader(0, "shaders/island.fs");
     oceanShader_frag = LoadShader(0, "shaders/ocean.fs");
     ship_frag = LoadShader(0, "shaders/ship.fs");
-
-    //FIND OCEAN UNIFORM LOCATIONS
+    explosionShader = LoadShader(0, "shaders/explosion.fs");
 
     loc_ocean_res = GetShaderLocation(oceanShader_frag, "resolution");                                                                                                                                               
     loc_ocean_mpos = GetShaderLocation(oceanShader_frag, "mpos");   
@@ -68,12 +79,14 @@ int ShaderInit(){
     loc_ship_camPos = GetShaderLocation(ship_frag, "cameraPosition");  
     
 
-    //setup ISLAND CONSTANTS
-    // int multiplier = 60;
-    // SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
+    //FIND EXPLOSION UNIFORM LOCATIONS
+    loc_expl_res = GetShaderLocation(explosionShader, "resolution");
+    loc_expl_dot = GetShaderLocation(explosionShader, "dotsize");   
+    loc_expl_mult = GetShaderLocation(explosionShader, "multiplier");   
+    loc_expl_worldScale= GetShaderLocation(explosionShader, "worldScale");   
+    loc_expl_camPos = GetShaderLocation(explosionShader, "cameraPosition");  
+    loc_expl_time = GetShaderLocation(explosionShader, "_Time");   
 
-    // float dotsize = 0.04;
-    // SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
 
     //setup Ship CONSTANTS
     int multiplier = 50;
@@ -81,12 +94,20 @@ int ShaderInit(){
     float dotsize = 0.2;
     SetShaderValue(ship_frag, loc_ship_dot, &dotsize, SHADER_UNIFORM_FLOAT);
 
+    //setup EXPLOSION CONSTANTS
+    multiplier = 230;
+    dotsize = 0.3;
+    SetShaderValue(explosionShader, loc_expl_mult, &multiplier, SHADER_UNIFORM_INT);
+    SetShaderValue(explosionShader, loc_expl_dot, &dotsize, SHADER_UNIFORM_FLOAT);
+    
+
 
     float resolutionVector[2] = {WIDTH, HEIGHT};  
     //set RESOLUTIONS
     SetShaderValue(islandShader_frag, loc_land_res, resolutionVector, SHADER_UNIFORM_VEC2);     
     SetShaderValue(oceanShader_frag, loc_ocean_res, resolutionVector, SHADER_UNIFORM_VEC2);     
-    SetShaderValue(ship_frag, loc_ship_res, resolutionVector, SHADER_UNIFORM_VEC2);     
+    SetShaderValue(ship_frag, loc_ship_res, resolutionVector, SHADER_UNIFORM_VEC2); 
+    SetShaderValue(explosionShader, loc_expl_res, resolutionVector, SHADER_UNIFORM_VEC2);    
     return 0;
 }
 
@@ -109,7 +130,12 @@ void PrepOceanPass(Vector2 mousePos, int multiplier, float dotsize){
     SetShaderValue(islandShader_frag, loc_land_worldScale, &worldScale, SHADER_UNIFORM_FLOAT);
     SetShaderValue(islandShader_frag, loc_land_camPos, &cameraPosition, SHADER_UNIFORM_VEC2);
     SetShaderValue(islandShader_frag, loc_land_time, &unscaledTime, SHADER_UNIFORM_FLOAT);
-    
+
+    //explosion
+    SetShaderValue(explosionShader, loc_expl_worldScale, &worldScale, SHADER_UNIFORM_FLOAT);
+    SetShaderValue(explosionShader, loc_expl_camPos, &cameraPosition, SHADER_UNIFORM_VEC2);
+    SetShaderValue(explosionShader, loc_expl_time, &unscaledTime, SHADER_UNIFORM_FLOAT);
+
     switch(currentScene){
 
         case MapScene:
@@ -121,6 +147,7 @@ void PrepOceanPass(Vector2 mousePos, int multiplier, float dotsize){
 
     BeginShaderMode(oceanShader_frag);
     DrawRectangle(0, 0, WIDTH, HEIGHT, BLACK);
+    
 }
 void EndOceanPass(){
     EndShaderMode();

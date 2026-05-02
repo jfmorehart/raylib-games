@@ -4,6 +4,8 @@
 #include "raylib.h"
 #include "pools.h"
 #include "vfx.h"
+#include <raylib.h>
+#include "rlgl.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -53,6 +55,9 @@ void FireSmoke(Vector2 position, float radius){
 }
 
 void UpdateAndRenderBlobs(Smoke *pool, int count){
+    rlSetTexture(rlGetTextureIdDefault());                                                                                 
+    rlBegin(RL_QUADS);                                                       
+                         
     for(int i = 0; i < count; i++){
         if(!pool[i].pObj.active) continue;
         float pct = LifePct(scaledTime, &pool[i].pObj);
@@ -61,6 +66,25 @@ void UpdateAndRenderBlobs(Smoke *pool, int count){
             continue;
         }
         float rad = (1 - pct) * pool[i].radius;
-        DrawCircleV(WorldToScreen(pool[i].wPos), rad, YELLOW);
+
+        Vector2 c = WorldToScreen(pool[i].wPos);
+        float r = rad;                     
+        rlTexCoord2f(0, 0);                                                                                                
+        rlVertex2f(c.x - r, c.y - r);                                                                                        
+                                                                    
+        // bottom-left                                                                                                     
+        rlTexCoord2f(0, 1);                         
+        rlVertex2f(c.x - r, c.y + r);                                 
+                                                                                                                            
+        // bottom-right
+        rlTexCoord2f(1, 1);                                                                                                
+        rlVertex2f(c.x + r, c.y + r);                 
+                                                                    
+        // top-right                                                                                                       
+        rlTexCoord2f(1, 0);
+        rlVertex2f(c.x + r, c.y - r);    
+        // DrawCircleV(WorldToScreen(pool[i].wPos), rad, YELLOW);
     }
+    rlEnd();                                                        
+    rlSetTexture(0); 
 }
