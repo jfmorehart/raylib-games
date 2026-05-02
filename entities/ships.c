@@ -10,6 +10,23 @@
 #include <math.h>
 #include <stdio.h>
 
+bool IsPointInShip(Vector2 worldSpace, const Ship *ship, float scaleMult){
+    Vector2 forward = VfromAngle(ship->angle);
+    // Vector2 forwardNormal = Vector2Normalize(forward);
+    forward = Vector2Scale(forward, ship->scale * 5 * scaleMult);
+
+    Vector2 right = {cos(ship->angle + PI * 0.5) * ship->scale * scaleMult, sin(ship->angle +PI * 0.5) * ship->scale * scaleMult};
+
+    Vector2 nose = Vector2Add(ship->wPos, forward);
+    Vector2 rightWing = Vector2Add(ship->wPos, right);//Vector2Add(, Vector2Scale(forward, -0.5));
+    Vector2 leftWing = Vector2Add(ship->wPos, Vector2Negate(right));//Vector2Add(), Vector2Scale(forward, -0.5));
+    Vector2 tail = Vector2Subtract(ship->wPos, forward); 
+
+    if(CheckCollisionPointTriangle(worldSpace, nose, rightWing, leftWing)) return true;
+    if(CheckCollisionPointTriangle(worldSpace, rightWing, tail, leftWing)) return true;
+    return false;
+}
+
 float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target, Island *obstacles){
 
     Vector2 d2m = Vector2Subtract(target, ship->wPos);
@@ -119,50 +136,9 @@ void SteerShip(Ship *ship, float speedMult, bool avoidIslands, Island *islandsTo
 
 }
 
-
 //runs every frame
 void ShipCombat(Ship *ship, Ship *targetShipsArray, int arrayLen){
     for(int i = 0; i < ship->batteryCount; i++){
         BatteryUpdate(ship, targetShipsArray, arrayLen, &ship->batteries[i]);
     }
 }
-
-// void ShipCombatOld(Ship *ship, Ship *targetShipsArray, int arrayLen){
-
-//     // 
-
-//     for(int g = 0; g < ship->battery.gunCount; g++){
-//         Gun *gun = &ship->battery.guns[g];
-//         if(scaledTime - ship->battery.lastFireTimes[g] > gun->reloadTime){
-//             ship->battery.lastFireTimes[g] = scaledTime;
-//             if(ship->targetShip){
-//                 //check if its still valid
-//                 if(!ship->targetShip->active){
-//                     ship->targetShip = 0; //null it
-//                     return;
-//                 } 
-//                 if(Vector2DistanceSqr(ship->targetShip->wPos, ship->wPos) > gun->range){
-//                     //out of range, null it
-//                     ship->targetShip = 0;
-//                     return;
-//                 }
-//                 //valid, in range, fire
-//                 FireBullet(ship->wPos, ship->targetShip->wPos, gun);
-//             }else{
-//                 //aquire
-//                 //for now, simple aquire
-//                 for(int i = 0; i < arrayLen; i++){
-//                     if(!targetShipsArray[i].active)continue;
-//                     if(Vector2DistanceSqr(targetShipsArray[i].wPos, ship->wPos) < gun->range){
-//                         //this is my target!
-//                         printf("target aquire!");
-//                         ship->targetShip = &targetShipsArray[i];
-//                         //fire
-//                         FireBullet(ship->wPos, ship->targetShip->wPos, gun);
-//                         break;
-//                     }
-//                 }
-//             }
-//         }
-//     }
-// }

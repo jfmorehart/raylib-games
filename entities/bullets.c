@@ -28,7 +28,12 @@ bool DamageShips(Vector2 position, float radius, Ship **allShips, int count, int
     int h = 0;
     for(int i = 0; i < count; i++){
         if(!allShips[i]->alive || !allShips[i]->includedInScene) continue;
-        if(Vector2Distance(allShips[i]->wPos, position) < radius){
+        if(Vector2Distance(allShips[i]->wPos, position) * 0.5 < radius){ //generous bounds check
+
+            //more expensive check
+            float d = DistanceToShipEdge(allShips[i], position, 0.3);
+            if(d > radius) continue;
+            
             //hit
             h++;
             allShips[i]->health -= damage;

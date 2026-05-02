@@ -127,7 +127,7 @@ void BattleFrameLoop(){
     EndShaderMode();
 
     int mLoc = GetShaderLocation(ship_frag, "multiplier");   
-    int mult = 150;
+    int mult = 230;//150;
     SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
 
     int dLoc = GetShaderLocation(ship_frag, "dotsize");   
@@ -137,7 +137,7 @@ void BattleFrameLoop(){
     //Set color red
     int colorLocation = GetShaderLocation(ship_frag, "dotcolor");   
 
-    Vector3 col = (Vector3){1, 0, 0};
+    Vector3 col = (Vector3){0.5, 0.5, 0.5};
     SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     for(int d = 0; d < currentMap.ecount; d++){
@@ -160,7 +160,7 @@ void BattleFrameLoop(){
 
     //trace ship lines
     mLoc = GetShaderLocation(ship_frag, "multiplier");   
-    mult = 200;
+    mult = 230;//200;
     dotsize = 0.1;
     dLoc = GetShaderLocation(ship_frag, "dotsize");   
     SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
@@ -179,7 +179,7 @@ void BattleFrameLoop(){
     EndShaderMode();
 
     //beaches
-    int multiplier = 80;
+    int multiplier = 230;//80;
     SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
     dotsize = 0.3;
     SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
@@ -189,7 +189,7 @@ void BattleFrameLoop(){
     }
     EndShaderMode();
 
-    multiplier = 100;
+    multiplier = 230;//100;
     SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
     dotsize = 0.08;
     SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
@@ -212,7 +212,7 @@ void BattleFrameLoop(){
     EndShaderMode();
 
     //Explosions!
-    col = (Vector3){1, 0.8, 0};
+    col = (Vector3){1, 1, 1};
     SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     UpdateAndRenderBlobs(smokePool, smokeCount);
@@ -223,7 +223,7 @@ void BattleFrameLoop(){
     SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
     mult = 180;
     SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
-    col = (Vector3){0.1, 0.1, 0.3};
+    col = (Vector3){0.2, 0.2, 0.2};
     SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(ship_frag);
     UpdateAndRenderBlobs(splashPool, splashCount);
@@ -242,6 +242,11 @@ void BattleFrameLoop(){
             DrawCircleV(mousePos_ScreenCoords, 5, RED);
         }else{
             DrawCircleV(mousePos_ScreenCoords, 5, GREEN);
+        }
+        for(int i = 0; i < currentMap.fcount; i++){
+            if(IsPointInShip(mousePos, &currentMap.friendlies[i], 0.3)){
+                DrawCircleV(mousePos_ScreenCoords, 5, RED);
+            }
         }
 
         for(int i = 0; i < currentMap.fcount; i++){
@@ -279,7 +284,6 @@ void BattleFrameLoop(){
         }
         currentScene = MapScene;
     }
-
 
     if(IsMouseButtonDown(1)){
         for(int i = 0; i < currentMap.fcount; i++){

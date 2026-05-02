@@ -22,6 +22,7 @@ bool IsOnScreen(Vector2 worldPoint);
 typedef struct Island Island;// name;
 Island *WhatIslandIsThis(Vector2 wPoint, Island *toCheckArray, int islandLength);
 
+Vector2 NearestPointOnSegment(Vector2 la, Vector2 lb, Vector2 point);
 bool PointIslandCheck(Vector2 point, const Island *is);
 bool IsPointWithinIslands(Vector2 wPoint);
 
@@ -37,6 +38,9 @@ typedef struct{
     bool hit;
     Vector2 hitPosition;
 } Hit;
+
+typedef struct Ship Ship;
+float DistanceToShipEdge(const Ship *ship, Vector2 point, float scaleMult);
 
 Hit Intersect(Edge ab, Edge cd);
 

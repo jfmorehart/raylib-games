@@ -92,6 +92,6 @@ void main()
     float w = length(fwidth(uvContinuous));
     float val = 1 - smoothstep(rdot - w , rdot + w, d);
     
-    val *= mix(0.4, 1, (n1 * n1) + 0.1);
+    val *= mix(0.6, 1, (n1 * n1) + 0.1);
     finalColor = vec4(val, val, val, 0.5);
 }                                                                                                                                                                                                  

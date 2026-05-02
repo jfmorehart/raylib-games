@@ -37,15 +37,16 @@ FILE *GetFile(const char* path){
     return fptr;
 }
 void AssignName(Map *map, const char * name){
-    for(int i = 0;i < strlen(name); i++){
-        if(name[i]){
+    bool goodData = true;
+    for(int i = 0; i < STRINGARRAY_STRLEN; i++){
+        if(name[i] && goodData){
             map->filename[i] = name[i];
         }else{
+            goodData = false;
             map->filename[i] = 0;
-            return;
         }
     }
-
+    map->filename[STRINGARRAY_STRLEN -1] = 0; //FORCE A NULL TERMINATOR
 }
 Map LoadMapFile(const char* path){
     Map loadMap;
@@ -147,6 +148,8 @@ StringArray GetMapNames(){
         perror("Unable to open directory");
         return (StringArray){0};
     }
+
+    printf("getting map names\n");
 
     StringArray strArr = (StringArray){0};
     for(int i = 0; i < 99; i++){

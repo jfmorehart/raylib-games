@@ -22,6 +22,8 @@ typedef struct StringArray{
     int stringIndices[40];
 }StringArray;
 
+void AssignName(Map *map, const char * name);
+
 int AppendStringToStrArr(const char* str, StringArray * strArr);
 
 FILE *GetFile(const char* path);

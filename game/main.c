@@ -20,10 +20,13 @@ Font font;
 Window hello = {BOTTOM_RIGHT, {300, 150}, "Yooo", 32, "whats up", 12};
 Vector2 worldZero;
 RenderTexture2D targetTex;
+Shader postProcess_frag;
 
 #define RSCALE 1.5
 
 void RunOnStart(){
+
+
 
     scenes[0] = (Scene){Menu, NULL};
     scenes[1] = (Scene){MapScene, InitMapScene};
@@ -41,6 +44,7 @@ void RunOnStart(){
     
     ChangeDirectory(GetApplicationDirectory());
     font = LoadFont("assets/jackinput.ttf");
+    postProcess_frag = LoadShader(0, "shaders/postprocess.fs");
 
     WIDTH = GetMonitorWidth(0);
     HEIGHT = GetMonitorHeight(0);
@@ -130,17 +134,32 @@ int main(void)
         }
 
         float diff = (WIDTH - HEIGHT) * 0.4;
-        int border = 3;
+        int border = 30;
+
+
+        int grey = 50;
+        Color outlineCol = (Color){grey, grey, grey, 255};
         DrawRectangle(0, 0, diff, HEIGHT, BLACK);//, int posY, int width, int height, Color color)
         DrawRectangle(WIDTH-  diff, 0, diff, HEIGHT, BLACK);
         DrawRectangle(diff, 0, WIDTH - diff * 2,border, BLACK);
         DrawRectangle(diff, HEIGHT - border, WIDTH - diff * 2, border, BLACK);
 
+        DrawLineEx((Vector2){diff, border}, (Vector2){WIDTH - diff, border}, 2, outlineCol);
+        DrawLineEx((Vector2){diff, border}, (Vector2){diff, HEIGHT - border}, 2, outlineCol);
+        DrawLineEx((Vector2){diff, HEIGHT -border}, (Vector2){WIDTH - diff, HEIGHT - border}, 2, outlineCol);
+        DrawLineEx((Vector2){WIDTH - diff, border}, (Vector2){WIDTH -diff, HEIGHT - border}, 2, outlineCol);
+
         EndTextureMode();
         int ws = WIDTH * RSCALE; 
         int hs = HEIGHT * RSCALE;
         Rectangle dest = (Rectangle){0, 0, ws, hs};
+
+        //beginshadermode for the blit
+        BeginShaderMode(postProcess_frag);
         DrawTexturePro(targetTex.texture, (Rectangle){0, 0, WIDTH, -HEIGHT}, dest, Vector2Zero(), 0, WHITE);
+        EndShaderMode();
+
+        
         // RenderWindow(&hello, &font);
 
         switch(currentScene){

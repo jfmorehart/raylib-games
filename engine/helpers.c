@@ -4,10 +4,12 @@
 #include "globals.h"
 #include "islands.h"
 #include "routines.h"
+#include "ships.h"
 #include "stb_perlin.h"
 #include "game/mapscene.h"
 #include "game/map.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -121,6 +123,45 @@ Hit Intersect(Edge ab, Edge cd){
     bool hit = WithinSegment(xIntercept, ab) && WithinSegment(xIntercept, cd);
     // printf("hit (%f, %f)\n", xIntercept, yIntercept);
     return (Hit){hit,(Vector2){xIntercept, yIntercept}};
+}
+
+float DistanceToShipEdge(const Ship *ship, Vector2 point, float scaleMult){
+
+    //INSIDE TRIANGLE?
+    if(IsPointInShip(point, ship, scaleMult)){
+        return 0;
+    }
+
+    Vector2 forward = VfromAngle(ship->angle);
+    // Vector2 forwardNormal = Vector2Normalize(forward);
+    forward = Vector2Scale(forward, ship->scale * 5 * scaleMult);
+
+    Vector2 right = {cos(ship->angle + PI * 0.5) * ship->scale * scaleMult, sin(ship->angle +PI * 0.5) * ship->scale * scaleMult};
+
+    Vector2 nose = Vector2Add(ship->wPos, forward);
+    Vector2 rightWing = Vector2Add(ship->wPos, right);//Vector2Add(, Vector2Scale(forward, -0.5));
+    Vector2 leftWing = Vector2Add(ship->wPos, Vector2Negate(right));//Vector2Add(), Vector2Scale(forward, -0.5));
+    Vector2 tail = Vector2Subtract(ship->wPos, forward);
+
+    float dist = 999;
+    float tdist = 0;
+    tdist = Vector2Distance(NearestPointOnSegment(leftWing, nose, point), point);
+    dist = fminf(dist, tdist);
+    tdist = Vector2Distance(NearestPointOnSegment(nose, rightWing, point), point);
+    dist = fminf(dist, tdist);
+    tdist = Vector2Distance(NearestPointOnSegment(rightWing, tail, point), point);
+    dist = fminf(dist, tdist);
+    tdist = Vector2Distance(NearestPointOnSegment(tail, leftWing, point), point);
+    dist = fminf(dist, tdist);
+    return dist;
+}
+
+Vector2 NearestPointOnSegment(Vector2 la, Vector2 lb, Vector2 point){
+    Vector2 segment = Vector2Subtract(la, lb);
+    Vector2 hypo  = Vector2Subtract(point, lb);
+    float lenPct = Vector2DotProduct(hypo, segment) / Vector2DotProduct(segment, segment);
+    lenPct = Clamp(lenPct, 0, 1);
+    return Vector2Add(lb, Vector2Scale(segment, lenPct));
 }
 
 bool PointIslandCheck(Vector2 point, const Island *is){

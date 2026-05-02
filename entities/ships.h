@@ -44,6 +44,8 @@ typedef struct Ship{
 } Ship;
 
 
+bool IsPointInShip(Vector2 worldSpace, const Ship *ship, float scaleMult);
+
 float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target, Island *obstacles);
 
 void RenderShip(const Ship *ship, float scaleMult);
