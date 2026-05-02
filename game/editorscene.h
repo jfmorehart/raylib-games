@@ -31,6 +31,8 @@ int indexClicked;
 
 extern Ship destroyerShip;
 
+StringArray allFiles;
+
 Vector2 PointCenter(Island *is){
     if(!is) {
         TraceLog(LOG_FATAL, "island pointer passed was null\n");
@@ -104,7 +106,7 @@ void InitEditorScene(){
 
     mode = PlaceIsland;
 
-    Map loadMap = LoadMapFile("editor/test.campaign");
+    Map loadMap = LoadMapFile("test.situ");
 
     if(loadMap.islandLength > 0 && loadMap.islandLength <  ISLANDCOUNT){
         //good data
@@ -113,7 +115,7 @@ void InitEditorScene(){
         //bad data
         localMap = (Map){0};
     }
-    GetMapCount();
+    allFiles = GetMapNames();
 }
 
 void Redraw(Island *is){
@@ -261,7 +263,7 @@ void GenericInput(){
         //     localMap.islandLength++;
         // }
 
-        FILE *fptr = fopen("editor/test.campaign", "wb");
+        FILE *fptr = fopen("editor/test.situ", "wb");
         // Write some text to the file
         fwrite(&localMap, sizeof(Map), 1, fptr);   
         // Close the file
@@ -451,4 +453,30 @@ void EditorFrameLoop(){
         break;
     }
     DrawText(TextFormat("Islands: %d", localMap.islandLength), 400, 400, 20, BLUE);
+
+
+}
+
+void EditorUILoop(){
+    DrawText("avaliable files", 30, 30, 20, BLUE);
+    DrawText(TextFormat("current map: %s ", currentMap.filename), 230, 30, 20, GREEN);
+
+    bool enableHighlight = (mousePos_UIScreenCoords.x >0 && mousePos_UIScreenCoords.x < 170);
+
+    for(int i= 0 ; i < allFiles.numStrings; i++){
+
+        if(enableHighlight && mousePos_UIScreenCoords.y > (60 + i * 20) - 0  && mousePos_UIScreenCoords.y < (60 + i * 20) + 20){
+            DrawText(StringAt(&allFiles, i), 30, 60 + i * 20, 20, WHITE);
+            if(IsMouseButtonPressed(0)){
+                printf("loading map: %s\n", StringAt(&allFiles, i));
+                currentMap = LoadMapFile(StringAt(&allFiles, i));
+                localMap = currentMap;
+                printf("islandcount: %d\n", currentMap.islandLength);
+
+            }
+        }else{
+            DrawText(StringAt(&allFiles, i), 30, 60 + i * 20, 20, BLUE);
+        }
+
+    }
 }

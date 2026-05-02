@@ -12,8 +12,26 @@
 #include <sys/stat.h> //MACOS
 #endif
 
+#define STRINGARRAY_STRLEN 20
+#define STRINGGARY_MAXCHARS 800
+#define STRINGARRAY_MAXSTRINGS 40
+
+typedef struct StringArray{
+    int numStrings;
+    char chars[STRINGGARY_MAXCHARS];
+    int stringIndices[40];
+}StringArray;
+
+int AppendStringToStrArr(const char* str, StringArray * strArr);
+
 FILE *GetFile(const char* path);
 
 Map LoadMapFile(const char* path);
 
 int GetMapCount();
+
+char *StringAt(StringArray *strArr, int index);
+
+void PrintAllStringsInStrArr(StringArray * strArr);
+
+StringArray GetMapNames();

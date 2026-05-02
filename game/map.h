@@ -7,6 +7,8 @@
 // #include "shiploadouts.h"
 
 typedef struct Map{
+    char filename[20];
+
     Island islands[ISLANDCOUNT];
     int islandLength;
 

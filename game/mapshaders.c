@@ -68,16 +68,16 @@ int ShaderInit(){
     
 
     //setup ISLAND CONSTANTS
-    int multiplier = 60;
-    SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
+    // int multiplier = 60;
+    // SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
 
-    float dotsize = 0.04;
-    SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
+    // float dotsize = 0.04;
+    // SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
 
     //setup Ship CONSTANTS
-    multiplier = 50;
+    int multiplier = 50;
     SetShaderValue(ship_frag, loc_ship_mult, &multiplier, SHADER_UNIFORM_INT);
-    dotsize = 0.2;
+    float dotsize = 0.2;
     SetShaderValue(ship_frag, loc_ship_dot, &dotsize, SHADER_UNIFORM_FLOAT);
 
 

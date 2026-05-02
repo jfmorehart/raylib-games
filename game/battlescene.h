@@ -46,6 +46,11 @@ extern Shader islandShader_frag;
 extern Shader oceanShader_frag;
 extern Shader ship_frag;
 
+extern int loc_land_mult;
+extern int loc_land_dot;
+
+
+
 void InitBattleScene(){
 
     timeScale = 1;
@@ -82,8 +87,8 @@ void InitBattleScene(){
 }
 
 void BattleFrameLoop(){
-    ClearBackground((Color){ 5, 5, 20, 255 });
-
+    int grey = 1;
+    ClearBackground((Color){ grey, grey,grey * 3, 255 });
     //Set shader variables and draw ocean
     PrepOceanPass(mousePos_fragCoords, 100, 0.02);
     
@@ -173,6 +178,21 @@ void BattleFrameLoop(){
     }
     EndShaderMode();
 
+    //beaches
+    int multiplier = 80;
+    SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
+    dotsize = 0.3;
+    SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
+    BeginShaderMode(islandShader_frag);
+    for(int i = 0; i < currentMap.islandLength; i++){
+        RenderBeaches(&currentMap.islands[i]);
+    }
+    EndShaderMode();
+
+    multiplier = 100;
+    SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
+    dotsize = 0.08;
+    SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
     BeginShaderMode(islandShader_frag);
     for(int i = 0; i < currentMap.islandLength; i++){
         Render(&currentMap.islands[i]);

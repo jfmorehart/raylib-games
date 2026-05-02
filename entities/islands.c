@@ -72,19 +72,31 @@ Island CreateIsland(){
 void Render(const Island *island){ 
 
     // float timeComponent = (0.5 * (sinf(unscaledTime) + 1)) * 0.01;
-    float timeComponent = (0.5 * (sinf(unscaledTime) + 1));
+    // float timeComponent = (0.5 * (sinf(unscaledTime) + 1));
     for(int i = 0; i < island->edgeCount; i++){
 
         Vector2 screenPoint0 = WorldToScreen(IslandPointToWorld(island, island->points[0]));
         Vector2 screenPoint1 = WorldToScreen(IslandPointToWorld(island, island->points[i]));
         Vector2 screenPoint2 = WorldToScreen(IslandPointToWorld(island, island->points[(i + 1) % island->edgeCount]));
 
-        Vector2 foam1 = Vector2Add(island->relativePosition, Vector2Scale(island->points[i], island->scale));
-        Vector2 foam2 = Vector2Add(island->relativePosition, Vector2Scale(island->points[(i + 1) % island->edgeCount], island->scale));
-        DrawLineEx(WorldToScreen(foam1), WorldToScreen(foam2), 1 + timeComponent * 1, WHITE);
+        // Vector2 foam1 = Vector2Add(island->relativePosition, Vector2Scale(island->points[i], island->scale));
+        // Vector2 foam2 = Vector2Add(island->relativePosition, Vector2Scale(island->points[(i + 1) % island->edgeCount], island->scale));
+        // DrawLineEx(WorldToScreen(foam1), WorldToScreen(foam2), 1 + timeComponent * 1, WHITE);
         DrawTriangle(screenPoint0, screenPoint1, screenPoint2, WHITE);
     }
 }
+
+void RenderBeaches(const Island *island){ 
+
+    // float timeComponent = (0.5 * (sinf(unscaledTime) + 1)) * 0.01;
+    float timeComponent = (0.5 * (sinf(unscaledTime) + 1));
+    for(int i = 0; i < island->edgeCount; i++){
+        Vector2 foam1 = Vector2Add(island->relativePosition, Vector2Scale(island->points[i], island->scale));
+        Vector2 foam2 = Vector2Add(island->relativePosition, Vector2Scale(island->points[(i + 1) % island->edgeCount], island->scale));
+        DrawLineEx(WorldToScreen(foam1), WorldToScreen(foam2), 1 + timeComponent * 1, WHITE);
+    }
+}
+
 void RenderWithEdges (const Island *island, Color col){ 
 
     for(int i = 0; i < island->edgeCount; i++){

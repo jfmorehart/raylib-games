@@ -19,6 +19,7 @@ Vector2 WorldPointToIsland(const Island *island, Vector2 worldSpace);
 
 int FindNextPoint(int current, const Vector2 *points);
 void Render(const Island *island);
+void RenderBeaches(const Island *island);
 void RenderWithEdges (const Island *island, Color col);
 void RenderObjectSpace (const Island *island);
 

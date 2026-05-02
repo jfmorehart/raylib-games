@@ -79,7 +79,7 @@ void main()
     float noise = n1;// + n2;
     // noise = pow(noise + 0.01, 0.5);
 
-    noise = scale(noise, 5) * 0.4;
+    noise = scale(noise, 3) * 0.4;
     float rdot = dotsize + noise;
 
 
@@ -92,6 +92,6 @@ void main()
     float w = length(fwidth(uvContinuous));
     float val = 1 - smoothstep(rdot - w , rdot + w, d);
     
-    val *= mix(0.4, 0.8, (n1 * n1) + 0.1);
+    val *= mix(0.4, 1, (n1 * n1) + 0.1);
     finalColor = vec4(val, val, val, 0.5);
 }                                                                                                                                                                                                  

@@ -97,7 +97,10 @@ int main(void)
 
 
         mousePos_ScreenCoords = GetMousePosition();
-        mousePos_ScreenCoords = Vector2Scale(mousePos_ScreenCoords, 1.00 / RSCALE);
+        mousePos_ScreenCoords = Vector2Scale(mousePos_ScreenCoords, 1.00 / RSCALE);       
+        
+        mousePos_UIScreenCoords = GetMousePosition();
+        // printf("%f, %f, \n" ,   mousePos_UIScreenCoords.x,   mousePos_UIScreenCoords.y);
         mousePos = ScreenToWorld(mousePos_ScreenCoords);
 
         mousePos_fragCoords.y = HEIGHT * RSCALE - mousePos_ScreenCoords.y;
@@ -139,6 +142,20 @@ int main(void)
         Rectangle dest = (Rectangle){0, 0, ws, hs};
         DrawTexturePro(targetTex.texture, (Rectangle){0, 0, WIDTH, -HEIGHT}, dest, Vector2Zero(), 0, WHITE);
         // RenderWindow(&hello, &font);
+
+        switch(currentScene){
+            case Menu:
+            break;
+            case MapScene:
+                break;
+            case Battle:
+            break;
+            case Editor:
+               EditorUILoop();
+            break;
+        }
+
+
         EndDrawing();
     }
 

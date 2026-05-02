@@ -25,6 +25,9 @@ extern Shader oceanShader_frag;
 extern Shader ship_frag;
 extern Shader islandShader_frag;
 
+extern int loc_land_mult;
+extern int loc_land_dot;
+
 Ship destroyerShip;
 // Ship battleShip;
 
@@ -266,10 +269,28 @@ void MapFrameLoop(){
     }
     EndShaderMode();
 
+    //beaches
+    int multiplier = 80;
+    SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
+    float dotsize = 0.3;
+    SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
+    BeginShaderMode(islandShader_frag);
+    for(int i = 0; i < currentMap.islandLength; i++){
+        RenderBeaches(&currentMap.islands[i]);
+    }
+    EndShaderMode();
+
+    multiplier = 60;
+    SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
+    dotsize = 0.04;
+    SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
+    BeginShaderMode(islandShader_frag);
+    //islands
     BeginShaderMode(islandShader_frag);
     for(int i = 0; i < currentMap.islandLength; i++){
         Render(&currentMap.islands[i]);
     }
     EndShaderMode();
+
 }
 
