@@ -1,6 +1,7 @@
 #pragma once
 #include "raylib.h"
 #include "globals.h"
+// #include "game/map.h"
 
 float R01();
 Vector2 RVec(float scale);
@@ -45,3 +46,8 @@ float DistanceToShipEdge(const Ship *ship, Vector2 point, float scaleMult);
 Hit Intersect(Edge ab, Edge cd);
 
 void SwitchScenes(SceneName to);
+
+typedef struct Map Map;
+
+Hit RayAllShipsIntersect(Edge ray, Ship * allships, int shipCount, float scaleMult);
+Hit IntersectIslandsAndShips(Vector2 start, Vector2 angle, Map *m, float scaleMult);

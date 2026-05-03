@@ -6,6 +6,8 @@
 #include "vfx.h"
 #include <raylib.h>
 #include "rlgl.h"
+#include "raymath.h"
+#include "map.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -87,4 +89,52 @@ void UpdateAndRenderBlobs(Smoke *pool, int count){
     }
     rlEnd();                                                        
     rlSetTexture(0); 
+}
+
+#define BEAMSEGMENTS_MAX 10
+void DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, float beamLength, Map *m, float scaleMult){
+    Hit hits[BEAMSEGMENTS_MAX] = {0};
+
+    Vector2 beamDir = Vector2Subtract(target, start);
+    float startingAngle = atan2(beamDir.y, beamDir.x) - angle * 0.5;
+
+    float apb = angle / (float)beamSegments;
+
+    
+    for(int i = 0; i < beamSegments; i++){
+        Vector2 dir = VfromAngle(startingAngle + apb * i);
+        dir = Vector2Scale(Vector2Normalize(dir), beamLength);
+        hits[i] = IntersectIslandsAndShips(start, dir, m, scaleMult);
+
+        if(!hits[i].hit || Vector2Length(hits[i].hitPosition) < 0.001){
+            printf("miss, setting to:(%f, %f)\n",  Vector2Add(start, dir).x, Vector2Add(start, dir).y);
+            hits[i].hitPosition = Vector2Add(start, dir);
+        }else{
+            printf("hit :(%f, %f)\n",  hits[i].hitPosition.x, hits[i].hitPosition.y);
+        }
+
+    }
+
+    for(int i = 1; i < beamSegments; i++){
+
+
+        Vector2 c = WorldToScreen(start);               
+        Vector2 h1 = WorldToScreen(hits[i - 1].hitPosition); 
+        Vector2 h2 =  WorldToScreen(hits[i].hitPosition);      
+    
+        //start
+        rlTexCoord2f(1, 1);         
+        rlVertex2f(c.x, c.y);
+                                                                    
+        // left                                                                                                  
+        rlTexCoord2f(0, 0);                         
+        rlVertex2f(h1.x, h1.y);                                 
+                                                                                                                            
+        // right
+        rlTexCoord2f(0, 0);                                                                                                
+        rlVertex2f(h2.x, h2.y);               
+
+        // DrawTriangle(WorldToScreen(start), WorldToScreen(hits[i - 1].hitPosition), WorldToScreen(hits[i].hitPosition), YELLOW);
+        // DrawLineEx(WorldToScreen(start), WorldToScreen(hits[i].hitPosition), 3, WHITE);
+    }
 }

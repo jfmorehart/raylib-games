@@ -6,9 +6,11 @@
 #include "globals.h"
 #include "islands.h"
 #include "ships.h"
+#include "map.h"
 
 #include <math.h>
 #include <stdio.h>
+
 
 bool IsPointInShip(Vector2 worldSpace, const Ship *ship, float scaleMult){
     Vector2 forward = VfromAngle(ship->angle);
@@ -161,3 +163,11 @@ void ShipCombat(Ship *ship, Ship *targetShipsArray, int arrayLen){
         BatteryUpdate(ship, targetShipsArray, arrayLen, &ship->batteries[i]);
     }
 }
+
+
+// void DrawBeam(Vector2 start, Vector2 angle, float range, Map *m){
+
+//     int segments = 10;
+
+//     Hit prevHit = AllIslandsIntersect()
+// }

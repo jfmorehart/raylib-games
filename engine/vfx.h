@@ -27,3 +27,5 @@ void FireSplash(Vector2 position, float radius);
 
 //all smoke-likes (smokes, splashes)
 void UpdateAndRenderBlobs(Smoke *pool, int count);
+
+void DrawBeam(Vector2 start, Vector2 beamCenter, float angle, int beamSegments, float beamLength, Map *m, float scaleMult);

@@ -302,6 +302,13 @@ void MapFrameLoop(){
     }
     EndShaderMode();
 
+    // Hit h = IntersectIslandsAndShips(Vector2Zero(), mousePos, &currentMap, 0.3);
+    // if(h.hit){
+    //     DrawLineEx(WorldToScreen(Vector2Zero()), WorldToScreen(h.hitPosition), 5, RED);
+    // }else{
+    //     DrawLineEx(WorldToScreen(Vector2Zero()), WorldToScreen(mousePos), 5, GREEN); 
+    // }
+    // DrawBeam(Vector2Zero(), mousePos, PI * 0.2, 10, 1, &currentMap, 0.3);
 }
 
 void MapUIRender(){

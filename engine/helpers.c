@@ -215,3 +215,104 @@ void SwitchScenes(SceneName to){ //temp
         }
     }
 }
+
+Hit RayShipIntersect(Edge ray, Ship *ship, float scaleMult){
+    Vector2 forward = VfromAngle(ship->angle);
+    // Vector2 forwardNormal = Vector2Normalize(forward);
+    forward = Vector2Scale(forward, ship->scale * 5 * scaleMult);
+
+    Vector2 right = {cos(ship->angle + PI * 0.5) * ship->scale * scaleMult, sin(ship->angle +PI * 0.5) * ship->scale * scaleMult};
+
+    Vector2 nose = Vector2Add(ship->wPos, forward);
+    Vector2 rightWing = Vector2Add(ship->wPos, right);//Vector2Add(, Vector2Scale(forward, -0.5));
+    Vector2 leftWing = Vector2Add(ship->wPos, Vector2Negate(right));//Vector2Add(), Vector2Scale(forward, -0.5));
+    Vector2 tail = Vector2Subtract(ship->wPos, forward); 
+
+    float cdist = 999;
+    Hit temp;
+    Edge ed;
+    ed = (Edge){leftWing, nose};
+    temp = Intersect(ray, ed);
+    if(temp.hit){
+        cdist = fminf(cdist, Vector2Distance(ray.a, temp.hitPosition));
+    }
+    ed = (Edge){nose, rightWing};
+    temp = Intersect(ray, ed);
+    if(temp.hit){
+        cdist = fminf(cdist, Vector2Distance(ray.a, temp.hitPosition));
+    }
+    ed = (Edge){rightWing, tail};
+    temp = Intersect(ray, ed);
+    if(temp.hit){
+        cdist = fminf(cdist, Vector2Distance(ray.a, temp.hitPosition));
+    }
+    ed = (Edge){tail, leftWing};
+    temp = Intersect(ray, ed);
+    if(temp.hit){
+        cdist = fminf(cdist, Vector2Distance(ray.a, temp.hitPosition));
+    }
+    if(cdist < 999){
+        return (Hit){true, Vector2Add(ray.a, Vector2Scale(Vector2Normalize(Vector2Subtract(ray.b, ray.a)), cdist))};
+    }
+    return (Hit){false, Vector2Zero()};
+}
+
+Hit RayAllShipsIntersect(Edge ray, Ship * allships, int shipCount, float scaleMult){
+    Vector2 chit;
+    float nearest = 999;
+    Hit temp;
+    float thit;
+    for(int i = 0; i < shipCount; i++){
+        temp = RayShipIntersect(ray, &allships[i], scaleMult);
+        if(temp.hit){
+            thit = Vector2Distance(temp.hitPosition, ray.a);
+            if(thit < nearest){
+                nearest = thit;
+                chit = temp.hitPosition;
+            }
+        }
+    }
+    if(nearest < 999){
+        return (Hit){true,chit};
+    }
+    return (Hit){false, Vector2Zero()};
+}
+
+Hit IntersectIslandsAndShips(Vector2 start, Vector2 angle, Map *m, float scaleMult){
+    Edge e = (Edge){start, Vector2Add(start, angle)};
+    Hit isl = AllIslandsIntersect(m->islands,e);
+    Hit fship = RayAllShipsIntersect(e, m->friendlies, m->fcount, scaleMult);
+    Hit eship = RayAllShipsIntersect(e, m->enemies, m->ecount, scaleMult);
+
+    Vector2 cl;
+    float nearest = 999;
+    float tdist;
+    if(isl.hit){
+        tdist = Vector2Distance(start, isl.hitPosition);
+        if(tdist < nearest){
+            nearest = tdist;
+            cl = isl.hitPosition;
+            printf("assign, isle: %f, %f, \n", isl.hitPosition.x, isl.hitPosition.y);
+        }
+    }
+    if(fship.hit){
+        tdist = Vector2Distance(start, fship.hitPosition);
+        if(tdist < nearest){
+            nearest = tdist;
+            cl = fship.hitPosition;
+            printf("assign, fship: %f, %f, \n", fship.hitPosition.x, fship.hitPosition.y);
+        }
+    }
+    if(eship.hit){
+        tdist = Vector2Distance(start, eship.hitPosition);
+        if(tdist < nearest){
+            nearest = tdist;
+            cl = eship.hitPosition;
+            printf("assign, eship\n");
+        }
+    }
+    if(nearest < 999){
+        return (Hit){true, cl};
+    }
+    return (Hit){false, Vector2Zero()};
+}

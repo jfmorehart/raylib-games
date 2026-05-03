@@ -158,8 +158,28 @@ void BattleFrameLoop(){
         if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
         RenderShip(&currentMap.friendlies[i], 0.3);
         SteerShipBattle(&currentMap.friendlies[i], false, currentMap.islands);
+
+        // DrawLineEx(WorldToScreen(currentMap.friendlies[i].wPos), mousePos_ScreenCoords, 3,  WHITE);
+        // DrawCircleV(WorldToScreen(currentMap.friendlies[i].wPos), 30, WHITE);
     }
     EndShaderMode();
+
+
+    //DRAW BEAMS
+    BeginShaderMode(ship_frag);
+    rlSetTexture(rlGetTextureIdDefault());                                                                                 
+    rlBegin(RL_TRIANGLES);             
+    for(int i = 0; i < currentMap.fcount; i++){
+        if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
+        Vector2 dir = Vector2Subtract(mousePos, currentMap.friendlies[i].wPos);
+        dir = Vector2Normalize(dir);
+        dir = Vector2Add(currentMap.friendlies[i].wPos , Vector2Scale(dir, currentMap.friendlies[i].scale + 0.003));
+        DrawBeam(dir, mousePos, PI * 0.3, 10, 1, &currentMap, 0.3);
+    }
+    rlEnd();                                                        
+    rlSetTexture(0); 
+    EndShaderMode();
+
 
     //trace ship lines
     mLoc = GetShaderLocation(ship_frag, "multiplier");   
@@ -298,6 +318,13 @@ void BattleFrameLoop(){
             }
         }   
     }
+    // Hit h = IntersectIslandsAndShips(Vector2Zero(), mousePos, &currentMap, 0.3);
+    // if(h.hit){
+    //     DrawLineEx(WorldToScreen(Vector2Zero()), WorldToScreen(h.hitPosition), 5, RED);
+    // }else{
+    //     DrawLineEx(WorldToScreen(Vector2Zero()), WorldToScreen(mousePos), 5, GREEN); 
+    // }
+    
 }
 
 void BattleUIRender(){
