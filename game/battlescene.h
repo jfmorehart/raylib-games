@@ -44,27 +44,19 @@ extern float startingZoom;
 extern float endZoom;
 extern Vector2 focusTarget;
 
-extern Shader islandShader_frag;
-extern Shader oceanShader_frag;
-extern Shader ship_frag;
-
-extern int loc_land_mult;
-extern int loc_land_dot;
-
-extern Shader explosionShader;
+extern DotShader islandShader;
+extern DotShader oceanShader;
+extern DotShader shipShader;
+extern DotShader explosionShader;
+extern DotShader lightShader;
 
 void InitBattleScene(){
 
     timeScale = 1;
 
-    //setup Ship CONSTANTS (overwrite from mapscene)
-    int resLoc = GetShaderLocation(ship_frag, "multiplier");   
-    int multiplier = 120;
-    SetShaderValue(ship_frag, resLoc, &multiplier, SHADER_UNIFORM_INT);
 
-    resLoc = GetShaderLocation(ship_frag, "dotsize");   
-    float dotsize = 0.2;
-    SetShaderValue(ship_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
+    //setup Ship CONSTANTS (overwrite from mapscene)
+    DotShaderValues(&shipShader,0.2, 120, (Vector3){1, 1, 1});
 
     //determine which ships are included in the scene
     allShipsIncludedCount = 0;
@@ -113,6 +105,24 @@ void BattleFrameLoop(){
         currentMap.friendlies[d].isVisible = false;
     }
 
+
+    //DRAW BEAMS
+    Vector3 col;// = (Vector3){0.1, 0.1, 0.1};
+    // DotShaderValues(&shipShader, 0.2, 230, col);
+    BeginShaderMode(lightShader.shader);
+    rlSetTexture(rlGetTextureIdDefault());                                                                                 
+    rlBegin(RL_TRIANGLES);             
+    for(int i = 0; i < currentMap.fcount; i++){
+        if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
+        Vector2 dir = Vector2Subtract(mousePos, currentMap.friendlies[i].wPos);
+        dir = Vector2Normalize(dir);
+        dir = Vector2Add(currentMap.friendlies[i].wPos , Vector2Scale(dir, currentMap.friendlies[i].scale + 0.006));
+        DrawBeam(dir, mousePos, PI * 0.3, 10, SHIP_SEARCHRANGE * 2, &currentMap, 0.3);
+    }
+    rlEnd();                                                        
+    rlSetTexture(0); 
+    EndShaderMode();
+
     PrepShipRangePass();
     for(int i = 0; i < currentMap.fcount; i++){
         if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
@@ -128,20 +138,9 @@ void BattleFrameLoop(){
     }
     EndShaderMode();
 
-    int mLoc = GetShaderLocation(ship_frag, "multiplier");   
-    int mult = 230;//150;
-    SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
-
-    int dLoc = GetShaderLocation(ship_frag, "dotsize");   
-    float dotsize = 0.2;
-    SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
-
-    //Set color red
-    int colorLocation = GetShaderLocation(ship_frag, "dotcolor");   
-
-    Vector3 col = (Vector3){0.5, 0.5, 0.5};
-    SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
-    BeginShaderMode(ship_frag);
+    col = (Vector3){0.5, 0.5, 0.5};
+    DotShaderValues(&shipShader,0.2, 230, col);
+    BeginShaderMode(shipShader.shader);
     for(int d = 0; d < currentMap.ecount; d++){
         if(currentMap.enemies[d].isVisible && currentMap.enemies[d].alive && currentMap.enemies[d].includedInScene){
             RenderShip(&currentMap.enemies[d], 0.3);
@@ -152,8 +151,8 @@ void BattleFrameLoop(){
 
     //Set color white
     col = (Vector3){1, 1, 1};
-    SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
-    BeginShaderMode(ship_frag);
+    DotShaderValues(&shipShader,0.2, 230, col);
+    BeginShaderMode(shipShader.shader);
     for(int i = 0; i < currentMap.fcount; i++){
         if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
         RenderShip(&currentMap.friendlies[i], 0.3);
@@ -165,32 +164,10 @@ void BattleFrameLoop(){
     EndShaderMode();
 
 
-    //DRAW BEAMS
-    BeginShaderMode(ship_frag);
-    rlSetTexture(rlGetTextureIdDefault());                                                                                 
-    rlBegin(RL_TRIANGLES);             
-    for(int i = 0; i < currentMap.fcount; i++){
-        if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
-        Vector2 dir = Vector2Subtract(mousePos, currentMap.friendlies[i].wPos);
-        dir = Vector2Normalize(dir);
-        dir = Vector2Add(currentMap.friendlies[i].wPos , Vector2Scale(dir, currentMap.friendlies[i].scale + 0.003));
-        DrawBeam(dir, mousePos, PI * 0.3, 10, 1, &currentMap, 0.3);
-    }
-    rlEnd();                                                        
-    rlSetTexture(0); 
-    EndShaderMode();
-
-
-    //trace ship lines
-    mLoc = GetShaderLocation(ship_frag, "multiplier");   
-    mult = 230;//200;
-    dotsize = 0.1;
-    dLoc = GetShaderLocation(ship_frag, "dotsize");   
-    SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
+    //trace ship linesx
     col = (Vector3){0.1, 0.1, 0.1};
-    SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
-    BeginShaderMode(ship_frag);
+    DotShaderValues(&shipShader,0.1, 230, col);
+    BeginShaderMode(shipShader.shader);
     for(int i = 0; i < currentMap.fcount; i++){
         if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
         ShipCombat(&currentMap.friendlies[i], currentMap.enemies, currentMap.ecount);
@@ -202,55 +179,39 @@ void BattleFrameLoop(){
     EndShaderMode();
 
     //beaches
-    int multiplier = 230;//80;
-    SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
-    dotsize = 0.3;
-    SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
-    BeginShaderMode(islandShader_frag);
+    DotShaderValues(&islandShader,0.3, 230, col);
+    BeginShaderMode(islandShader.shader);
     for(int i = 0; i < currentMap.islandLength; i++){
         RenderBeaches(&currentMap.islands[i]);
     }
     EndShaderMode();
 
-    multiplier = 230;//100;
-    SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
-    dotsize = 0.08;
-    SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
-    BeginShaderMode(islandShader_frag);
+    DotShaderValues(&islandShader,0.08, 230, col);
+    BeginShaderMode(islandShader.shader);
     for(int i = 0; i < currentMap.islandLength; i++){
         Render(&currentMap.islands[i]);
     }
     EndShaderMode();
 
     //BULLETS
-    mLoc = GetShaderLocation(ship_frag, "multiplier");   
-    mult = 230;
-    dotsize = 0.15;
-    SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
-    SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
     col = (Vector3){0.4, 0.4, 0.4};
-    SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
-    BeginShaderMode(ship_frag);
+    DotShaderValues(&shipShader,0.1, 230, col);
+    BeginShaderMode(shipShader.shader);
     UpdateAndRenderBullets(bulletPool, bulletCount, allShipsIncludedInScene, allShipsIncludedCount);
     EndShaderMode();
 
     //Explosions!
     col = (Vector3){1, 1, 1};
-    int cloc = GetShaderLocation(explosionShader, "dotcolor");
-    SetShaderValue(explosionShader, cloc, &col, SHADER_UNIFORM_VEC3);
-    BeginShaderMode(explosionShader);
+    SetShaderValue(explosionShader.shader, explosionShader.dloc, &col, SHADER_UNIFORM_VEC3);
+    BeginShaderMode(explosionShader.shader);
     UpdateAndRenderBlobs(smokePool, smokeCount);
     EndShaderMode();
     EndShaderMode();
 
     //Splashes
-    dotsize = 0.3;
-    SetShaderValue(ship_frag, dLoc, &dotsize, SHADER_UNIFORM_FLOAT);
-    mult = 180;
-    SetShaderValue(ship_frag, mLoc, &mult, SHADER_UNIFORM_INT);
     col = (Vector3){0.2, 0.2, 0.2};
-    SetShaderValue(ship_frag, colorLocation, &col, SHADER_UNIFORM_VEC3);
-    BeginShaderMode(ship_frag);
+    DotShaderValues(&shipShader,0.3, 180, col);
+    BeginShaderMode(shipShader.shader);
     UpdateAndRenderBlobs(splashPool, splashCount);
     EndShaderMode();
 

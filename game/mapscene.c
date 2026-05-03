@@ -21,12 +21,10 @@ Map currentMap;
 
 extern Battery DestroyerLoadout[SHIP_MAXBATTERIES];
 
-extern Shader oceanShader_frag;
-extern Shader ship_frag;
-extern Shader islandShader_frag;
+extern DotShader oceanShader;
+extern DotShader shipShader;
+extern DotShader islandShader;
 
-extern int loc_land_mult;
-extern int loc_land_dot;
 
 Ship destroyerShip;
 // Ship battleShip;
@@ -131,13 +129,13 @@ void InitMapScene(){
     timeScale = 0.1;
 
     //setup Ship CONSTANTS (overwrite from battlescene)
-    int resLoc = GetShaderLocation(ship_frag, "multiplier");   
-    int multiplier = 80;
-    SetShaderValue(ship_frag, resLoc, &multiplier, SHADER_UNIFORM_INT);
+    // int resLoc = GetShaderLocation(ship_frag, "multiplier");   
+    // int multiplier = 80;
+    // SetShaderValue(ship_frag, resLoc, &multiplier, SHADER_UNIFORM_INT);
 
-    resLoc = GetShaderLocation(ship_frag, "dotsize");   
-    float dotsize = 0.3;
-    SetShaderValue(ship_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
+    // resLoc = GetShaderLocation(ship_frag, "dotsize");   
+    // float dotsize = 0.3;
+    // SetShaderValue(ship_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
 }
 
 void MapInputLoop(){
@@ -252,10 +250,9 @@ void MapFrameLoop(){
     EndOceanPass();
 
     //Set color red
-    int resLoc = GetShaderLocation(ship_frag, "dotcolor");   
     Vector3 col = (Vector3){1, 0, 0};
-    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
-    BeginShaderMode(ship_frag);
+    SetShaderValue(shipShader.shader, shipShader.colLoc, &col, SHADER_UNIFORM_VEC3);
+    BeginShaderMode(shipShader.shader);
     for(int d = 0; d < currentMap.ecount; d++){
         if(currentMap.enemies[d].isVisible && currentMap.enemies[d].alive){
             RenderShip(&currentMap.enemies[d], 0.7);
@@ -268,8 +265,8 @@ void MapFrameLoop(){
 
     //Set color white
     col = (Vector3){1, 1, 1};
-    SetShaderValue(ship_frag, resLoc, &col, SHADER_UNIFORM_VEC3);
-    BeginShaderMode(ship_frag);
+    SetShaderValue(shipShader.shader, shipShader.colLoc, &col, SHADER_UNIFORM_VEC3);
+    BeginShaderMode(shipShader.shader);
     for(int i = 0; i < currentMap.fcount; i++){
         if(!currentMap.friendlies[i].alive)continue;
         RenderShip(&currentMap.friendlies[i], 1);
@@ -280,23 +277,16 @@ void MapFrameLoop(){
     EndShaderMode();
 
     //beaches
-    int multiplier = 80;
-    SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
-    float dotsize = 0.3;
-    SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
-    BeginShaderMode(islandShader_frag);
+    DotShaderValues(&islandShader, 0.3, 80, (Vector3){0, 0, 0});
+    BeginShaderMode(islandShader.shader);
     for(int i = 0; i < currentMap.islandLength; i++){
         RenderBeaches(&currentMap.islands[i]);
     }
     EndShaderMode();
 
-    multiplier = 60;
-    SetShaderValue(islandShader_frag, loc_land_mult, &multiplier, SHADER_UNIFORM_INT);
-    dotsize = 0.04;
-    SetShaderValue(islandShader_frag, loc_land_dot, &dotsize, SHADER_UNIFORM_FLOAT);
-    BeginShaderMode(islandShader_frag);
     //islands
-    BeginShaderMode(islandShader_frag);
+    DotShaderValues(&islandShader, 0.04, 60, (Vector3){0, 0, 0});
+    BeginShaderMode(islandShader.shader);
     for(int i = 0; i < currentMap.islandLength; i++){
         Render(&currentMap.islands[i]);
     }

@@ -53,7 +53,7 @@ float octaves(vec2 uv, int octaveCount){
 
 void main()                                                                                                                                                                                        
 {
-    vec2 cuv = fragTexCoord;
+    vec2 fuv = fragTexCoord;
 
     vec2 screenCoords = vec2(gl_FragCoord.x, gl_FragCoord.y);
     screenCoords -= (resolution * 0.5);
@@ -69,5 +69,6 @@ void main()
     float val = step(length(uv - 0.5), dotsize);
 
     vec3 col = dotcolor * val;
-    finalColor = vec4(val, val ,val , val);
+    val *= fuv.x * 1 - abs(fuv.y - 0.5);
+    finalColor = vec4(col, val);
 }                                                                                                                                                                                                  

@@ -120,18 +120,21 @@ void DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, floa
 
         Vector2 c = WorldToScreen(start);               
         Vector2 h1 = WorldToScreen(hits[i - 1].hitPosition); 
+        float l = Vector2Distance(start, hits[i - 1].hitPosition) / beamLength;
+        float l2 = Vector2Distance(start, hits[i].hitPosition) / beamLength;
         Vector2 h2 =  WorldToScreen(hits[i].hitPosition);      
     
         //start
-        rlTexCoord2f(1, 1);         
+        float uvval = (float)i / beamSegments;
+        rlTexCoord2f(1, uvval);         
         rlVertex2f(c.x, c.y);
                                                                     
         // left                                                                                                  
-        rlTexCoord2f(0, 0);                         
+        rlTexCoord2f(1 - l, uvval);                         
         rlVertex2f(h1.x, h1.y);                                 
                                                                                                                             
         // right
-        rlTexCoord2f(0, 0);                                                                                                
+        rlTexCoord2f(1 - l2, uvval);                                                                                                
         rlVertex2f(h2.x, h2.y);               
 
         // DrawTriangle(WorldToScreen(start), WorldToScreen(hits[i - 1].hitPosition), WorldToScreen(hits[i].hitPosition), YELLOW);

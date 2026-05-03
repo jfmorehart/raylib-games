@@ -11,8 +11,8 @@
                                                                          
   void main()                                                                   
   {
-      fragTexCoord = vertexTexCoord;                                            
-      fragColor = vertexColor;                    
-      gl_Position = mvp * vec4(vertexPosition, 1.0);              
+    fragTexCoord = vertexTexCoord;                                            
+    fragColor = vertexColor;                    
+    gl_Position = mvp * vec4(vertexPosition, 1.0);              
   }                                                                      
                             
