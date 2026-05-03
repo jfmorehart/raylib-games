@@ -12,3 +12,4 @@ void RandomizeMap();
 void InitMapScene();
 void MapInputLoop();
 void MapFrameLoop();
+void MapUIRender();

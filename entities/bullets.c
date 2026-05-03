@@ -146,7 +146,7 @@ bool CanBatterySeeThis(Vector2 batteryPosition, float batteryAngle, Battery *bat
     return true;
 }
 //runs every frame that we have a valid target
-void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 target){
+void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 target, Vector2 targetVelocity){
 
     //CHECK IF BATTERY CAN ENGAGE (moved to Update)
     //Range, Angle
@@ -156,9 +156,12 @@ void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 targ
     // }
     Gun btype = battery->BatteryType;
     Vector2 rvec = RVec_Perlin(battery->_r_index, 1);
-    float innaccuracy = battery->batterySpread * Vector2Distance(batteryPosition, target);
+    float tdist = Vector2Distance(batteryPosition, target);
+    float innaccuracy = battery->batterySpread * tdist;
     float accuracy = (btype.range * ((battery->timesTargeted + 1) * 0.15));
-    Vector2 spreadTarget = Vector2Add(target, Vector2Scale(rvec,  fminf(innaccuracy / accuracy, 0.3)));
+    float btime = tdist / BULLET_SPEED * BATTLESCENE_SPEEDMULT;
+    Vector2 movingTarget = Vector2Add(target, Vector2Scale(targetVelocity, btime));
+    Vector2 spreadTarget = Vector2Add(movingTarget, Vector2Scale(rvec,  fminf(innaccuracy / accuracy, 0.3)));
     // printf("%f\n", Vector2Distance(batteryPosition, target) / (btype.range * battery->timesTargeted));
 
     for(int g = 0; g < battery->gunCount; g++){
@@ -209,11 +212,12 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
     if(battery->shipTarget){
 
         //DEBUG RENDER
-        Gun btype = battery->BatteryType;
-        Vector2 rvec = RVec_Perlin(battery->_r_index, 1);
-        float innaccuracy = battery->batterySpread * Vector2Distance(batteryPosition, battery->shipTarget->wPos);
-        float accuracy = (btype.range * ((battery->timesTargeted + 1) * 0.3));
-        Vector2 spreadTarget = Vector2Add(battery->shipTarget->wPos, Vector2Scale(rvec,  fmin(innaccuracy / accuracy, 0.3)));
+
+        // Gun btype = battery->BatteryType;
+        // Vector2 rvec = RVec_Perlin(battery->_r_index, 1);
+        // float innaccuracy = battery->batterySpread * Vector2Distance(batteryPosition, battery->shipTarget->wPos);
+        // float accuracy = (btype.range * ((battery->timesTargeted + 1) * 0.3));
+        // Vector2 spreadTarget = Vector2Add(battery->shipTarget->wPos, Vector2Scale(rvec,  fmin(innaccuracy / accuracy, 0.3)));
         // DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(spreadTarget), 3, GREEN);
 
         //alive?
@@ -231,7 +235,8 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
             // battery->timesTargeted++;
             // if(battery->timesTargeted > 4) battery->timesTargeted = 4;
             // printf("firing on %p, time %d, spread = ", battery->shipTarget, battery->timesTargeted);
-            BatteryEngageTarget(batteryPosition, battery, battery->shipTarget->wPos);
+            Vector2 movement = Vector2Scale(VfromAngle(battery->shipTarget->angle), SHIPSPEED);
+            BatteryEngageTarget(batteryPosition, battery, battery->shipTarget->wPos, movement);
         }else{
             //schedule retarget
             battery->shipTarget = 0;

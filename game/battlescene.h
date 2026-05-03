@@ -145,6 +145,7 @@ void BattleFrameLoop(){
     for(int d = 0; d < currentMap.ecount; d++){
         if(currentMap.enemies[d].isVisible && currentMap.enemies[d].alive && currentMap.enemies[d].includedInScene){
             RenderShip(&currentMap.enemies[d], 0.3);
+            SteerShipBattle(&currentMap.enemies[d], true, currentMap.islands);
         }
     }
     EndShaderMode();
@@ -156,7 +157,7 @@ void BattleFrameLoop(){
     for(int i = 0; i < currentMap.fcount; i++){
         if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
         RenderShip(&currentMap.friendlies[i], 0.3);
-        SteerShip(&currentMap.friendlies[i], 0.08, false, currentMap.islands);
+        SteerShipBattle(&currentMap.friendlies[i], false, currentMap.islands);
     }
     EndShaderMode();
 
@@ -297,23 +298,20 @@ void BattleFrameLoop(){
             }
         }   
     }
-    
-    // BeginShaderMode(explosionShader);
-    // Vector2 c = mousePos_ScreenCoords;
-    // float r = 30;                     
-    // rlTexCoord2f(0, 0);                                                                                                
-    // rlVertex2f(c.x - r, c.y - r);                                                                                        
-                                                                
-    // // bottom-left                                                                                                     
-    // rlTexCoord2f(0, 1);                         
-    // rlVertex2f(c.x - r, c.y + r);                                 
-                                                                                                                        
-    // // bottom-right
-    // rlTexCoord2f(1, 1);                                                                                                
-    // rlVertex2f(c.x + r, c.y + r);                 
-                                                                
-    // // top-right                                                                                                       
-    // rlTexCoord2f(1, 0);
-    // rlVertex2f(c.x + r, c.y - r);    
-    // EndShaderMode();
+}
+
+void BattleUIRender(){
+
+    float diff = (WIDTH - HEIGHT) * 0.4;
+    int border = 30;
+    float dayscaler = 470;
+    float sct = worldTime * dayscaler;  
+    float td = sct / (60.00 * 24.00);
+    int days = floorf(td);
+    float ht = (td - days) * 24;
+    int hrs = floorf(ht);
+    int mins = (ht - hrs) * 60;
+    const char * str = TextFormat("%ddays, %dhrs, %dmins", days, hrs, mins);
+    DrawText(str, diff + border, border - 10, 12, GRAY);
+    DrawText("Battle Off Cape Esperance",diff + border + 250, border - 10, 12, GRAY);
 }

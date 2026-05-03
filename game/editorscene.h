@@ -105,6 +105,7 @@ void ResetCanvas(){
 void InitEditorScene(){
 
     mode = PlaceIsland;
+    timeScale = 0;
 
     Map loadMap = LoadMapFile("test.situ");
 
@@ -564,6 +565,7 @@ void EditorUILoop(){
             if(IsMouseButtonPressed(0)){
                 printf("loading map: %s\n", StringAt(&allFiles, i));
                 currentMap = LoadMapFile(StringAt(&allFiles, i));
+                worldTime = 0;
                 localMap = currentMap;
                 printf("islandcount: %d\n", currentMap.islandLength);
             }

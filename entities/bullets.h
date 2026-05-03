@@ -77,6 +77,6 @@ bool CanBatterySeeThis(Vector2 batteryPosition, float batteryAngle, Battery *bat
 
 Ship *BatteryAquireTarget(const Ship *ship, Ship *targetShipsArray, int arrayLen, Battery *battery, Vector2 batteryPosition);
 
-void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 target);
+void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 target, Vector2 targetVelocity);
 
 void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *battery);

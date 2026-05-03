@@ -23,7 +23,6 @@ RenderTexture2D targetTex;
 Shader postProcess_frag;
 
 #define RSCALE 1.5
-
 void RunOnStart(){
 
 
@@ -96,9 +95,7 @@ int main(void)
 
         scaledDeltaTime = GetFrameTime() * timeScale;
         scaledTime += scaledDeltaTime;
-
         unscaledTime += GetFrameTime();
-
 
         mousePos_ScreenCoords = GetMousePosition();
         mousePos_ScreenCoords = Vector2Scale(mousePos_ScreenCoords, 1.00 / RSCALE);       
@@ -122,10 +119,12 @@ int main(void)
             case Menu:
             break;
             case MapScene:
+                worldTime += scaledDeltaTime;
                 MapInputLoop();
                 MapFrameLoop();
                 break;
             case Battle:
+                worldTime += scaledDeltaTime * 0.004;
                 BattleFrameLoop();
             break;
             case Editor:
@@ -166,14 +165,15 @@ int main(void)
             case Menu:
             break;
             case MapScene:
+                MapUIRender();
                 break;
             case Battle:
+                BattleUIRender();
             break;
             case Editor:
                EditorUILoop();
             break;
         }
-
 
         EndDrawing();
     }

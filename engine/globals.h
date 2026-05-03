@@ -27,6 +27,10 @@ float fixedDeltaTime;
 float scaledTime;
 float unscaledTime;
 float timeScale;
+float worldTime;
+
+#define BATTLESCENE_SPEEDMULT 0.08
+
 
 typedef enum SceneName{
     Menu,

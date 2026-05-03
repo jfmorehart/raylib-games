@@ -114,7 +114,7 @@ void RenderShip(const Ship *ship, float scaleMult){
     }
 }
 
-void SteerShip(Ship *ship, float speedMult, bool avoidIslands, Island *islandsToAvoid){
+void SteerShip(Ship *ship, bool avoidIslands, Island *islandsToAvoid){
     //Steer Ship
     if(ship->hasMoveTarget){
         float angle;
@@ -127,13 +127,32 @@ void SteerShip(Ship *ship, float speedMult, bool avoidIslands, Island *islandsTo
 
         float diff = SignedAngle(ship->angle, angle);
         if(diff < -0.01){
-            ship->angle -= scaledDeltaTime * SHIPTURN * speedMult;
+            ship->angle -= scaledDeltaTime * SHIPTURN;
         }else if(diff >= 0.01){
-            ship->angle += scaledDeltaTime * SHIPTURN * speedMult;
+            ship->angle += scaledDeltaTime * SHIPTURN;
         }
-        ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), scaledDeltaTime * 0.1 * SHIPSPEED * speedMult));
+        ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), scaledDeltaTime * SHIPSPEED));
     }
+}
+void SteerShipBattle(Ship *ship, bool avoidIslands, Island *islandsToAvoid){
+    //Steer Ship
+    if(ship->hasMoveTarget){
+        float angle;
+        if(avoidIslands){
+            angle = Path2Target(ship, 4, PI * 0.5, ship->moveTargetPosition, islandsToAvoid);
+        }else{
+            Vector2 delta =  Vector2Subtract(ship->moveTargetPosition, ship->wPos);
+            angle = atan2f(delta.y, delta.x);
+        }
 
+        float diff = SignedAngle(ship->angle, angle);
+        if(diff < -0.01){
+            ship->angle -= scaledDeltaTime * SHIPTURN * BATTLESCENE_SPEEDMULT;
+        }else if(diff >= 0.01){
+            ship->angle += scaledDeltaTime * SHIPTURN * BATTLESCENE_SPEEDMULT;
+        }
+        ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), scaledDeltaTime * SHIPSPEED * BATTLESCENE_SPEEDMULT));
+    }
 }
 
 //runs every frame

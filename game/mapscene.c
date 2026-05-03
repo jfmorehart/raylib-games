@@ -31,6 +31,8 @@ extern int loc_land_dot;
 Ship destroyerShip;
 // Ship battleShip;
 
+bool focusing = false;
+
 void TimeRoutine(Routine *routine){
 
     float runtime = (unscaledTime - routine->startTime);
@@ -55,7 +57,21 @@ void SwitchToBattleRoutine(Routine * routine){
     float runtime = (unscaledTime - routine->startTime);
     if(runtime >= routine->duration){
         routine->isActive= false;
+        focusing = false;
         SwitchScenes(Battle);
+    }
+}
+void CallFocus(Vector2 wpos){
+
+    bool run = RunRoutine("FocusRoutine");
+
+    if(run){
+        startingCameraPos = cameraPosition;
+        startingZoom = worldScale;
+        focusTarget = wpos;
+        focusing = true;
+        RunRoutine("SwitchToBattleRoutine");
+        endZoom = 0.4;
     }
 }
 
@@ -99,6 +115,9 @@ void RandomizeMap(){
         currentMap.enemies[i].wPos = RandomWorldPointNoIsland();
         currentMap.enemies[i].angle = R01() * 7;
         currentMap.enemies->team = false;
+
+        currentMap.enemies[i].hasMoveTarget = true;
+        currentMap.enemies[i].moveTargetPosition = RandomWorldPointNoIsland();
         memcpy(currentMap.enemies[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout)); 
         currentMap.enemies[i].batteryCount = 3; //REMEMBER TO RESET!
     } 
@@ -122,7 +141,7 @@ void InitMapScene(){
 }
 
 void MapInputLoop(){
-
+    if(focusing) return;
     if(IsMouseButtonDown(0)){
 
 
@@ -165,27 +184,9 @@ void MapInputLoop(){
         RunRoutine("TimeRoutine");
     }
     if(IsKeyPressed(KEY_F)){
-
-        bool run = RunRoutine("FocusRoutine");
-
-        if(run){
-            startingCameraPos = cameraPosition;
-            startingZoom = worldScale;
-            focusTarget = mousePos;
-            RunRoutine("SwitchToBattleRoutine");
-            if(startingZoom < 0.5){
-                endZoom = 2;
-            }else{
-                endZoom = 0.4;
-            }
-        }
+        CallFocus(mousePos);
     }
 
-    // if(IsKeyDown(KEY_Z)){
-    //     worldScale = 0.2;
-    // }else{
-    //     worldScale = 1;
-    // }
     if(IsKeyDown(KEY_E)){
         worldScale += fixedDeltaTime * (worldScale / 0.3) * 0.1;
     }
@@ -233,6 +234,7 @@ void MapFrameLoop(){
     }
 
     PrepShipRangePass();
+
     for(int i = 0; i < currentMap.fcount; i++){
         if(!currentMap.friendlies[i].alive)continue;
         DrawCircleV(WorldToScreen(currentMap.friendlies[i].wPos), WorldToPixels(SHIP_SEARCHRANGE), WHITE);
@@ -241,6 +243,9 @@ void MapFrameLoop(){
             if(!currentMap.enemies[d].alive)continue;
             if(Vector2Distance(currentMap.friendlies[i].wPos, currentMap.enemies[d].wPos) < SHIP_SEARCHRANGE){
                 currentMap.enemies[d].isVisible = true;
+                if(!focusing){
+                    CallFocus(currentMap.friendlies[i].wPos);
+                }
             }
         }
     }
@@ -254,6 +259,9 @@ void MapFrameLoop(){
     for(int d = 0; d < currentMap.ecount; d++){
         if(currentMap.enemies[d].isVisible && currentMap.enemies[d].alive){
             RenderShip(&currentMap.enemies[d], 0.7);
+            if(!focusing){
+                SteerShip(&currentMap.enemies[d], true, currentMap.islands);
+            }
         }
     }
     EndShaderMode();
@@ -265,7 +273,9 @@ void MapFrameLoop(){
     for(int i = 0; i < currentMap.fcount; i++){
         if(!currentMap.friendlies[i].alive)continue;
         RenderShip(&currentMap.friendlies[i], 1);
-        SteerShip(&currentMap.friendlies[i], 1, true, currentMap.islands);
+        if(!focusing){
+            SteerShip(&currentMap.friendlies[i], true, currentMap.islands);
+        }
     }
     EndShaderMode();
 
@@ -292,5 +302,17 @@ void MapFrameLoop(){
     }
     EndShaderMode();
 
+}
+
+void MapUIRender(){
+    float diff = (WIDTH - HEIGHT) * 0.4;
+    int border = 30;
+    float dayscaler = 470;
+    float sct = worldTime * dayscaler;  
+    float td = sct / (60.00 * 24.00);
+    int days = floorf(td);
+    int hrs = (td - days) * 24;
+    const char * str = TextFormat("%ddays, %dhrs", days, hrs);
+    DrawText(str, diff + border, border - 10, 12, GRAY);
 }
 

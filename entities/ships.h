@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 #define SHIPTURN 2
-#define SHIPSPEED 1
+#define SHIPSPEED 0.1
 #define SHIP_BLEND_MAX 0.15
 #define SHIP_SEARCHRANGE 0.2
 #define SHIP_MAXBATTERIES 6
@@ -50,6 +50,7 @@ float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target, Is
 
 void RenderShip(const Ship *ship, float scaleMult);
 
-void SteerShip(Ship *ship, float speedMult, bool avoidIslands, Island *islandsToAvoid);
+void SteerShip(Ship *ship, bool avoidIslands, Island *islandsToAvoid);
+void SteerShipBattle(Ship *ship, bool avoidIslands, Island *islandsToAvoid);
 
 void ShipCombat(Ship *ship, Ship *targetShipsArray, int arrayLen);
