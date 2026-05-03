@@ -15,3 +15,5 @@
     extern Ship BattleshipStats;
 
     void MakeLoadouts();
+
+    void InitRvecs(Ship *ship);

@@ -7,6 +7,8 @@
 #include "vfx.h"
 #include "ships.h"
 #include "bullets.h"
+#include "map.h"
+#include "mapscene.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -23,6 +25,8 @@
 extern int bulletCount;
 extern int bulletCham;
 extern Bullet bulletPool[];
+
+extern Map currentMap;
 
 bool DamageShips(Vector2 position, float radius, Ship **allShips, int count, int damage){
     int h = 0;
@@ -254,5 +258,28 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
             battery->lastSearch = scaledTime + battery->searchCooldown * (R01() * 0.4 + 0.8);
             battery->shipTarget = BatteryAquireTarget(ship, targetShips, arrayLen, battery, batteryPosition);
         }
+    }
+}
+typedef struct BeamHits BeamHits;// name;
+BeamHits RenderBatteryBeam(Battery * battery,const Ship * ship){
+    Vector2 batteryPosition = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), battery->batteryOffset_Y * ship->scale));
+    if(battery->shipTarget){        
+        Gun btype = battery->BatteryType;
+        Vector2 rvec = Vector2Scale(RVec_Perlin(battery->_r_index, 0.3), 0.5);
+        float tdist = Vector2Distance(batteryPosition, battery->shipTarget->wPos);
+        float innaccuracy = battery->batterySpread * tdist;
+        float accuracy = (btype.range + btype.range * ((battery->timesTargeted + 1) * 0.08));
+        float btime = tdist / BULLET_SPEED * BATTLESCENE_SPEEDMULT;
+        Vector2 vel = Vector2Scale(Vector2Normalize(VfromAngle(battery->shipTarget->angle)), SHIPSPEED * BATTLESCENE_SPEEDMULT);
+        Vector2 movingTarget = Vector2Add(battery->shipTarget->wPos, Vector2Scale(vel, btime));
+        Vector2 spreadTarget = Vector2Add(movingTarget, Vector2Scale(rvec,  fminf(innaccuracy / accuracy, 0.3)));
+        // Vector2 spreadTarget = battery->shipTarget->wPos;
+        Vector2 dir = Vector2Subtract(spreadTarget, batteryPosition);
+        dir = Vector2Normalize(dir);
+        dir = Vector2Add(batteryPosition , Vector2Scale(dir, ship->scale + 0.006));
+        return DrawBeam(dir, spreadTarget, PI * 0.25, 20, SHIP_SEARCHRANGE * 2, &currentMap, 0.3);
+        //DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(spreadTarget), 5, WHITE);
+    }else{
+        return (BeamHits){0};
     }
 }

@@ -80,3 +80,5 @@ Ship *BatteryAquireTarget(const Ship *ship, Ship *targetShipsArray, int arrayLen
 void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 target, Vector2 targetVelocity);
 
 void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *battery);
+
+BeamHits RenderBatteryBeam(Battery * battery,const Ship * ship);

@@ -103,7 +103,8 @@ void RandomizeMap(){
         currentMap.friendlies[i].wPos = RandomWorldPointNoIsland();
         currentMap.friendlies[i].angle = R01() * 7;
         currentMap.friendlies->team = true;
-        memcpy(currentMap.friendlies[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout)); 
+        memcpy(currentMap.friendlies[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout));
+        InitRvecs(&currentMap.friendlies[i]);
         if(i == 0){destroyerShip = currentMap.friendlies[i];}
     }   
 
@@ -117,7 +118,7 @@ void RandomizeMap(){
         currentMap.enemies[i].hasMoveTarget = true;
         currentMap.enemies[i].moveTargetPosition = RandomWorldPointNoIsland();
         memcpy(currentMap.enemies[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout)); 
-        currentMap.enemies[i].batteryCount = 3; //REMEMBER TO RESET!
+        InitRvecs(&currentMap.enemies[i]);
     } 
 }
 

@@ -263,6 +263,8 @@ Hit RayAllShipsIntersect(Edge ray, Ship * allships, int shipCount, float scaleMu
     Hit temp;
     float thit;
     for(int i = 0; i < shipCount; i++){
+        if(!allships[i].alive) continue;
+        if(!allships[i].includedInScene) continue;
         temp = RayShipIntersect(ray, &allships[i], scaleMult);
         if(temp.hit){
             thit = Vector2Distance(temp.hitPosition, ray.a);
@@ -292,7 +294,7 @@ Hit IntersectIslandsAndShips(Vector2 start, Vector2 angle, Map *m, float scaleMu
         if(tdist < nearest){
             nearest = tdist;
             cl = isl.hitPosition;
-            printf("assign, isle: %f, %f, \n", isl.hitPosition.x, isl.hitPosition.y);
+            // printf("assign, isle: %f, %f, \n", isl.hitPosition.x, isl.hitPosition.y);
         }
     }
     if(fship.hit){
@@ -300,7 +302,7 @@ Hit IntersectIslandsAndShips(Vector2 start, Vector2 angle, Map *m, float scaleMu
         if(tdist < nearest){
             nearest = tdist;
             cl = fship.hitPosition;
-            printf("assign, fship: %f, %f, \n", fship.hitPosition.x, fship.hitPosition.y);
+            // printf("assign, fship: %f, %f, \n", fship.hitPosition.x, fship.hitPosition.y);
         }
     }
     if(eship.hit){
@@ -308,7 +310,7 @@ Hit IntersectIslandsAndShips(Vector2 start, Vector2 angle, Map *m, float scaleMu
         if(tdist < nearest){
             nearest = tdist;
             cl = eship.hitPosition;
-            printf("assign, eship\n");
+            // printf("assign, eship\n");
         }
     }
     if(nearest < 999){

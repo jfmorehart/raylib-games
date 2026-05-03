@@ -11,6 +11,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 
 extern int smokeCount;
 extern int smokeCham;
@@ -91,8 +92,7 @@ void UpdateAndRenderBlobs(Smoke *pool, int count){
     rlSetTexture(0); 
 }
 
-#define BEAMSEGMENTS_MAX 10
-void DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, float beamLength, Map *m, float scaleMult){
+BeamHits DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, float beamLength, Map *m, float scaleMult){
     Hit hits[BEAMSEGMENTS_MAX] = {0};
 
     Vector2 beamDir = Vector2Subtract(target, start);
@@ -107,16 +107,15 @@ void DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, floa
         hits[i] = IntersectIslandsAndShips(start, dir, m, scaleMult);
 
         if(!hits[i].hit || Vector2Length(hits[i].hitPosition) < 0.001){
-            printf("miss, setting to:(%f, %f)\n",  Vector2Add(start, dir).x, Vector2Add(start, dir).y);
+            // printf("miss, setting to:(%f, %f)\n",  Vector2Add(start, dir).x, Vector2Add(start, dir).y);
             hits[i].hitPosition = Vector2Add(start, dir);
         }else{
-            printf("hit :(%f, %f)\n",  hits[i].hitPosition.x, hits[i].hitPosition.y);
+            // printf("hit :(%f, %f)\n",  hits[i].hitPosition.x, hits[i].hitPosition.y);
         }
 
     }
 
     for(int i = 1; i < beamSegments; i++){
-
 
         Vector2 c = WorldToScreen(start);               
         Vector2 h1 = WorldToScreen(hits[i - 1].hitPosition); 
@@ -140,4 +139,9 @@ void DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, floa
         // DrawTriangle(WorldToScreen(start), WorldToScreen(hits[i - 1].hitPosition), WorldToScreen(hits[i].hitPosition), YELLOW);
         // DrawLineEx(WorldToScreen(start), WorldToScreen(hits[i].hitPosition), 3, WHITE);
     }
+    BeamHits beam;
+    beam.origin = start;
+    beam.hitcount = beamSegments;
+    memcpy(beam.hits, hits, sizeof(Hit) * BEAMSEGMENTS_MAX);
+    return beam;
 }

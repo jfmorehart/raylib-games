@@ -68,7 +68,11 @@ void main()
     vec2 uv = fract(ns * multiplier);
     float val = step(length(uv - 0.5), dotsize);
 
-    vec3 col = dotcolor * val;
-    val *= fuv.x * 1 - abs(fuv.y - 0.5);
+    float dbrite = pow(1 - abs(fuv.x - 0.5), 2);
+    float wbrite = pow(1 - abs(fuv.y - 0.5), 4);
+    val *= wbrite * dbrite; 
+
+    vec3 col = dotcolor;// * val;
+
     finalColor = vec4(col, val);
 }                                                                                                                                                                                                  

@@ -50,11 +50,13 @@ extern DotShader shipShader;
 extern DotShader explosionShader;
 extern DotShader lightShader;
 
+BeamHits allHits[MAX_SHIPS * SHIP_MAXBATTERIES];
+int friendlyBeams = 0;
+int enemyBeams= 0;
+
 void InitBattleScene(){
 
     timeScale = 1;
-
-
     //setup Ship CONSTANTS (overwrite from mapscene)
     DotShaderValues(&shipShader,0.2, 120, (Vector3){1, 1, 1});
 
@@ -107,26 +109,94 @@ void BattleFrameLoop(){
 
 
     //DRAW BEAMS
-    Vector3 col;// = (Vector3){0.1, 0.1, 0.1};
+    friendlyBeams= 0;
+    enemyBeams = 0;
+
+    Vector3 col = (Vector3){1, 1, 1};
     // DotShaderValues(&shipShader, 0.2, 230, col);
     BeginShaderMode(lightShader.shader);
-    rlSetTexture(rlGetTextureIdDefault());                                                                                 
-    rlBegin(RL_TRIANGLES);             
+    rlSetTexture(rlGetTextureIdDefault());   
+    BeginBlendMode(BLEND_ADDITIVE);                                                                              
+    rlBegin(RL_TRIANGLES);
     for(int i = 0; i < currentMap.fcount; i++){
-        if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
-        Vector2 dir = Vector2Subtract(mousePos, currentMap.friendlies[i].wPos);
-        dir = Vector2Normalize(dir);
-        dir = Vector2Add(currentMap.friendlies[i].wPos , Vector2Scale(dir, currentMap.friendlies[i].scale + 0.006));
-        DrawBeam(dir, mousePos, PI * 0.3, 10, SHIP_SEARCHRANGE * 2, &currentMap, 0.3);
+        for(int j = 0; j < currentMap.friendlies[i].batteryCount; j++){
+            if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene){
+                allHits[i * SHIP_MAXBATTERIES + j] = (BeamHits){0};
+                continue;
+            }
+            if(friendlyBeams < 1 || (friendlyBeams < 5 && RVec_Perlin(currentMap.friendlies[i].batteries[j]._r_index, 0.01).x > 0.5)){
+                allHits[i * SHIP_MAXBATTERIES + j] = RenderBatteryBeam(&currentMap.friendlies[i].batteries[j], &currentMap.friendlies[i]);
+                if( allHits[i * SHIP_MAXBATTERIES + j].hitcount > 0){
+                    friendlyBeams++;
+                }
+            }
+        }
+    }
+    for(int i = 0; i < currentMap.ecount; i++){
+        if(!currentMap.enemies[i].alive || !currentMap.enemies[i].includedInScene)continue;
+        for(int j = 0; j < currentMap.enemies[i].batteryCount; j++){
+            if(enemyBeams < 1 || (enemyBeams < 5 && RVec_Perlin(currentMap.enemies[i].batteries[j]._r_index, 0.01).x > 0.2)){
+                BeamHits bh = RenderBatteryBeam(&currentMap.enemies[i].batteries[j], &currentMap.enemies[i]);
+                if(bh.hitcount > 0){
+                    enemyBeams++;
+                }
+            }
+        }
     }
     rlEnd();                                                        
     rlSetTexture(0); 
     EndShaderMode();
 
+
+    //DRAW HIGHLIGHTS
+    col = (Vector3){0.8, 0, 0};
+    DotShaderValues(&shipShader,0.2, 230, col);
+    BeginShaderMode(shipShader.shader);
+    for(int i = 0; i < SHIP_MAXBATTERIES * MAX_SHIPS; i++){
+        BeamHits beamHits = allHits[i];
+        if(beamHits.hitcount < 1) continue;
+        //find local min and draw some shit
+        int localMinIndex = -1;
+        float closest = 999;
+        for(int h = 0; h < beamHits.hitcount; h++){
+            // if(!beamHits.hits[h].hit)continue;
+            float tdist = Vector2Distance(beamHits.origin, beamHits.hits[h].hitPosition);
+            if(tdist < closest){
+                closest = tdist;
+                localMinIndex = h;
+            }
+            printf("%d -- %d -- dist %f -- %d \n", i, h, tdist, (h == localMinIndex));
+        }
+        if(localMinIndex == -1){
+            printf("failed to find localmin - %d\n", i);
+            continue;
+        }
+        printf("drawing local min");
+        DrawCircleV(WorldToScreen(beamHits.hits[localMinIndex].hitPosition), 2, GRAY);
+
+        Vector2 v1 = beamHits.hits[localMinIndex].hitPosition;
+        //a little past localmin
+        Vector2 delta = Vector2Subtract(beamHits.hits[localMinIndex].hitPosition, beamHits.origin);
+        Vector2 v3 = Vector2Add(v1, Vector2Scale(Vector2Normalize(delta), 0.01));
+        //otherwise, draw the lines
+        if(localMinIndex > 0){
+            Vector2 v2 = beamHits.hits[localMinIndex - 1].hitPosition;
+            v2 = Vector2Add(v1, Vector2Scale(Vector2Normalize(Vector2Subtract(v2, v1)), 0.01));
+            DrawTriangle(WorldToScreen(v1), WorldToScreen(v2), WorldToScreen(v3), WHITE);
+        }
+        if(localMinIndex < beamHits.hitcount - 1){
+            Vector2 v2 = beamHits.hits[localMinIndex + 1].hitPosition;
+            v2 = Vector2Add(v1, Vector2Scale(Vector2Normalize(Vector2Subtract(v2, v1)), 0.01));
+            DrawTriangle(WorldToScreen(v1), WorldToScreen(v3), WorldToScreen(v2), WHITE);
+        }
+    }
+    EndShaderMode();
+    EndBlendMode();
+
     PrepShipRangePass();
     for(int i = 0; i < currentMap.fcount; i++){
         if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
-        DrawCircleV(WorldToScreen(currentMap.friendlies[i].wPos), WorldToPixels(SHIP_SEARCHRANGE), WHITE);
+        DrawCircleV(WorldToScreen(currentMap.friendlies[i].wPos), WorldToPixels(SHIP_SEARCHRANGE * 0.5), WHITE);
 
         for(int d = 0; d < currentMap.ecount; d++){
             if(!currentMap.enemies[d].alive || !currentMap.enemies[d].includedInScene)continue;
@@ -143,7 +213,7 @@ void BattleFrameLoop(){
     BeginShaderMode(shipShader.shader);
     for(int d = 0; d < currentMap.ecount; d++){
         if(currentMap.enemies[d].isVisible && currentMap.enemies[d].alive && currentMap.enemies[d].includedInScene){
-            RenderShip(&currentMap.enemies[d], 0.3);
+            // RenderShip(&currentMap.enemies[d], 0.3);
             SteerShipBattle(&currentMap.enemies[d], true, currentMap.islands);
         }
     }
@@ -193,9 +263,10 @@ void BattleFrameLoop(){
     }
     EndShaderMode();
 
+   
     //BULLETS
-    col = (Vector3){0.4, 0.4, 0.4};
-    DotShaderValues(&shipShader,0.1, 230, col);
+    col = (Vector3){0.5, 0.5, 0.5};
+    DotShaderValues(&shipShader,0.15, 230, col);
     BeginShaderMode(shipShader.shader);
     UpdateAndRenderBullets(bulletPool, bulletCount, allShipsIncludedInScene, allShipsIncludedCount);
     EndShaderMode();
@@ -207,13 +278,16 @@ void BattleFrameLoop(){
     UpdateAndRenderBlobs(smokePool, smokeCount);
     EndShaderMode();
     EndShaderMode();
-
+    
     //Splashes
     col = (Vector3){0.2, 0.2, 0.2};
     DotShaderValues(&shipShader,0.3, 180, col);
     BeginShaderMode(shipShader.shader);
     UpdateAndRenderBlobs(splashPool, splashCount);
     EndShaderMode();
+
+    // BeginBlendMode(BLEND_ADDITIVE);  
+    // EndBlendMode();
 
     if(IsMouseButtonDown(0)){
 

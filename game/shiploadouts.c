@@ -107,4 +107,10 @@
         BattleshipLoadout[3].batteryOffset_Y = 0;
     }
 
+    void InitRvecs(Ship *ship){
+        for(int i = 0; i < ship->batteryCount; i++){
+            ship->batteries[i]._r_index = R01();
+        }
+    }
+
 
