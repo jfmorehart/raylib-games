@@ -35,9 +35,11 @@ typedef struct{
     Vector2 b;
 }Edge;
 
+typedef struct Ship Ship;
 typedef struct{
     bool hit;
     Vector2 hitPosition;
+    Ship * shipHit; //not guaranteed!
 } Hit;
 
 typedef struct Ship Ship;

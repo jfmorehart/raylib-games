@@ -10,6 +10,7 @@
 #include "routines.h"
 #include "shiploadouts.h"
 #include "map.h"
+#include "rlgl.h"
 
 #include <math.h>       
 #include <stdio.h>
@@ -22,7 +23,7 @@ Map currentMap;
 extern Battery DestroyerLoadout[SHIP_MAXBATTERIES];
 
 extern DotShader oceanShader;
-extern DotShader shipShader;
+extern DotShader generalShader;
 extern DotShader islandShader;
 
 
@@ -128,7 +129,7 @@ void InitMapScene(){
     // worldScale = 1;
     // cameraPosition = ScreenToWorld((Vector2){WIDTH * 0.5, HEIGHT * 0.5});
     timeScale = 0.1;
-
+    DotShaderValues(&generalShader, 0.3, 80, (Vector3){1, 1, 1});
     //setup Ship CONSTANTS (overwrite from battlescene)
     // int resLoc = GetShaderLocation(ship_frag, "multiplier");   
     // int multiplier = 80;
@@ -250,10 +251,12 @@ void MapFrameLoop(){
     }
     EndOceanPass();
 
+    rlSetTexture(rlGetTextureIdDefault());                                                                                 
+    rlBegin(RL_TRIANGLES);   
     //Set color red
     Vector3 col = (Vector3){1, 0, 0};
-    SetShaderValue(shipShader.shader, shipShader.colLoc, &col, SHADER_UNIFORM_VEC3);
-    BeginShaderMode(shipShader.shader);
+    SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
+    BeginShaderMode(generalShader.shader);
     for(int d = 0; d < currentMap.ecount; d++){
         if(currentMap.enemies[d].isVisible && currentMap.enemies[d].alive){
             RenderShip(&currentMap.enemies[d], 0.7);
@@ -266,8 +269,8 @@ void MapFrameLoop(){
 
     //Set color white
     col = (Vector3){1, 1, 1};
-    SetShaderValue(shipShader.shader, shipShader.colLoc, &col, SHADER_UNIFORM_VEC3);
-    BeginShaderMode(shipShader.shader);
+    SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
+    BeginShaderMode(generalShader.shader);
     for(int i = 0; i < currentMap.fcount; i++){
         if(!currentMap.friendlies[i].alive)continue;
         RenderShip(&currentMap.friendlies[i], 1);
@@ -276,6 +279,8 @@ void MapFrameLoop(){
         }
     }
     EndShaderMode();
+    rlEnd();                                                        
+    rlSetTexture(0); 
 
     //beaches
     DotShaderValues(&islandShader, 0.3, 80, (Vector3){0, 0, 0});

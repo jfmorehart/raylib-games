@@ -28,12 +28,7 @@ void FireSplash(Vector2 position, float radius);
 //all smoke-likes (smokes, splashes)
 void UpdateAndRenderBlobs(Smoke *pool, int count);
 
-#define BEAMSEGMENTS_MAX 20
+#define BEAMSEGMENTS_MAX 50
 
-typedef struct BeamHits{
-    Vector2 origin;
-    int hitcount;
-    Hit hits[BEAMSEGMENTS_MAX];
-}BeamHits;
 
-BeamHits DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, float beamLength, Map *m, float scaleMult);
+void DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, float beamLength, Map *m, float scaleMult, float illumbrightness);

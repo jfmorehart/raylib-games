@@ -40,6 +40,9 @@ typedef struct Ship{
     struct Ship *targetShip;
 
     int batteryCount;
+    
+    float illuminationThisFrame;
+
     Battery batteries[SHIP_MAXBATTERIES];
 } Ship;
 
@@ -49,6 +52,7 @@ bool IsPointInShip(Vector2 worldSpace, const Ship *ship, float scaleMult);
 float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target, Island *obstacles);
 
 void RenderShip(const Ship *ship, float scaleMult);
+void RenderShipColor(const Ship *ship, float scaleMult, Vector3 color);
 
 void SteerShip(Ship *ship, bool avoidIslands, Island *islandsToAvoid);
 void SteerShipBattle(Ship *ship, bool avoidIslands, Island *islandsToAvoid);

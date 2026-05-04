@@ -260,10 +260,9 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
         }
     }
 }
-typedef struct BeamHits BeamHits;// name;
-BeamHits RenderBatteryBeam(Battery * battery,const Ship * ship){
+void RenderBatteryBeam(Battery * battery,const Ship * ship){
     Vector2 batteryPosition = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), battery->batteryOffset_Y * ship->scale));
-    if(battery->shipTarget){        
+    if(battery->shipTarget && ship->alive){        
         Gun btype = battery->BatteryType;
         Vector2 rvec = Vector2Scale(RVec_Perlin(battery->_r_index, 0.3), 0.5);
         float tdist = Vector2Distance(batteryPosition, battery->shipTarget->wPos);
@@ -277,9 +276,7 @@ BeamHits RenderBatteryBeam(Battery * battery,const Ship * ship){
         Vector2 dir = Vector2Subtract(spreadTarget, batteryPosition);
         dir = Vector2Normalize(dir);
         dir = Vector2Add(batteryPosition , Vector2Scale(dir, ship->scale + 0.006));
-        return DrawBeam(dir, spreadTarget, PI * 0.25, 20, SHIP_SEARCHRANGE * 2, &currentMap, 0.3);
+        DrawBeam(dir, spreadTarget, PI * 0.25, 50, SHIP_SEARCHRANGE * 2, &currentMap, 0.3, scaledDeltaTime);
         //DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(spreadTarget), 5, WHITE);
-    }else{
-        return (BeamHits){0};
     }
 }

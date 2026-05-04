@@ -20,11 +20,11 @@ vec3 BoxSample(vec2 uv){
     vec3 col = vec3(0, 0, 0);
     for(int x = -1; x < 2; x++){
         for(int y = -1; y < 2; y++){
-            float mult = 1 + step(abs(x), 0.5) * step(abs(y), 0.5) * 3;
+            float mult = 0.5 + step(abs(x), 0.5) * step(abs(y), 0.5) * 2;
             col += texture(texture0, fragTexCoord + vec2(x, y) * 0.001).xyz * mult;
         }
     }
-    return col / 9.00;
+    return col / 4.00;
 }
 void main(){
 

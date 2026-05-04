@@ -10,8 +10,7 @@
 #include "game/map.h"
 
 #include <math.h>
-#include <stdio.h>
-#include <string.h>
+
 
 #define STB_PERLIN_IMPLEMENTATION
 
@@ -207,13 +206,18 @@ bool IsPointWithinIslands(Vector2 wPoint){
 }
 
 void SwitchScenes(SceneName to){ //temp
-    currentScene = to;
+
     EndAllRoutines();
+    bool found = false;
     for(int i = 0 ; i < SCENECOUNT; i++){
         if(scenes[i].name == to){
             scenes[i].RunOnInit();
+            found = true;
+            break;
         }
     }
+    if(!found)TraceLog(LOG_FATAL, "missed Init sequence for scene");
+    currentScene = to;
 }
 
 Hit RayShipIntersect(Edge ray, Ship *ship, float scaleMult){
@@ -262,6 +266,7 @@ Hit RayAllShipsIntersect(Edge ray, Ship * allships, int shipCount, float scaleMu
     float nearest = 999;
     Hit temp;
     float thit;
+    Ship *besthit;
     for(int i = 0; i < shipCount; i++){
         if(!allships[i].alive) continue;
         if(!allships[i].includedInScene) continue;
@@ -269,13 +274,14 @@ Hit RayAllShipsIntersect(Edge ray, Ship * allships, int shipCount, float scaleMu
         if(temp.hit){
             thit = Vector2Distance(temp.hitPosition, ray.a);
             if(thit < nearest){
+                besthit = &allships[i];
                 nearest = thit;
                 chit = temp.hitPosition;
             }
         }
     }
     if(nearest < 999){
-        return (Hit){true,chit};
+        return (Hit){true,chit, besthit};
     }
     return (Hit){false, Vector2Zero()};
 }
@@ -289,6 +295,7 @@ Hit IntersectIslandsAndShips(Vector2 start, Vector2 angle, Map *m, float scaleMu
     Vector2 cl;
     float nearest = 999;
     float tdist;
+    Ship * bestship = 0;
     if(isl.hit){
         tdist = Vector2Distance(start, isl.hitPosition);
         if(tdist < nearest){
@@ -302,6 +309,7 @@ Hit IntersectIslandsAndShips(Vector2 start, Vector2 angle, Map *m, float scaleMu
         if(tdist < nearest){
             nearest = tdist;
             cl = fship.hitPosition;
+            bestship = fship.shipHit;
             // printf("assign, fship: %f, %f, \n", fship.hitPosition.x, fship.hitPosition.y);
         }
     }
@@ -310,11 +318,12 @@ Hit IntersectIslandsAndShips(Vector2 start, Vector2 angle, Map *m, float scaleMu
         if(tdist < nearest){
             nearest = tdist;
             cl = eship.hitPosition;
+            bestship = eship.shipHit;
             // printf("assign, eship\n");
         }
     }
     if(nearest < 999){
-        return (Hit){true, cl};
+        return (Hit){true, cl, bestship};
     }
     return (Hit){false, Vector2Zero()};
 }

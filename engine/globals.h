@@ -16,6 +16,10 @@ Vector2 mousePos_fragCoords;
 Vector2 xBounds;
 Vector2 yBounds;
 
+
+#define RSCALE 1.5
+
+
 #define ISLANDCOUNT  40
 #define MAX_SHIPS 10
 #define FRAMERATE 120

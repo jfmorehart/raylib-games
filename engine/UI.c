@@ -1,4 +1,3 @@
-#pragma once
 #include <raylib.h>
 #include "globals.h"
 #include "UI.h"
@@ -22,6 +21,10 @@ void RenderWindow(Window *window, Font *font){
         case BOTTOM_RIGHT:
             xPos = WIDTH - window->pixelScale.x;
             yPos = HEIGHT - window->pixelScale.y;
+        break;
+        case CENTER:
+            xPos = WIDTH * 0.5;
+            yPos = HEIGHT* 0.5;
     }
     Vector2 pos = {xPos + window->pixelScale.x * 0.2, yPos + window->pixelScale.y * 0.1};
     DrawRectangle(xPos, yPos, window->pixelScale.x, window->pixelScale.y, GRAY);

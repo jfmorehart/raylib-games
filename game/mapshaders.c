@@ -37,9 +37,10 @@ void DotShaderValues(DotShader *ds, float dotSize, int multiplier, Vector3 color
 
 DotShader islandShader;
 DotShader oceanShader;
-DotShader shipShader;
+DotShader generalShader;
 DotShader explosionShader;
 DotShader lightShader;
+DotShader illuminatedShader;
 
 extern SceneName currentScene;
 
@@ -51,20 +52,22 @@ int ShaderInit(){
 
     islandShader = CreateDotShader(LoadShader(0, "shaders/island.fs"));
     oceanShader = CreateDotShader(LoadShader(0, "shaders/ocean.fs"));
-    shipShader = CreateDotShader(LoadShader(0, "shaders/ship.fs"));
+    generalShader = CreateDotShader(LoadShader(0, "shaders/generaldot.fs"));
     explosionShader= CreateDotShader(LoadShader(0, "shaders/explosion.fs"));
     lightShader = CreateDotShader(LoadShader("shaders/beam.vs","shaders/beam.fs"));
+    illuminatedShader = CreateDotShader(LoadShader(0,"shaders/illum.fs")); 
 
-    DotShaderValues(&shipShader, 0.2, 50, (Vector3){1, 1, 1});
+    DotShaderValues(&generalShader, 0.2, 50, (Vector3){1, 1, 1});
     DotShaderValues(&explosionShader, 0.3, 230, (Vector3){1, 1, 1});
     DotShaderValues(&lightShader, 0.3, 230, (Vector3){0.2, 0.2, 0.2});
 
     Vector2 resolutionVector = {WIDTH, HEIGHT};  
     SetRes(&islandShader, resolutionVector);
     SetRes(&oceanShader, resolutionVector);
-    SetRes(&shipShader, resolutionVector);
+    SetRes(&generalShader, resolutionVector);
     SetRes(&explosionShader, resolutionVector); 
     SetRes(&lightShader, resolutionVector); 
+    SetRes(&illuminatedShader, resolutionVector); 
     return 0;
 }
 
@@ -73,10 +76,11 @@ void PrepOceanPass(Vector2 specialMousePos, int multiplier, float dotsize){
     //setup OCEAN CONSTANTS
     DotShaderValues(&oceanShader, dotsize, multiplier, (Vector3){0 ,0, 0});
     FrameRefreshShader(&oceanShader, unscaledTime, cameraPosition,  worldScale, specialMousePos);
-    FrameRefreshShader(&shipShader, unscaledTime, cameraPosition,  worldScale, specialMousePos);
+    FrameRefreshShader(&generalShader, unscaledTime, cameraPosition,  worldScale, specialMousePos);
     FrameRefreshShader(&islandShader, unscaledTime, cameraPosition,  worldScale, specialMousePos);
     FrameRefreshShader(&explosionShader, unscaledTime, cameraPosition,  worldScale, specialMousePos);
     FrameRefreshShader(&lightShader, unscaledTime, cameraPosition,  worldScale, specialMousePos);
+    FrameRefreshShader(&illuminatedShader, unscaledTime, cameraPosition,  worldScale, specialMousePos);
 
     switch(currentScene){
 
@@ -112,11 +116,11 @@ void PrepShipRangePass(){
     BeginShaderMode(oceanShader.shader);
 }
 
-
 void UnloadShaders(){
     UnloadShader(islandShader.shader);
     UnloadShader(oceanShader.shader);
     UnloadShader(explosionShader.shader);
-    UnloadShader(shipShader.shader);
+    UnloadShader(generalShader.shader);
     UnloadShader(lightShader.shader);
+    UnloadShader(illuminatedShader.shader);
 }

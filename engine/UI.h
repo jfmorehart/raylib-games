@@ -7,7 +7,8 @@ typedef enum Corner{
     TOP_LEFT, 
     TOP_RIGHT,
     BOTTOM_LEFT, 
-    BOTTOM_RIGHT
+    BOTTOM_RIGHT,
+    CENTER
 }Corner;
 
 typedef struct Window{

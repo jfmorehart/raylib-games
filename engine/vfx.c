@@ -92,7 +92,7 @@ void UpdateAndRenderBlobs(Smoke *pool, int count){
     rlSetTexture(0); 
 }
 
-BeamHits DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, float beamLength, Map *m, float scaleMult){
+void DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, float beamLength, Map *m, float scaleMult, float illumbrightness){
     Hit hits[BEAMSEGMENTS_MAX] = {0};
 
     Vector2 beamDir = Vector2Subtract(target, start);
@@ -109,10 +109,7 @@ BeamHits DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, 
         if(!hits[i].hit || Vector2Length(hits[i].hitPosition) < 0.001){
             // printf("miss, setting to:(%f, %f)\n",  Vector2Add(start, dir).x, Vector2Add(start, dir).y);
             hits[i].hitPosition = Vector2Add(start, dir);
-        }else{
-            // printf("hit :(%f, %f)\n",  hits[i].hitPosition.x, hits[i].hitPosition.y);
         }
-
     }
 
     for(int i = 1; i < beamSegments; i++){
@@ -135,13 +132,23 @@ BeamHits DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, 
         // right
         rlTexCoord2f(1 - l2, uvval);                                                                                                
         rlVertex2f(h2.x, h2.y);               
-
-        // DrawTriangle(WorldToScreen(start), WorldToScreen(hits[i - 1].hitPosition), WorldToScreen(hits[i].hitPosition), YELLOW);
-        // DrawLineEx(WorldToScreen(start), WorldToScreen(hits[i].hitPosition), 3, WHITE);
     }
-    BeamHits beam;
-    beam.origin = start;
-    beam.hitcount = beamSegments;
-    memcpy(beam.hits, hits, sizeof(Hit) * BEAMSEGMENTS_MAX);
-    return beam;
+
+    //apply brightnesses;
+    int trackedCount = 0;
+    Ship *alreadyIlluminated[5];
+    for(int i = 0;i < beamSegments; i++){
+        if(hits[i].shipHit){
+            for(int sh = 0; sh < trackedCount; sh++){
+                if(alreadyIlluminated[i] == hits[i].shipHit){
+                    continue;
+                }
+            }
+             float dist = Vector2DistanceSqr(start, hits[i].hitPosition);
+            dist = fmaxf(dist, beamLength / 5);
+            hits[i].shipHit->illuminationThisFrame += illumbrightness * (beamLength / dist);
+            // printf("added: %f\n" , illumbrightness * (beamLength / dist));
+            alreadyIlluminated[i] = hits[i].shipHit;
+        }
+    }
 }

@@ -7,6 +7,7 @@
 #include "islands.h"
 #include "ships.h"
 #include "map.h"
+#include "rlgl.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -112,8 +113,63 @@ void RenderShip(const Ship *ship, float scaleMult){
     
     if(ship->hasMoveTarget && ship->selected){
         DrawLineV(WorldToScreen(ship->wPos), WorldToScreen(ship->moveTargetPosition), WHITE);
-
     }
+}
+
+void RenderShipColor(const Ship *ship, float scaleMult, Vector3 color){ 
+    Vector2 forward = VfromAngle(ship->angle);
+    // Vector2 forwardNormal = Vector2Normalize(forward);
+    forward = Vector2Scale(forward, ship->scale * 5 * scaleMult);
+
+    Vector2 right = {cos(ship->angle + PI * 0.5) * ship->scale * scaleMult, sin(ship->angle +PI * 0.5) * ship->scale * scaleMult};
+
+    Vector2 nose = Vector2Add(ship->wPos, forward);
+    Vector2 rightWing = Vector2Add(ship->wPos, right);//Vector2Add(, Vector2Scale(forward, -0.5));
+    Vector2 leftWing = Vector2Add(ship->wPos, Vector2Negate(right));//Vector2Add(), Vector2Scale(forward, -0.5));
+    Vector2 tail = Vector2Subtract(ship->wPos, forward);
+                            
+    Vector2 no = WorldToScreen(nose);
+    Vector2 le = WorldToScreen(leftWing);
+    Vector2 ri = WorldToScreen(rightWing);
+    Vector2 ta = WorldToScreen(tail);
+    //nose
+
+    rlColor3f(color.x, color.y, color.z);
+
+    rlTexCoord2f(0.5, 1);                                                                                                
+    rlVertex2f(no.x, no.y);                                                                                        
+       
+    // right
+    rlTexCoord2f(1, 0.5);                                                                                                
+    rlVertex2f(ri.x, ri.y);                 
+
+    // left                                                                                                
+    rlTexCoord2f(0, 0.5);                         
+    rlVertex2f(le.x, le.y);            
+           
+    // right
+    rlTexCoord2f(1, 0.5);                                                                                                
+    rlVertex2f(ri.x, ri.y);                 
+
+    // tail                                                                                                     
+    rlTexCoord2f(0.5, 0);
+    rlVertex2f(ta.x, ta.y);  
+    
+    // left                                                                                                
+    rlTexCoord2f(0, 0.5);                         
+    rlVertex2f(le.x, le.y);        
+                         
+
+    // if(ship->selected){
+    //     DrawTriangle(WorldToScreen(nose), WorldToScreen(rightWing),WorldToScreen(leftWing), BLUE);
+    //     DrawTriangle(WorldToScreen(tail), WorldToScreen(leftWing), WorldToScreen(rightWing), BLUE);
+    // }else{
+    //     DrawTriangle(WorldToScreen(nose), WorldToScreen(rightWing),WorldToScreen(leftWing), WHITE);
+    //     DrawTriangle(WorldToScreen(tail), WorldToScreen(leftWing), WorldToScreen(rightWing), WHITE);
+    // }
+    if(ship->hasMoveTarget && ship->selected){
+        DrawLineV(WorldToScreen(ship->wPos), WorldToScreen(ship->moveTargetPosition), WHITE);
+    } 
 }
 
 void SteerShip(Ship *ship, bool avoidIslands, Island *islandsToAvoid){
@@ -163,11 +219,3 @@ void ShipCombat(Ship *ship, Ship *targetShipsArray, int arrayLen){
         BatteryUpdate(ship, targetShipsArray, arrayLen, &ship->batteries[i]);
     }
 }
-
-
-// void DrawBeam(Vector2 start, Vector2 angle, float range, Map *m){
-
-//     int segments = 10;
-
-//     Hit prevHit = AllIslandsIntersect()
-// }

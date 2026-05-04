@@ -10,6 +10,7 @@
 #include "routines.h"
 #include "editorscene.h"
 #include "mapscene.h"
+#include "menuscene.h"
 
 #include <math.h>       
 #include <stdio.h>
@@ -23,16 +24,13 @@ RenderTexture2D targetTex;
 Shader postProcess_frag;
 
 #define RSCALE 1.5
+
 void RunOnStart(){
 
-
-
-    scenes[0] = (Scene){Menu, NULL};
+    scenes[0] = (Scene){Menu, MenuInit};
     scenes[1] = (Scene){MapScene, InitMapScene};
     scenes[2] = (Scene){Battle, InitBattleScene};
     scenes[3] = (Scene){Editor, InitEditorScene};
-
-    currentScene = MapScene;
 
     routines[0] = (Routine){"TimeRoutine", false, true, -999, 2, 2, TimeRoutine};
     routines[1] = (Routine){"FocusRoutine", false, true, -999, 1, 1, FocusRoutine};
@@ -82,8 +80,10 @@ void RunOnStart(){
     srand(time(NULL));
 
     RandomizeMap();
-    InitMapScene();
+    // InitMapScene();
     ShaderInit();
+
+    SwitchScenes(Menu);
 }
 
 int main(void)
@@ -111,12 +111,16 @@ int main(void)
 
         BeginDrawing();
 
-        if(IsKeyPressed(KEY_P)){
+        if(IsKeyPressed(KEY_ESCAPE)){
+            SwitchScenes(Menu);
+        }
+        if(IsKeyPressed(KEY_P) && currentScene != Menu){
             SwitchScenes(Editor);
         }
 
         switch(currentScene){
             case Menu:
+
             break;
             case MapScene:
                 worldTime += scaledDeltaTime;
@@ -163,6 +167,7 @@ int main(void)
 
         switch(currentScene){
             case Menu:
+                MenuUpdate();
             break;
             case MapScene:
                 MapUIRender();

@@ -346,6 +346,7 @@ Ship* NearestShip(Vector2 point){
     Ship* nearest = 0;
     float dist = 999;
     for(int i = 0 ; i < localMap.fcount; i++){
+        if(!localMap.friendlies[i].alive)continue;
         float testDist = Vector2DistanceSqr(localMap.friendlies[i].wPos, point);
         if(testDist < dist){
             dist = testDist;
@@ -353,6 +354,7 @@ Ship* NearestShip(Vector2 point){
         }
     }
     for(int i = 0 ; i < localMap.ecount; i++){
+        if(!localMap.enemies[i].alive)continue;
         float testDist = Vector2DistanceSqr(localMap.enemies[i].wPos, point);
         if(testDist < dist){
             dist = testDist;
@@ -363,8 +365,32 @@ Ship* NearestShip(Vector2 point){
 }
 
 
+/*            //if we arent on an empty slot, find one
+            if(array[w].alive) w = r; 
+            for(int x = w; x < r; x++){
+else{
+            if(!array[w].alive){
+                array[w] = array[r];
+                array[r] = (Ship){0};
+            }
+        }
+            }*/
 //this function is slow and way overcomplicated but it WORKS and i thought of it myself so its STAYING
 void CleanUpShipArrays(Ship *array, int *setlen){
+
+    //smart version for next time
+    // int w  = 0;
+    // for(int r = 0; r < MAX_SHIPS; r++){
+    //     if(array[r].alive){ //full slot
+    //         if(!array[w].alive){ //empty!
+    //             array[w] = array[r];
+    //             array[r] = (Ship){0}; 
+    //         }
+    //         w++;
+    //     }
+    // }
+    // *setlen = w;
+
     //keep track of open spots in the array
     int realCount = 0;
     int openslots[MAX_SHIPS] = {0}; //One Plus the index of the open spot (so that we can encode zero)
@@ -472,6 +498,7 @@ void PlaceIslandMode(){
                 }else{
                     CleanUpShipArrays(localMap.enemies, &localMap.ecount);
                 }
+                printf("fsh %d, esh %d\n", localMap.fcount, localMap.ecount);
             }
         }
     }else{
@@ -505,12 +532,14 @@ void PlaceIslandMode(){
 
             localMap.friendlies[localMap.fcount] = destroyerShip;
             localMap.friendlies[localMap.fcount].wPos = mousePos;
+            localMap.friendlies[localMap.fcount].team = true;
             localMap.fcount++;
         }
         if(IsKeyPressed(KEY_J)){
             localMap.friendlies[localMap.fcount] = BattleshipStats;
             memcpy(localMap.friendlies[localMap.fcount].batteries, BattleshipLoadout, sizeof(BattleshipLoadout)); 
             localMap.friendlies[localMap.fcount].wPos = mousePos;
+            localMap.friendlies[localMap.fcount].team = true;
             localMap.fcount++;
         }
     }else{
