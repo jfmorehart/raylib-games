@@ -10,7 +10,7 @@ Font menufont;
 int currentChar;
 #define MAXCHARS 512
 
-char buffer[MAXCHARS];
+char textBuffer[MAXCHARS];
 float last_delete_time;
 float delete_cooldown = 0.1;
 bool help;
@@ -19,7 +19,7 @@ void MenuInit(){
     printf("loading menu\n");
     menufont = LoadFont("assets/jackinput.ttf");
     currentChar = 0;
-    memset(buffer, 0, sizeof(buffer));
+    memset(textBuffer, 0, sizeof(textBuffer));
     SetExitKey(0);
     help = false;
 }
@@ -34,8 +34,8 @@ void MenuUpdate(){
         // NOTE: Only allow keys in range [32..125]
         if ((key >= 32) && (key <= 125) && (currentChar < MAXCHARS))
         {
-            buffer[currentChar] = (char)key;
-            buffer[currentChar+1] = '\0'; // Add null terminator at the end of the string
+            textBuffer[currentChar] = (char)key;
+            textBuffer[currentChar+1] = '\0'; // Add null terminator at the end of the string
             currentChar++;
         }
 
@@ -46,7 +46,7 @@ void MenuUpdate(){
         last_delete_time = unscaledTime;
         currentChar--;
         if (currentChar < 0) currentChar = 0;
-        buffer[currentChar] = '\0';
+        textBuffer[currentChar] = '\0';
     }
     // printf("%s", buffer);
     DrawText("SAVO_C            __ development version 0.15 __", 100, 30, 30, GRAY);
@@ -59,21 +59,21 @@ void MenuUpdate(){
         DrawText("edit: E -> wind: (Click -> new vertex) P -> place: (JKL; -> +ship). S to save.", 100, RSCALE *HEIGHT/3 + 100, 30, GRAY);
     }
 
-    DrawText(buffer, 100, RSCALE * HEIGHT - 100, 30, GRAY);
+    DrawText(textBuffer, 100, RSCALE * HEIGHT - 100, 30, GRAY);
 
-    if(strcmp(buffer, "play") == 0){
+    if(strcmp(textBuffer, "play") == 0){
         SwitchScenes(MapScene);
     }
-    if(strcmp(buffer, "edit") == 0){
+    if(strcmp(textBuffer, "edit") == 0){
         SwitchScenes(Editor);
     }
-    if(strcmp(buffer, "quit") == 0){
+    if(strcmp(textBuffer, "quit") == 0){
         exit(0);
     }
-    if(strcmp(buffer, "help") == 0){
+    if(strcmp(textBuffer, "help") == 0){
         help = true;
         currentChar = 0;
-        memset(buffer, 0, sizeof(buffer)); 
+        memset(textBuffer, 0, sizeof(textBuffer)); 
     }
 }
 

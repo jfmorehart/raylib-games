@@ -5,6 +5,8 @@
 
 float R01();
 Vector2 RVec(float scale);
+float FBM(float index, float lac, float gain, int oc);
+float Perlin(float index);
 Vector2 RVec_Perlin(float index, float wobbleFreq);
 Vector2 RandomWorldPoint();
 

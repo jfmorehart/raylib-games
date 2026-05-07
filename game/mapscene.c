@@ -91,7 +91,7 @@ void RandomizeMap(){
 
     MakeLoadouts();
 
-    srand(time(NULL));
+    // srand(time(NULL));
     for(int i = 0; i < ISLANDCOUNT; i++){
         currentMap.islands[i] = CreateIsland(); 
     }
@@ -109,18 +109,18 @@ void RandomizeMap(){
         if(i == 0){destroyerShip = currentMap.friendlies[i];}
     }   
 
-    currentMap.ecount= MAX_SHIPS;
-    for(int i = 0; i < currentMap.ecount; i++){
-        currentMap.enemies[i] = DestroyerStats;
-        currentMap.enemies[i].wPos = RandomWorldPointNoIsland();
-        currentMap.enemies[i].angle = R01() * 7;
-        currentMap.enemies->team = false;
+    // currentMap.ecount= MAX_SHIPS;
+    // for(int i = 0; i < currentMap.ecount; i++){
+    //     currentMap.enemies[i] = DestroyerStats;
+    //     currentMap.enemies[i].wPos = RandomWorldPointNoIsland();
+    //     currentMap.enemies[i].angle = R01() * 7;
+    //     currentMap.enemies->team = false;
 
-        currentMap.enemies[i].hasMoveTarget = true;
-        currentMap.enemies[i].moveTargetPosition = RandomWorldPointNoIsland();
-        memcpy(currentMap.enemies[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout)); 
-        InitRvecs(&currentMap.enemies[i]);
-    } 
+    //     currentMap.enemies[i].hasMoveTarget = true;
+    //     currentMap.enemies[i].moveTargetPosition = RandomWorldPointNoIsland();
+    //     memcpy(currentMap.enemies[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout)); 
+    //     InitRvecs(&currentMap.enemies[i]);
+    // } 
 }
 
 
@@ -213,7 +213,7 @@ void MapInputLoop(){
 
 void MapFrameLoop(){
 
-    int grey = 5;
+    int grey = 7;
     ClearBackground((Color){ grey, grey, grey * 2, 255 });
 
     // float gridSize = 1;
@@ -232,6 +232,15 @@ void MapFrameLoop(){
     for(int d = 0; d < currentMap.ecount; d++){
         currentMap.enemies[d].isVisible = false;
     }
+
+    // //beaches
+    // DotShaderValues(&islandShader, 0.3, 80, (Vector3){0, 0, 0});
+    // BeginShaderMode(islandShader.shader);
+    // for(int i = 0; i < currentMap.islandLength; i++){
+    //     RenderBeaches(&currentMap.islands[i]);
+    // }
+    // EndShaderMode();
+
 
     PrepShipRangePass();
 
@@ -278,24 +287,20 @@ void MapFrameLoop(){
             SteerShip(&currentMap.friendlies[i], true, currentMap.islands);
         }
     }
-    EndShaderMode();
-    rlEnd();                                                        
+    rlEnd();
     rlSetTexture(0); 
-
-    //beaches
-    DotShaderValues(&islandShader, 0.3, 80, (Vector3){0, 0, 0});
-    BeginShaderMode(islandShader.shader);
-    for(int i = 0; i < currentMap.islandLength; i++){
-        RenderBeaches(&currentMap.islands[i]);
-    }
     EndShaderMode();
 
-    //islands
-    DotShaderValues(&islandShader, 0.04, 60, (Vector3){0, 0, 0});
+    //islands 
+    DotShaderValues(&islandShader, 0.04, 60, (Vector3){1, 1, 1});
     BeginShaderMode(islandShader.shader);
+    rlSetTexture(rlGetTextureIdDefault());                                                                                 
+    rlBegin(RL_TRIANGLES); 
     for(int i = 0; i < currentMap.islandLength; i++){
         Render(&currentMap.islands[i]);
     }
+    rlEnd();
+    rlSetTexture(0); 
     EndShaderMode();
 
     // Hit h = IntersectIslandsAndShips(Vector2Zero(), mousePos, &currentMap, 0.3);

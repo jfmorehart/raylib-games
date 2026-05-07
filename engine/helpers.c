@@ -25,7 +25,13 @@ Vector2 RVec(float scale){
     //printf("rvec: (%f, %f)\n", rvec.x, rvec.y);  
     return rvec;
 }
-
+float FBM(float index, float lac, float gain, int oc){
+    return stb_perlin_fbm_noise3(index, index * 0.27, index * 0.13, lac, gain, oc);
+}
+float Perlin(float index){
+    return stb_perlin_noise3(index, index * 0.15, index * 0.07, 0, 0, 0);
+    // return stb_perlin_noise3(index, 0, 0, 0, 0, 0);
+}
 Vector2 RVec_Perlin(float index, float wobbleFreq){
     float a = stb_perlin_noise3(index * 413 + 123 + scaledTime * wobbleFreq, 0, 0, 0, 0, 0);
     float b = stb_perlin_noise3(index * 214 + 8976+ scaledTime * wobbleFreq, 0, 0, 0, 0, 0);

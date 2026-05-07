@@ -182,28 +182,36 @@ void BattleFrameLoop(){
     }
     EndShaderMode();
 
-    //beaches
-    DotShaderValues(&islandShader,0.3, 230, col);
-    BeginShaderMode(islandShader.shader);
-    for(int i = 0; i < currentMap.islandLength; i++){
-        RenderBeaches(&currentMap.islands[i]);
-    }
-    EndShaderMode();
+    // //beaches
+    // DotShaderValues(&islandShader,0.3, 230, col);
+    // BeginShaderMode(islandShader.shader);
+    // for(int i = 0; i < currentMap.islandLength; i++){
+    //     RenderBeaches(&currentMap.islands[i]);
+    // }
+    // EndShaderMode();
 
-    DotShaderValues(&islandShader,0.08, 230, col);
+    col = (Vector3){1,1,1};
+    DotShaderValues(&islandShader, 0.3, 230, col);
     BeginShaderMode(islandShader.shader);
+    rlSetTexture(rlGetTextureIdDefault());                                                                                 
+    rlBegin(RL_TRIANGLES);  
     for(int i = 0; i < currentMap.islandLength; i++){
         Render(&currentMap.islands[i]);
     }
+    rlEnd();                                                        
+    rlSetTexture(0); 
     EndShaderMode();
-   
+
+    BeginBlendMode(BLEND_ADDITIVE);  
+
     //BULLETS
-    col = (Vector3){0.5, 0.5, 0.5};
-    DotShaderValues(&generalShader,0.15, 230, col);
+    col = (Vector3){0.1, 0.1, 0.1};
+    DotShaderValues(&generalShader,0.10, 230, col);
     BeginShaderMode(generalShader.shader);
     UpdateAndRenderBullets(bulletPool, bulletCount, allShipsIncludedInScene, allShipsIncludedCount);
     EndShaderMode();
 
+    EndBlendMode();
     //Explosions!
     col = (Vector3){1, 1, 1};
     SetShaderValue(explosionShader.shader, explosionShader.dloc, &col, SHADER_UNIFORM_VEC3);
@@ -218,9 +226,6 @@ void BattleFrameLoop(){
     BeginShaderMode(generalShader.shader);
     UpdateAndRenderBlobs(splashPool, splashCount);
     EndShaderMode();
-
-    // BeginBlendMode(BLEND_ADDITIVE);  
-    // EndBlendMode();
 
     if(IsMouseButtonDown(0)){
 

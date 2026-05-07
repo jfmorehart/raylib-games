@@ -7,6 +7,7 @@
 #include <math.h>       
 #include <stdio.h>
 #include <stdlib.h>
+#include "rlgl.h"
 
 #define MAXHULLPOINTS 15
 
@@ -75,14 +76,26 @@ void Render(const Island *island){
     // float timeComponent = (0.5 * (sinf(unscaledTime) + 1));
     for(int i = 0; i < island->edgeCount; i++){
 
-        Vector2 screenPoint0 = WorldToScreen(IslandPointToWorld(island, island->points[0]));
+        Vector2 screenPoint0 = WorldToScreen(island->relativePosition);
         Vector2 screenPoint1 = WorldToScreen(IslandPointToWorld(island, island->points[i]));
         Vector2 screenPoint2 = WorldToScreen(IslandPointToWorld(island, island->points[(i + 1) % island->edgeCount]));
+
+        //start
+        rlTexCoord2f(0, 0);         
+        rlVertex2f(screenPoint0.x, screenPoint0.y);
+                                                                    
+        // left                                                                                                  
+        rlTexCoord2f((float)i / island->edgeCount, 1);                         
+        rlVertex2f(screenPoint1.x, screenPoint1.y);                                 
+                                                                                                                            
+        // right
+        rlTexCoord2f((float)(i + 1) / island->edgeCount, 1);                                                                                                
+        rlVertex2f(screenPoint2.x, screenPoint2.y);    
 
         // Vector2 foam1 = Vector2Add(island->relativePosition, Vector2Scale(island->points[i], island->scale));
         // Vector2 foam2 = Vector2Add(island->relativePosition, Vector2Scale(island->points[(i + 1) % island->edgeCount], island->scale));
         // DrawLineEx(WorldToScreen(foam1), WorldToScreen(foam2), 1 + timeComponent * 1, WHITE);
-        DrawTriangle(screenPoint0, screenPoint1, screenPoint2, WHITE);
+        // DrawTriangle(screenPoint0, screenPoint1, screenPoint2, WHITE);
     }
 }
 
@@ -99,11 +112,22 @@ void RenderBeaches(const Island *island){
 
 void RenderWithEdges (const Island *island, Color col){ 
 
+    Vector2 screenPoint0 = WorldToScreen(island->relativePosition);
     for(int i = 0; i < island->edgeCount; i++){
-
-        Vector2 screenPoint0 = WorldToScreen(IslandPointToWorld(island, island->points[0]));
         Vector2 screenPoint1 = WorldToScreen(IslandPointToWorld(island, island->points[i]));
         Vector2 screenPoint2 = WorldToScreen(IslandPointToWorld(island, island->points[(i + 1) % island->edgeCount]));
+
+        // //start
+        // rlTexCoord2f(0, 0);         
+        // rlVertex2f(screenPoint0.x, screenPoint0.y);
+                                                                    
+        // // left                                                                                                  
+        // rlTexCoord2f((float)i / island->edgeCount, 1);                         
+        // rlVertex2f(screenPoint1.x, screenPoint1.y);                                 
+                                                                                                                            
+        // // right
+        // rlTexCoord2f((float)(i + 1) / island->edgeCount, 1);                                                                                                
+        // rlVertex2f(screenPoint2.x, screenPoint2.y);        
 
         if(i + 1 == island->edgeCount){
             DrawLineEx(WorldToScreen(island->edges[i].a), WorldToScreen(island->edges[i].b), 5, RED);
