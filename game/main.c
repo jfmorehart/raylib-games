@@ -11,6 +11,7 @@
 #include "editorscene.h"
 #include "mapscene.h"
 #include "menuscene.h"
+#include "engine/audio.h"
 
 #include <math.h>       
 #include <stdio.h>
@@ -23,10 +24,7 @@ Vector2 worldZero;
 RenderTexture2D targetTex;
 Shader postProcess_frag;
 
-AudioStream stream;
-#define SAMPLE_RATE 44100
-#define BUFFER_SIZE 4096
-float buffer[BUFFER_SIZE];
+
 void RunOnStart(){
 
     scenes[0] = (Scene){Menu, MenuInit};
@@ -79,83 +77,19 @@ void RunOnStart(){
 
     fixedDeltaTime = 1.0 /FRAMERATE;
 
-    srand(1);//time(NULL));
+    srand(time(NULL));
 
     RandomizeMap();
     // InitMapScene();
     ShaderInit();
 
-    SwitchScenes(MapScene);
-
-    InitAudioDevice();
-
-    // Set the number of samples the stream will keep in memory at a time to BUFFER_SIZE
-    SetAudioStreamBufferSizeDefault(BUFFER_SIZE);
-
-    // Init raw audio stream (sample rate: 44100, sample size: 32bit-float, channels: 1-mono)
-    stream = LoadAudioStream(SAMPLE_RATE, 32, 1);
-    float pan = 0.5;
-    SetAudioStreamPan(stream, pan);
-    PlayAudioStream(stream);
-}
-
-float sineFrequency = 440;
-float phase = 0;
-float sineStartTime = 0;
-typedef enum WaveType{
-    Sine, 
-    Saw, 
-    Triangle,
-    Square,
-    WhiteNoise,
-    PerlinNoise,
-    FBMNoise
-}WaveType;
-
-float nstep;
-float CalcWave(WaveType wt, float phase){//FOR USE WITH NOISE FUNCITONS, PASS NSTEP * FREQ AS THE PHASE PARAM
+    InitAudio();
     
-    switch (wt){
-        case Sine:
-        return sin(phase);
-        case Saw:
-        return  (phase - PI) / PI;
-        case Triangle:
-        return   2 * ((fabsf(phase - PI) / PI) - 0.5);
-        case Square:
-        return 2 * (round(phase / (2 * PI)) - 0.5);
-        case WhiteNoise:
-        return (R01() * 2) - 1;
-        case PerlinNoise:
-        return Perlin(phase);
-        case FBMNoise:
-        return FBM(phase, 2, 0.5, 6);
-    }
+    SwitchScenes(MapScene);
+    // SwitchScenes(Menu);
+
 }
 
-void ProcessAudio(){
-
-    if (IsAudioStreamProcessed(stream))
-    {
-        for (int i = 0; i < BUFFER_SIZE; i++)
-        {
-            int wavelength = SAMPLE_RATE/sineFrequency;
-            
-            nstep += 0.02; 
-            buffer[i] = CalcWave(FBMNoise, nstep * 0.3 + 0.5 * sin(nstep * 0.01));
-
-            phase += 2 * PI / wavelength;
-
-            if (phase >= 2 * PI)
-            {
-                phase -= 2 * PI;
-                sineStartTime = GetTime();
-            }
-        }
-
-        UpdateAudioStream(stream, buffer, BUFFER_SIZE);
-    }
-}
 int main(void)
 {
     RunOnStart();
