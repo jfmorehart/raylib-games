@@ -8,6 +8,7 @@
 #include "stb_perlin.h"
 #include "game/mapscene.h"
 #include "game/map.h"
+#include "engine/audio.h"
 
 #include <math.h>
 
@@ -214,6 +215,7 @@ bool IsPointWithinIslands(Vector2 wPoint){
 void SwitchScenes(SceneName to){ //temp
 
     EndAllRoutines();
+    EndAllNotes();
     bool found = false;
     for(int i = 0 ; i < SCENECOUNT; i++){
         if(scenes[i].name == to){

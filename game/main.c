@@ -84,11 +84,12 @@ void RunOnStart(){
     ShaderInit();
 
     InitAudio();
-    
-    SwitchScenes(MapScene);
-    // SwitchScenes(Menu);
+
+    // SwitchScenes(MapScene);
+    SwitchScenes(Menu);
 
 }
+
 
 int main(void)
 {
