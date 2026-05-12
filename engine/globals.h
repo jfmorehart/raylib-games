@@ -40,6 +40,7 @@ typedef enum SceneName{
     Menu,
     MapScene,
     Battle,
+    CutScene,
     Editor
 }SceneName;
 SceneName currentScene;
@@ -50,7 +51,7 @@ typedef struct Scene{
 }Scene;
 
 
-#define SCENECOUNT 4
+#define SCENECOUNT 5
 Scene scenes[SCENECOUNT];
 
 

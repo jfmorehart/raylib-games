@@ -12,6 +12,7 @@
 #include "mapscene.h"
 #include "menuscene.h"
 #include "engine/audio.h"
+#include "game/cutscene.h"
 
 #include <math.h>       
 #include <stdio.h>
@@ -30,7 +31,8 @@ void RunOnStart(){
     scenes[0] = (Scene){Menu, MenuInit};
     scenes[1] = (Scene){MapScene, InitMapScene};
     scenes[2] = (Scene){Battle, InitBattleScene};
-    scenes[3] = (Scene){Editor, InitEditorScene};
+    scenes[3] = (Scene){CutScene, InitCutScene};
+    scenes[4] = (Scene){Editor, InitEditorScene};
 
     routines[0] = (Routine){"TimeRoutine", false, true, -999, 2, 2, TimeRoutine};
     routines[1] = (Routine){"FocusRoutine", false, true, -999, 1, 1, FocusRoutine};
@@ -85,8 +87,8 @@ void RunOnStart(){
 
     InitAudio();
 
-    // SwitchScenes(MapScene);
     SwitchScenes(Menu);
+    // SwitchScenes(CutScene);
 
 }
 
@@ -126,7 +128,7 @@ int main(void)
 
         switch(currentScene){
             case Menu:
-
+            //menuUpdate uses GUI update (below)
             break;
             case MapScene:
                 worldTime += scaledDeltaTime;
@@ -137,6 +139,9 @@ int main(void)
                 worldTime += scaledDeltaTime * 0.004;
                 BattleFrameLoop();
             break;
+            case CutScene:
+               UpdateCutScene();
+               break;
             case Editor:
                EditorFrameLoop();
             break;
@@ -180,6 +185,8 @@ int main(void)
                 break;
             case Battle:
                 BattleUIRender();
+            break;
+            case CutScene:
             break;
             case Editor:
                EditorUILoop();

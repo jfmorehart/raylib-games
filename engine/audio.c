@@ -350,7 +350,7 @@ Note * noiseNote;
 Note *crashNote;
 
 void ProcessAudio(){
-
+    
     switch(currentScene){
         case Menu:
             if(unscaledTime > 2){

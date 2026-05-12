@@ -578,7 +578,6 @@ void EditorFrameLoop(){
     }
     DrawText(TextFormat("Islands: %d", localMap.islandLength), 400, 400, 20, BLUE);
 
-
 }
 
 void EditorUILoop(){

@@ -61,6 +61,9 @@ void MenuUpdate(){
 
     DrawText(textBuffer, 100, RSCALE * HEIGHT - 100, 30, GRAY);
 
+    if(strcmp(textBuffer, "cut") == 0){
+        SwitchScenes(CutScene);
+    }
     if(strcmp(textBuffer, "play") == 0){
         SwitchScenes(MapScene);
     }

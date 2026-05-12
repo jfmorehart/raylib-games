@@ -41,6 +41,8 @@ DotShader generalShader;
 DotShader explosionShader;
 DotShader lightShader;
 DotShader illuminatedShader;
+DotShader skyShader;
+DotShader waterShader;
 
 extern SceneName currentScene;
 
@@ -56,6 +58,8 @@ int ShaderInit(){
     explosionShader= CreateDotShader(LoadShader(0, "shaders/explosion.fs"));
     lightShader = CreateDotShader(LoadShader("shaders/beam.vs","shaders/beam.fs"));
     illuminatedShader = CreateDotShader(LoadShader(0,"shaders/illum.fs")); 
+    skyShader = CreateDotShader(LoadShader(0,"shaders/sky.fs")); 
+    waterShader = CreateDotShader(LoadShader(0,"shaders/water.fs")); 
 
     DotShaderValues(&generalShader, 0.2, 50, (Vector3){1, 1, 1});
     DotShaderValues(&explosionShader, 0.3, 230, (Vector3){1, 1, 1});
@@ -68,6 +72,8 @@ int ShaderInit(){
     SetRes(&explosionShader, resolutionVector); 
     SetRes(&lightShader, resolutionVector); 
     SetRes(&illuminatedShader, resolutionVector); 
+    SetRes(&skyShader, resolutionVector); 
+    SetRes(&waterShader, resolutionVector); 
     return 0;
 }
 
@@ -123,4 +129,5 @@ void UnloadShaders(){
     UnloadShader(generalShader.shader);
     UnloadShader(lightShader.shader);
     UnloadShader(illuminatedShader.shader);
+    UnloadShader(skyShader.shader);
 }
