@@ -203,9 +203,8 @@ void BattleFrameLoop(){
     EndShaderMode();
 
     BeginBlendMode(BLEND_ADDITIVE);  
-
     //BULLETS
-    col = (Vector3){0.1, 0.1, 0.1};
+    col = (Vector3){0.3, 0.3, 0.3};
     DotShaderValues(&generalShader,0.10, 230, col);
     BeginShaderMode(generalShader.shader);
     UpdateAndRenderBullets(bulletPool, bulletCount, allShipsIncludedInScene, allShipsIncludedCount);

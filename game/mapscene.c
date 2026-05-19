@@ -25,12 +25,21 @@ extern Battery DestroyerLoadout[SHIP_MAXBATTERIES];
 extern DotShader oceanShader;
 extern DotShader generalShader;
 extern DotShader islandShader;
+extern DotShader map_islandShader;
 
 
 Ship destroyerShip;
 // Ship battleShip;
 
 bool focusing = false;
+
+Vector2 startingCameraPos;
+float startingZoom;
+float endZoom;
+Vector2 focusTarget;
+bool isZoomed;
+
+#pragma region routine
 
 void TimeRoutine(Routine *routine){
 
@@ -45,12 +54,6 @@ void TimeRoutine(Routine *routine){
         // printf("End Time Routine");
     }
 }
-
-Vector2 startingCameraPos;
-float startingZoom;
-float endZoom;
-Vector2 focusTarget;
-bool isZoomed;
 
 void SwitchToBattleRoutine(Routine * routine){
     float runtime = (unscaledTime - routine->startTime);
@@ -87,6 +90,9 @@ void FocusRoutine(Routine *routine){
         // printf("End Focus Routine");
     }
 }
+#pragma endregion
+
+#pragma region init
 void RandomizeMap(){
 
     MakeLoadouts();
@@ -109,18 +115,18 @@ void RandomizeMap(){
         if(i == 0){destroyerShip = currentMap.friendlies[i];}
     }   
 
-    currentMap.ecount= MAX_SHIPS;
-    for(int i = 0; i < currentMap.ecount; i++){
-        currentMap.enemies[i] = DestroyerStats;
-        currentMap.enemies[i].wPos = RandomWorldPointNoIsland();
-        currentMap.enemies[i].angle = R01() * 7;
-        currentMap.enemies->team = false;
+    // currentMap.ecount= MAX_SHIPS;
+    // for(int i = 0; i < currentMap.ecount; i++){
+    //     currentMap.enemies[i] = DestroyerStats;
+    //     currentMap.enemies[i].wPos = RandomWorldPointNoIsland();
+    //     currentMap.enemies[i].angle = R01() * 7;
+    //     currentMap.enemies->team = false;
 
-        currentMap.enemies[i].hasMoveTarget = true;
-        currentMap.enemies[i].moveTargetPosition = RandomWorldPointNoIsland();
-        memcpy(currentMap.enemies[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout)); 
-        InitRvecs(&currentMap.enemies[i]);
-    } 
+    //     currentMap.enemies[i].hasMoveTarget = true;
+    //     currentMap.enemies[i].moveTargetPosition = RandomWorldPointNoIsland();
+    //     memcpy(currentMap.enemies[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout)); 
+    //     InitRvecs(&currentMap.enemies[i]);
+    // } 
 }
 
 
@@ -139,7 +145,9 @@ void InitMapScene(){
     // float dotsize = 0.3;
     // SetShaderValue(ship_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
 }
+#pragma endregion
 
+#pragma region loop
 void MapInputLoop(){
     if(focusing) return;
     if(IsMouseButtonDown(0)){
@@ -213,20 +221,20 @@ void MapInputLoop(){
 
 void MapFrameLoop(){
 
-    int grey = 7;
-    ClearBackground((Color){ grey, grey, grey * 2, 255 });
+    int grey = 10;
+    ClearBackground((Color){ grey, grey, grey, 255 });
 
-    // float gridSize = 1;
-    // for(float x = xBounds.x; x < xBounds.y; x+= gridSize){
-    //     DrawLineV(WorldToScreen((Vector2){x, -3}), WorldToScreen((Vector2){x, 3}), GRAY);
-    // }
-    // for(float x = yBounds.y; x < yBounds.x; x+= gridSize){
-    //     DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), GRAY);
-    // }
+    float gridSize = 0.3;
+    for(float x = xBounds.x; x < xBounds.y; x+= gridSize){
+        DrawLineV(WorldToScreen((Vector2){x, -3}), WorldToScreen((Vector2){x, 3}), DARKGRAY);
+    }
+    for(float x = yBounds.y; x < yBounds.x; x+= gridSize){
+        DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), DARKGRAY);
+    }
 
 
     //Set shader variables and draw ocean
-    PrepOceanPass(mousePos_fragCoords, 90, 0.08);
+    PrepOceanPass(mousePos_fragCoords, 90, 0.1);
     EndOceanPass(); //flush buffer
 
     for(int d = 0; d < currentMap.ecount; d++){
@@ -234,8 +242,8 @@ void MapFrameLoop(){
     }
 
     // //beaches
-    // DotShaderValues(&islandShader, 0.3, 80, (Vector3){0, 0, 0});
-    // BeginShaderMode(islandShader.shader);
+    // DotShaderValues(&map_islandShader, 0.3, 80, (Vector3){1, 1, 1});
+    // BeginShaderMode(map_islandShader.shader);
     // for(int i = 0; i < currentMap.islandLength; i++){
     //     RenderBeaches(&currentMap.islands[i]);
     // }
@@ -292,8 +300,8 @@ void MapFrameLoop(){
     EndShaderMode();
 
     //islands 
-    DotShaderValues(&islandShader, 0.04, 60, (Vector3){1, 1, 1});
-    BeginShaderMode(islandShader.shader);
+    DotShaderValues(&map_islandShader, 0.04, 60, (Vector3){1, 1, 1});
+    BeginShaderMode(map_islandShader.shader);
     rlSetTexture(rlGetTextureIdDefault());                                                                                 
     rlBegin(RL_TRIANGLES); 
     for(int i = 0; i < currentMap.islandLength; i++){
@@ -323,4 +331,4 @@ void MapUIRender(){
     const char * str = TextFormat("%ddays, %dhrs", days, hrs);
     DrawText(str, diff + border, border - 10, 12, GRAY);
 }
-
+#pragma endregion

@@ -12,9 +12,11 @@ extern DotShader generalShader;
 extern DotShader skyShader;
 extern DotShader waterShader;
 
+Font cutfont;
+
 void InitCutScene(){
     printf("init cut scene\n");
-
+    cutfont = LoadFont("assets/jackinput.ttf");
     //setup Ship CONSTANTS (overwrite from mapscene)
     DotShaderValues(&generalShader,0.2, 120, (Vector3){1, 1, 1});
 }
@@ -41,7 +43,7 @@ void UpdateCutScene(){
     ClearBackground((Color){ grey, grey,grey , 255 });
 
     Vector3 col = (Vector3){0.2, 0.2, 0.2};
-    DotShaderValues(&skyShader, 0.2, 130, col);
+    DotShaderValues(&skyShader, 0.2, 80, col);
     BeginShaderMode(skyShader.shader);
 
     DrawRectangle(0, 0, WIDTH, HEIGHT / 2, BLUE);
@@ -65,4 +67,8 @@ void UpdateCutScene(){
     DrawHorizonObj(-40, 15, 5, 3 + tfac);
 
     // EndShaderMode();
+}
+
+void CutSceneUIUpdate(){
+    DrawTextPro(cutfont, "enemy force spotted", Vector2Zero(), Vector2Zero(), 0, 30, 1,WHITE);
 }

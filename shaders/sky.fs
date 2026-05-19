@@ -68,8 +68,10 @@ void main()
 
     wPos.x /= d2pix;
 
-    wPos.y -=  _Time * 0.1;
-    wPos.x -=  _Time * 0.1;
+    vec2 wPos_nomove = wPos *= 0.5;
+
+    wPos.y -=  _Time * 0.04;
+    wPos.x -=  _Time * 0.03;
 
     wPos *= 0.5;
 
@@ -95,7 +97,7 @@ void main()
 
     rdot = clamp(rdot, 0, 0.5);
     
-    vec2 uvContinuous = (screenCoords * 0.8 + n1 * 0.001) * multiplier;
+    vec2 uvContinuous = (wPos_nomove * 0.8 + n1 * 0.001) * multiplier;
     vec2 uvCell = fract(uvContinuous);
 
     float d = length(uvCell - 0.5);
@@ -106,7 +108,7 @@ void main()
 
     rec *= 0.1;
     // rec = wPos.y;
-    // rec *= wPos.y;
+    // rec = mix(rec, 1 - wPos.y, 0.03);
     // rec = d2pix;
     finalColor = vec4(rec, rec, rec, rec);
 }                                                                                                                                                                                                  

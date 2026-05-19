@@ -34,7 +34,7 @@ float rand(vec2 x) {
 	// Same code, with the clamps in smoothstep and common subexpressions
 	// optimized away.
 	vec2 u = f * f * (3.0 - 2.0 * f);
-	return (mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y) - 0.4;
+	return (mix(a, b, u.x) + (c - a) * u.y * (1.0 - u.x) + (d - b) * u.x * u.y) - 0.5;
 }
 
 float octaves(vec2 uv, int octaveCount){
@@ -60,61 +60,52 @@ void main()
     vec2 screenCoords = vec2(gl_FragCoord.x, gl_FragCoord.y);
     screenCoords -= (resolution * 0.5);
     screenCoords /= (resolution.y * 0.5);
+    screenCoords *= worldScale;
+    screenCoords += cameraPosition;
 
     vec2 wPos = screenCoords;
-
-
-    float d2pix = wPos.y;//length(wPos) * length(wPos);
-
-
-    wPos.y = 1 / d2pix;
-    wPos.y += sin(2 * wPos.x + 1 * wPos.y + _Time * 0.5) * 1;
-
-    wPos.x /= d2pix;
-
-    wPos *= 0.01;
-
-    // wPos.y *= 1000;
-    // wPos.y = 1 - wPos.y;
+    // wPos += fragTexCoord * 0.04;
 
     float stime = _Time * 1;
-    float baseFreq = 20;
+
+    float baseFreq = 5;
 
     //layer one
     float n1 = (octaves(130 + (wPos) * baseFreq, 5));
-    float n1rescale = (n1 - 0.5) * 2;
+    float hf = octaves(10 + (wPos) * baseFreq * 10 , 1); 
 
     float lowFreq = octaves(10 + (wPos) * 10 , 1); 
-    lowFreq = mix(1 - fragTexCoord.y, lowFreq, 0.6);
+    // lowFreq = mix(1 - fragTexCoord.y, lowFreq, 0.4);
+    wPos -= lowFreq * 0.1;
 
-    float noise = lowFreq + ((n1 - 0.5) * 2) * 0.1;// + n2;
 
-    float tfac = fract(0.25 * _Time + wPos.x); 
+    float noise = (1 - fragTexCoord.y) - 0.1;
+    noise -= lowFreq + n1 * 1 + hf * 0.3;
+
+    float mask = step(0.01, noise);//+ sin(_Time + wPos.x * 5) * 0.005);
+
+    float tfac = fract(0.25 + wPos.x); 
+    float seamask = step(-0.07 + n1 * 0.01, noise - tfac * 0.05);
 
     noise += (n1 - 0.5) * 2;
-    noise *= 0.5;
+    noise *= 0.3;
     noise = pow(scale(noise, 10) * 2, 2) * 0.5;// * 0.5;
-    float rdot = dotsize + noise * 0.3;
 
-    rdot /= 10;
-    rdot = clamp(rdot, 0, 0.5);
+    // noise = mix(1 - fragTexCoord.y, noise, 0.4);
+    float rdot = dotsize + noise;
+
     
-    vec2 uvContinuous = (wPos * 0.8 + n1 * 0.001) * multiplier;
+    rdot = clamp(rdot, 0.1, 0.5);
+    
+    vec2 uvContinuous = wPos * multiplier;//(wPos * 0.8 + n1 * 0.001) * multiplier;
     vec2 uvCell = fract(uvContinuous);
 
     float d = length(uvCell - 0.5);
     float w = length(fwidth(uvContinuous));
     float val = 1 - smoothstep(rdot - w , rdot + w, d);
 
-    float rec = val * noise;
 
-    // rec = wPos.y;
-    // rec *= wPos.y;
-    // rec = d2pix;
-    // rec *= 1000;
-    // rec /= d2pix;
-    // rec = rec - rec * d2pix * 10;
-    // vec3 fcol = vec3(0.8, 0.8, 0.9) * rec;
+    float rec = val * 0.7;
 
-    finalColor = vec4(rec, rec, rec, rec);
+    finalColor = vec4(rec, rec, rec, seamask);
 }                                                                                                                                                                                                  

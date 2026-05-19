@@ -98,6 +98,9 @@ int main(void)
     RunOnStart();
     while (!WindowShouldClose()) {
 
+        bool useDownResnBlur = true;
+        if(currentScene == MapScene) useDownResnBlur = false;
+
         ProcessAudio();
         BeginTextureMode(targetTex);
 
@@ -168,10 +171,15 @@ int main(void)
         int hs = HEIGHT * RSCALE;
         Rectangle dest = (Rectangle){0, 0, ws, hs};
 
-        //beginshadermode for the blit
-        BeginShaderMode(postProcess_frag);
-        DrawTexturePro(targetTex.texture, (Rectangle){0, 0, WIDTH, -HEIGHT}, dest, Vector2Zero(), 0, WHITE);
-        EndShaderMode();
+        if(useDownResnBlur){
+            //beginshadermode for the blit
+            BeginShaderMode(postProcess_frag);
+        }
+         DrawTexturePro(targetTex.texture, (Rectangle){0, 0, WIDTH, -HEIGHT}, dest, Vector2Zero(), 0, WHITE);
+
+        if(useDownResnBlur){
+            EndShaderMode();
+        }
 
         
         // RenderWindow(&hello, &font);
@@ -187,6 +195,7 @@ int main(void)
                 BattleUIRender();
             break;
             case CutScene:
+                CutSceneUIUpdate();
             break;
             case Editor:
                EditorUILoop();

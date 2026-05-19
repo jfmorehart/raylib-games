@@ -74,7 +74,7 @@ void main()
     float n1rescale = (n1 - 0.5) * 2;
 
     float lowFreq = octaves(10 + (wPos) * 10 , 1); 
-    lowFreq = mix(1 - fragTexCoord.y, lowFreq, 0.6);
+    lowFreq = mix(1 - fragTexCoord.y, lowFreq, 0.8);
     wPos -= lowFreq * 0.1;
 
 
