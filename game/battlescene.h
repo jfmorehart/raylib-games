@@ -53,6 +53,7 @@ extern DotShader illuminatedShader;
 
 void InitBattleScene(){
 
+    worldScale = 0.4;
     timeScale = 1;
     //setup Ship CONSTANTS (overwrite from mapscene)
     DotShaderValues(&generalShader,0.2, 120, (Vector3){1, 1, 1});

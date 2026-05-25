@@ -92,24 +92,26 @@ float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target, Is
 }
 
 void RenderShip(const Ship *ship, float scaleMult){ 
-    Vector2 forward = VfromAngle(ship->angle);
-    // Vector2 forwardNormal = Vector2Normalize(forward);
-    forward = Vector2Scale(forward, ship->scale * 5 * scaleMult);
+    Vector2 snPos = GridSnappedVector(ship->wPos, 0.1);
+    DrawCircleV(WorldToScreen(snPos), 200 * ship->scale * scaleMult, WHITE);
+    // Vector2 forward = VfromAngle(ship->angle);
+    // // Vector2 forwardNormal = Vector2Normalize(forward);
+    // forward = Vector2Scale(forward, ship->scale * 5 * scaleMult);
 
-    Vector2 right = {cos(ship->angle + PI * 0.5) * ship->scale * scaleMult, sin(ship->angle +PI * 0.5) * ship->scale * scaleMult};
+    // Vector2 right = {cos(ship->angle + PI * 0.5) * ship->scale * scaleMult, sin(ship->angle +PI * 0.5) * ship->scale * scaleMult};
 
-    Vector2 nose = Vector2Add(ship->wPos, forward);
-    Vector2 rightWing = Vector2Add(ship->wPos, right);//Vector2Add(, Vector2Scale(forward, -0.5));
-    Vector2 leftWing = Vector2Add(ship->wPos, Vector2Negate(right));//Vector2Add(), Vector2Scale(forward, -0.5));
-    Vector2 tail = Vector2Subtract(ship->wPos, forward);
+    // Vector2 nose = Vector2Add(ship->wPos, forward);
+    // Vector2 rightWing = Vector2Add(ship->wPos, right);//Vector2Add(, Vector2Scale(forward, -0.5));
+    // Vector2 leftWing = Vector2Add(ship->wPos, Vector2Negate(right));//Vector2Add(), Vector2Scale(forward, -0.5));
+    // Vector2 tail = Vector2Subtract(ship->wPos, forward);
 
-    if(ship->selected){
-        DrawTriangle(WorldToScreen(nose), WorldToScreen(rightWing),WorldToScreen(leftWing), BLUE);
-        DrawTriangle(WorldToScreen(tail), WorldToScreen(leftWing), WorldToScreen(rightWing), BLUE);
-    }else{
-        DrawTriangle(WorldToScreen(nose), WorldToScreen(rightWing),WorldToScreen(leftWing), WHITE);
-        DrawTriangle(WorldToScreen(tail), WorldToScreen(leftWing), WorldToScreen(rightWing), WHITE);
-    }
+    // if(ship->selected){
+    //     DrawTriangle(WorldToScreen(nose), WorldToScreen(rightWing),WorldToScreen(leftWing), BLUE);
+    //     DrawTriangle(WorldToScreen(tail), WorldToScreen(leftWing), WorldToScreen(rightWing), BLUE);
+    // }else{
+    //     DrawTriangle(WorldToScreen(nose), WorldToScreen(rightWing),WorldToScreen(leftWing), WHITE);
+    //     DrawTriangle(WorldToScreen(tail), WorldToScreen(leftWing), WorldToScreen(rightWing), WHITE);
+    // }
     
     if(ship->hasMoveTarget && ship->selected){
         DrawLineV(WorldToScreen(ship->wPos), WorldToScreen(ship->moveTargetPosition), WHITE);

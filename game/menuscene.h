@@ -1,3 +1,4 @@
+#include "filesystem.h"
 #include "globals.h"
 #include "UI.h"
 #include "helpers.h"
@@ -28,6 +29,8 @@ float lastWriteTime;
 int backlogLength = 10;
 DisplayLine backLog[10];
 int backLogCham;
+
+extern Map currentMap;
 
 int AddToBackLog(char *toadd, int length){
     char * writeto = backLog[backLogCham].lineBuffer;
@@ -150,6 +153,7 @@ void MenuUpdate(){
         currentChar = 0;
         memset(displayBuffer, 0, MAXCHARS);
         displayBufferCham = 0;
+        currentMap = LoadMapFile("bergen.campaign");
         SwitchScenes(MapScene);
     }
 

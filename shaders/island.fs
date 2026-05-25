@@ -64,40 +64,51 @@ void main()
     screenCoords += cameraPosition;
 
     vec2 wPos = screenCoords;
+    
     // wPos += fragTexCoord * 0.04;
 
     float stime = _Time * 1;
-    float baseFreq = 15;
+    float baseFreq = 8;
+
+    //layer one
 
     //layer one
     float n1 = (octaves(130 + (wPos) * baseFreq, 5));
-    float n1rescale = (n1 - 0.5) * 2;
+    float n1rescale = 2 * (n1 - 0.5);
+    float hf = octaves(10 + (wPos) * baseFreq * 8, 1); 
 
     float lowFreq = octaves(10 + (wPos) * 10 , 1); 
-    lowFreq = mix(1 - fragTexCoord.y, lowFreq, 0.8);
-    wPos -= lowFreq * 0.1;
+    // lowFreq = mix(1 - fragTexCoord.y, lowFreq, 0.4);
+    // wPos -= lowFreq * 0.1;
 
 
-    float noise = lowFreq + ((n1 - 0.5) * 2) * 0.1;// + n2;
+    float noise = (1 - fragTexCoord.y) - 0.1;
+    noise -= lowFreq + n1 * 0.3 + hf * 0.4;
 
     float mask = step(0.01, noise);//+ sin(_Time + wPos.x * 5) * 0.005);
 
-    float tfac = fract(0.25 * _Time + wPos.x); 
+    float tfac = fract(0.25 * _Time + wPos.x * 0.3 + wPos.y * 0.2 + hf * 2); 
     float seamask = step(-0.07 + n1rescale * 0.01, noise - tfac * 0.05);
     float seamask2 = step(-0.05, noise - tfac * 0.05);
 
-    noise += (n1 - 0.5) * 2;
-    noise *= 0.3;
-    noise = pow(scale(noise, 10) * 2, 2) * 0.5;// * 0.5;
-    float rdot = dotsize + noise;
+    float beach = step(-0.05, noise) - step(0.1, noise);
 
+
+    // noise += (n1 - 0.5) * 2;
+    // noise *= 0.3;
+    // noise = pow(scale(noise, 10) * 2, 2) * 0.6;// * 0.5;
+    noise = scale(noise, 10);
+    noise *= 0.1;
+    float rdot = dotsize + noise;
+    rdot += beach * 5;
     rdot = clamp(rdot, 0, 0.5);
     
-    vec2 uvContinuous = (wPos * 0.8 + n1 * 0.001) * multiplier;
+    vec2 uvContinuous = wPos * multiplier;
     vec2 uvCell = fract(uvContinuous);
 
     float d = length(uvCell - 0.5);
     float w = length(fwidth(uvContinuous));
+    w = 0;
     float val = 1 - smoothstep(rdot - w , rdot + w, d);
     // val *= noise;//
     // val *= mix(0.6, 1, (n1 * n1) + 0.1);
@@ -109,6 +120,8 @@ void main()
     float seasize = 0.1;
     rec += (seamask - seamask2) * 0.7 *  (1 - smoothstep(seasize - w , seasize + w, d));
 
-    rec *= val;
+    // rec = (1 - fragTexCoord.y) * 0.3 + noise;//
+    // rec *= val;
+    rec *= (1 - beach) + beach * 5;
     finalColor = vec4(rec, rec, rec, mask + sea);
 }                                                                                                                                                                                                  

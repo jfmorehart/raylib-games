@@ -64,34 +64,40 @@ void main()
     screenCoords += cameraPosition;
 
     vec2 wPos = screenCoords;
+
+    // wPos.x = floor(wPos.x * multiplier) + mod(wPos.x * multiplier, 1);
+    // wPos.y = floor(wPos.y * multiplier) + mod(wPos.y * multiplier, 1);
+
     // wPos += fragTexCoord * 0.04;
 
     float stime = _Time * 1;
 
-    float baseFreq = 5;
+    float baseFreq = 8;
 
     //layer one
     float n1 = (octaves(130 + (wPos) * baseFreq, 5));
-    float hf = octaves(10 + (wPos) * baseFreq * 10 , 1); 
+    float hf = octaves(10 + (wPos) * baseFreq * 8, 1); 
 
     float lowFreq = octaves(10 + (wPos) * 10 , 1); 
     // lowFreq = mix(1 - fragTexCoord.y, lowFreq, 0.4);
-    wPos -= lowFreq * 0.1;
+    // wPos -= lowFreq * 0.1;
 
 
     float noise = (1 - fragTexCoord.y) - 0.1;
-    noise -= lowFreq + n1 * 1 + hf * 0.3;
+    noise -= lowFreq + n1 * 0.3 + hf * 0.4;
 
     float mask = step(0.01, noise);//+ sin(_Time + wPos.x * 5) * 0.005);
 
     float tfac = fract(0.25 + wPos.x); 
     float seamask = step(-0.07 + n1 * 0.01, noise - tfac * 0.05);
 
-    noise += (n1 - 0.5) * 2;
-    noise *= 0.3;
-    noise = pow(scale(noise, 10) * 2, 2) * 0.5;// * 0.5;
+    // noise += (n1 - 0.5) * 2;
+    // noise *= 0.3;
+    // noise = pow(scale(noise, 10) * 2, 2) * 0.5;// * 0.5;
 
     // noise = mix(1 - fragTexCoord.y, noise, 0.4);
+
+    noise = scale(noise * 0.5, 10);
     float rdot = dotsize + noise;
 
     
@@ -102,10 +108,11 @@ void main()
 
     float d = length(uvCell - 0.5);
     float w = length(fwidth(uvContinuous));
+    // w = 0;
     float val = 1 - smoothstep(rdot - w , rdot + w, d);
 
 
     float rec = val * 0.7;
-
-    finalColor = vec4(rec, rec, rec, seamask);
+    vec3 col = vec3(rec, rec, rec);
+    finalColor = vec4(col, seamask);
 }                                                                                                                                                                                                  

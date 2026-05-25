@@ -33,9 +33,10 @@ int noteCount = 1;
 Note notes[MAX_NOTES];
 
 Note song[350];
-
 int songnum = 0;
 float nstep;
+
+Note song2[350];
 
 void A2S(float duration, float freq, float amp, WaveType wt, int harmonics){
     if(songnum > MAX_NOTES) {
@@ -44,6 +45,7 @@ void A2S(float duration, float freq, float amp, WaveType wt, int harmonics){
     song[songnum] = CreateNote(duration, freq, amp, wt, harmonics);
     songnum++;
 }
+
 void WriteSong(){
     float qtr = 60.00/ bpm;
     float eit = qtr / 2;

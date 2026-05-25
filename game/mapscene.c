@@ -132,7 +132,7 @@ void RandomizeMap(){
 
 void InitMapScene(){
 
-    // worldScale = 1;
+    // worldScale = 2;
     // cameraPosition = ScreenToWorld((Vector2){WIDTH * 0.5, HEIGHT * 0.5});
     timeScale = 0.1;
     DotShaderValues(&generalShader, 0.3, 80, (Vector3){1, 1, 1});
@@ -219,18 +219,23 @@ void MapInputLoop(){
     }
 }
 
+
 void MapFrameLoop(){
 
     int grey = 10;
     ClearBackground((Color){ grey, grey, grey, 255 });
 
-    float gridSize = 0.3;
+    float gridSize = 0.1;
+    grey = 20;
     for(float x = xBounds.x; x < xBounds.y; x+= gridSize){
-        DrawLineV(WorldToScreen((Vector2){x, -3}), WorldToScreen((Vector2){x, 3}), DARKGRAY);
+        DrawLineV(WorldToScreen((Vector2){x, -3}), WorldToScreen((Vector2){x, 3}),  CLITERAL(Color) { grey, grey, grey, 255 } );
     }
     for(float x = yBounds.y; x < yBounds.x; x+= gridSize){
-        DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), DARKGRAY);
+        DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), CLITERAL(Color) { grey, grey, grey, 255 });
     }
+
+    Vector2 mGridPos = GridSnappedVector(mousePos, gridSize);
+    DrawCircleV(WorldToScreen(mGridPos), 3, WHITE);
 
 
     //Set shader variables and draw ocean
@@ -302,6 +307,7 @@ void MapFrameLoop(){
     //islands 
     DotShaderValues(&map_islandShader, 0.04, 60, (Vector3){1, 1, 1});
     BeginShaderMode(map_islandShader.shader);
+    
     rlSetTexture(rlGetTextureIdDefault());                                                                                 
     rlBegin(RL_TRIANGLES); 
     for(int i = 0; i < currentMap.islandLength; i++){

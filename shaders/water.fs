@@ -104,6 +104,7 @@ void main()
 
     float d = length(uvCell - 0.5);
     float w = length(fwidth(uvContinuous));
+    // w = 0;
     float val = 1 - smoothstep(rdot - w , rdot + w, d);
 
     float rec = val * noise;

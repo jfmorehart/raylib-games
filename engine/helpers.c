@@ -87,6 +87,14 @@ Vector2 ScreenToWorld(Vector2 screenPos){
     screenPos = Vector2Add(screenPos, cameraPosition);
     return screenPos;
 }
+Vector2 GridSnappedVector(Vector2 worldSpace, float gridSize){
+    worldSpace.x -= xBounds.x;
+    worldSpace.y -= yBounds.y;
+    worldSpace.x = round(worldSpace.x / gridSize) * gridSize + xBounds.x;
+    worldSpace.y = round(worldSpace.y / gridSize) * gridSize + yBounds.y;
+    return worldSpace;
+}
+
 
 bool IsOnScreen(Vector2 worldPoint){
     Vector2 screenPoint = WorldToScreen(worldPoint);

@@ -20,6 +20,8 @@ float WorldToPixels(float world);
 Vector2 WorldToScreen(Vector2 worldPos);
 Vector2 ScreenToWorld(Vector2 screenPos);
 
+Vector2 GridSnappedVector(Vector2 worldSpace, float gridSize);
+
 bool IsOnScreen(Vector2 worldPoint);
 
 typedef struct Island Island;// name;

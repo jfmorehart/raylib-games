@@ -17,6 +17,7 @@ typedef enum EditorMode{
 } EditorMode;
 
 extern Map currentMap;
+extern Vector2 worldZero;
 
 EditorMode mode;
 
@@ -104,6 +105,8 @@ void ResetCanvas(){
 
 void InitEditorScene(){
 
+    worldScale = 2;
+    cameraPosition = worldZero;
     mode = PlaceIsland;
     timeScale = 0;
 
