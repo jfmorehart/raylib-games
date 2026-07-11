@@ -25,7 +25,6 @@ Vector2 worldZero;
 RenderTexture2D targetTex;
 Shader postProcess_frag;
 
-
 void RunOnStart(){
 
     scenes[0] = (Scene){Menu, MenuInit};
@@ -109,7 +108,8 @@ int main(void)
         unscaledTime += GetFrameTime();
 
         mousePos_ScreenCoords = GetMousePosition();
-        mousePos_ScreenCoords = Vector2Scale(mousePos_ScreenCoords, 1.00 / RSCALE);       
+        mousePos_ScreenCoords = Vector2Scale(mousePos_ScreenCoords, 1.00 / RSCALE);
+        mousePos_ScreenCoords = Vector2Subtract(mousePos_ScreenCoords, destOffset);    
         
         mousePos_UIScreenCoords = GetMousePosition();
         // printf("%f, %f, \n" ,   mousePos_UIScreenCoords.x,   mousePos_UIScreenCoords.y);
@@ -137,10 +137,12 @@ int main(void)
                 worldTime += scaledDeltaTime;
                 MapInputLoop();
                 MapFrameLoop();
+                // if(destOffset.x > -80){destOffset.x -= fixedDeltaTime * 300;}
                 break;
             case Battle:
                 worldTime += scaledDeltaTime * 0.004;
                 BattleFrameLoop();
+                // if(destOffset.x < 0){destOffset.x += fixedDeltaTime* 300;}
             break;
             case CutScene:
                UpdateCutScene();
@@ -169,16 +171,16 @@ int main(void)
         EndTextureMode();
         int ws = WIDTH * RSCALE; 
         int hs = HEIGHT * RSCALE;
-        Rectangle dest = (Rectangle){0, 0, ws, hs};
+        Rectangle dest = (Rectangle){destOffset.x, 0, ws, hs};
 
         if(useDownResnBlur){
             //beginshadermode for the blit
-            BeginShaderMode(postProcess_frag);
+            // BeginShaderMode(postProcess_frag);
         }
-         DrawTexturePro(targetTex.texture, (Rectangle){0, 0, WIDTH, -HEIGHT}, dest, Vector2Zero(), 0, WHITE);
+        DrawTexturePro(targetTex.texture, (Rectangle){0, 0, WIDTH, -HEIGHT}, dest, Vector2Zero(), 0, WHITE);
 
         if(useDownResnBlur){
-            EndShaderMode();
+            // EndShaderMode();
         }
 
         

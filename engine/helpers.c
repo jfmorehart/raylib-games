@@ -79,9 +79,11 @@ Vector2 WorldToScreen(Vector2 worldPos){
     Vector2 screen = Vector2Subtract(worldPos, cameraPosition);
     screen.x = screen.x / worldScale * (HEIGHT * 0.5) + WIDTH * 0.5;
     screen.y = -screen.y / worldScale * (HEIGHT * 0.5) + HEIGHT * 0.5;
+    screen = Vector2Subtract(screen, destOffset);
     return screen;
 }
 Vector2 ScreenToWorld(Vector2 screenPos){
+    screenPos = Vector2Add(screenPos,  destOffset);
     screenPos.x = (screenPos.x - WIDTH * 0.5) / (HEIGHT * 0.5) * worldScale;
     screenPos.y = -(screenPos.y - HEIGHT * 0.5) / (HEIGHT * 0.5) * worldScale;
     screenPos = Vector2Add(screenPos, cameraPosition);

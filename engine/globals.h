@@ -54,4 +54,6 @@ typedef struct Scene{
 #define SCENECOUNT 5
 Scene scenes[SCENECOUNT];
 
+Vector2 destOffset;
+
 

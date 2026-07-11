@@ -61,6 +61,7 @@ void InitBattleScene(){
     //determine which ships are included in the scene
     allShipsIncludedCount = 0;
     for(int i = 0; i < currentMap.fcount; i++){
+        BattleSceneIntroReset(&currentMap.friendlies[i]);
         currentMap.friendlies[i].includedInScene = false;
         if(!currentMap.friendlies[i].alive)continue;
         if(IsOnScreen(currentMap.friendlies[i].wPos)){
@@ -70,6 +71,7 @@ void InitBattleScene(){
         }
     }
     for(int i = 0; i < currentMap.ecount; i++){
+        BattleSceneIntroReset(&currentMap.enemies[i]);
         currentMap.enemies[i].includedInScene = false;
         if(!currentMap.enemies[i].alive)continue;
         if(IsOnScreen(currentMap.enemies[i].wPos)){

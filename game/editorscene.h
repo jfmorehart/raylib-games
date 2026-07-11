@@ -481,11 +481,11 @@ void PlaceIslandMode(){
 
     for(int i = 0; i < localMap.fcount; i++){
         if(!localMap.friendlies[i].alive)continue;
-        DrawCircleV(WorldToScreen(localMap.friendlies[i].wPos), 5, BLUE);
+        DrawCircleV(WorldToScreen(localMap.friendlies[i].wPos), localMap.friendlies[i].scale * 200 + 3, BLUE);
     }
     for(int i = 0 ; i < localMap.ecount; i++){
         if(!localMap.enemies[i].alive)continue;
-        DrawCircleV(WorldToScreen(localMap.enemies[i].wPos), 5, RED);
+        DrawCircleV(WorldToScreen(localMap.enemies[i].wPos), localMap.enemies[i].scale * 200 + 3, RED);
     }
 
 

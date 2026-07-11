@@ -137,8 +137,13 @@ void MenuUpdate(){
         displayBufferCham = 0;
         AddLine("Admiral Wilhelm Canaris. Abwehr, Reichsmarine.");
         AddLine("You will be executed in 87 days.");
+        AddLine("At your disposal are the battleships:");
+        AddLine("Scharnhorst");
+        AddLine("Tirpitz");
+        AddLine("and nine destroyers");
         AddLine("Begin?");
     }
+    
     if(strcmp(textBuffer, "Raeber") == 0){
         memset(textBuffer, 0, MAXCHARS);
         currentChar = 0;

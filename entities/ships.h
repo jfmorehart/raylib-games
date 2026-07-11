@@ -57,4 +57,5 @@ void RenderShipColor(const Ship *ship, float scaleMult, Vector3 color);
 void SteerShip(Ship *ship, bool avoidIslands, Island *islandsToAvoid);
 void SteerShipBattle(Ship *ship, bool avoidIslands, Island *islandsToAvoid);
 
+void BattleSceneIntroReset(Ship *ship);
 void ShipCombat(Ship *ship, Ship *targetShipsArray, int arrayLen);

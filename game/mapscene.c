@@ -11,6 +11,7 @@
 #include "shiploadouts.h"
 #include "map.h"
 #include "rlgl.h"
+#include "taskforce.h"
 
 #include <math.h>       
 #include <stdio.h>
@@ -27,7 +28,6 @@ extern DotShader generalShader;
 extern DotShader islandShader;
 extern DotShader map_islandShader;
 
-
 Ship destroyerShip;
 // Ship battleShip;
 
@@ -40,6 +40,8 @@ Vector2 focusTarget;
 bool isZoomed;
 
 #pragma region routine
+
+
 
 void TimeRoutine(Routine *routine){
 
@@ -74,6 +76,23 @@ void CallFocus(Vector2 wpos){
         focusing = true;
         RunRoutine("SwitchToBattleRoutine");
         endZoom = 0.4;
+
+        for(int i = 0 ; i < taskForceCount; i++){
+
+            Vector2 delta = Vector2Subtract(tfs[i].destination, tfs[i].position);
+            delta = Vector2Normalize(delta);
+
+            for(int s = 0; s < tfs[i].shipCount; s++){
+                if(tfs[i].ships[s]){
+                    tfs[i].ships[s]->wPos = Vector2Add(tfs[i].position, tfs[i].ships[s]->wPos);
+
+                    tfs[i].ships[s]->moveTargetPosition = tfs[i].destination;
+                    tfs[i].ships[s]->hasMoveTarget = true;
+
+                    tfs[i].ships[s]->angle = atan2f(delta.y, delta.x);
+                }
+            }
+        }
     }
 }
 
@@ -115,18 +134,6 @@ void RandomizeMap(){
         if(i == 0){destroyerShip = currentMap.friendlies[i];}
     }   
 
-    // currentMap.ecount= MAX_SHIPS;
-    // for(int i = 0; i < currentMap.ecount; i++){
-    //     currentMap.enemies[i] = DestroyerStats;
-    //     currentMap.enemies[i].wPos = RandomWorldPointNoIsland();
-    //     currentMap.enemies[i].angle = R01() * 7;
-    //     currentMap.enemies->team = false;
-
-    //     currentMap.enemies[i].hasMoveTarget = true;
-    //     currentMap.enemies[i].moveTargetPosition = RandomWorldPointNoIsland();
-    //     memcpy(currentMap.enemies[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout)); 
-    //     InitRvecs(&currentMap.enemies[i]);
-    // } 
 }
 
 
@@ -144,6 +151,71 @@ void InitMapScene(){
     // resLoc = GetShaderLocation(ship_frag, "dotsize");   
     // float dotsize = 0.3;
     // SetShaderValue(ship_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
+
+    taskForceCount = 0;
+    for(int i =0 ; i < currentMap.fcount; i++){
+
+        bool found = false;
+        for(int t = 0; t < taskForceCount; t++){ 
+            if(tfs[t].shipCount + 1 >= MAX_SHIPS_IN_TF) continue;
+            if(tfs[t].team != currentMap.friendlies[i].team) continue;
+            if(Vector2Distance(currentMap.friendlies[i].wPos, tfs[t].position) < TF_MAX_RADIUS){
+                tfs[t].ships[tfs[t].shipCount] = &currentMap.friendlies[i];
+
+                //wPos stores offset from tf center in transit
+                tfs[t].ships[tfs[t].shipCount]->wPos = Vector2Subtract(tfs[t].position, tfs[t].ships[tfs[t].shipCount]->wPos);
+                tfs[t].shipCount++;
+                found = true;
+            }   
+        }
+        if(found) continue;
+        //TRIED ALL TFS AND DIDNT FIT INTO ANY!
+        //make new!
+
+        tfs[taskForceCount] = (TaskForce){0};
+        tfs[taskForceCount].shipCount = 0;
+        tfs[taskForceCount].min_speed = 0.09;
+        tfs[taskForceCount].team = currentMap.friendlies[i].team;
+        tfs[taskForceCount].position = currentMap.friendlies[i].wPos;
+        tfs[taskForceCount].ships[tfs[taskForceCount].shipCount] = &currentMap.friendlies[i];
+        tfs[taskForceCount].ships[tfs[taskForceCount].shipCount]->wPos = Vector2Zero(); // in transit, wPos becomes offset from tf center
+        tfs[taskForceCount].shipCount++;
+        taskForceCount++;
+
+        // printf("spawning new taskforce- ship - %f, %f", currentMap.friendlies[i].wPos.x,  tfs[taskForceCount].position.x);
+    }
+
+    for(int i =0 ; i < currentMap.ecount; i++){
+
+        bool found = false;
+        for(int t = 0; t < taskForceCount; t++){ 
+            if(tfs[t].shipCount + 1 >= MAX_SHIPS_IN_TF) continue;
+            if(tfs[t].team != currentMap.enemies[i].team) continue;
+            if(Vector2Distance(currentMap.enemies[i].wPos, tfs[t].position) < TF_MAX_RADIUS){
+                tfs[t].ships[tfs[t].shipCount] = &currentMap.enemies[i];
+
+                //wPos stores offset from tf center in transit
+                tfs[t].ships[tfs[t].shipCount]->wPos = Vector2Subtract(tfs[t].position, tfs[t].ships[tfs[t].shipCount]->wPos);
+                tfs[t].shipCount++;
+                found = true;
+            }   
+        }
+        if(found) continue;
+        //TRIED ALL TFS AND DIDNT FIT INTO ANY!
+        //make new!
+
+        tfs[taskForceCount].shipCount = 0;
+        tfs[taskForceCount] = (TaskForce){0};
+        tfs[taskForceCount].min_speed = 0.09;
+        tfs[taskForceCount].team = false;
+        tfs[taskForceCount].position = currentMap.enemies[i].wPos;
+        tfs[taskForceCount].ships[tfs[taskForceCount].shipCount] = &currentMap.enemies[i];
+        tfs[taskForceCount].ships[tfs[taskForceCount].shipCount]->wPos = Vector2Zero(); // in transit, wPos becomes offset from tf center
+        tfs[taskForceCount].shipCount++;
+        tfs[taskForceCount].destination = RandomWorldPointNoIsland();
+        taskForceCount++;
+    }
+
 }
 #pragma endregion
 
@@ -151,14 +223,6 @@ void InitMapScene(){
 void MapInputLoop(){
     if(focusing) return;
     if(IsMouseButtonDown(0)){
-
-
-        // Island *click = WhatIslandIsThis(mousePos);
-        // if(click){
-        //     click->relativePosition = mousePos;
-        //     RecalculateEdges2(click);
-        //     printf("dragging %f, %f\n", mousePos.x, mousePos.y);
-        // }
 
         // printf("click \n");
         if(!IsKeyDown(KEY_LEFT_SHIFT)){
@@ -225,17 +289,17 @@ void MapFrameLoop(){
     int grey = 10;
     ClearBackground((Color){ grey, grey, grey, 255 });
 
-    float gridSize = 0.1;
-    grey = 20;
-    for(float x = xBounds.x; x < xBounds.y; x+= gridSize){
-        DrawLineV(WorldToScreen((Vector2){x, -3}), WorldToScreen((Vector2){x, 3}),  CLITERAL(Color) { grey, grey, grey, 255 } );
-    }
-    for(float x = yBounds.y; x < yBounds.x; x+= gridSize){
-        DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), CLITERAL(Color) { grey, grey, grey, 255 });
-    }
+    // float gridSize = 0.1;
+    // grey = 20;
+    // for(float x = xBounds.x; x < xBounds.y; x+= gridSize){
+    //     DrawLineV(WorldToScreen((Vector2){x, -3}), WorldToScreen((Vector2){x, 3}),  CLITERAL(Color) { grey, grey, grey, 255 } );
+    // }
+    // for(float x = yBounds.y; x < yBounds.x; x+= gridSize){
+    //     DrawLineV(WorldToScreen((Vector2){-3, x}), WorldToScreen((Vector2){3, x}), CLITERAL(Color) { grey, grey, grey, 255 });
+    // }
 
-    Vector2 mGridPos = GridSnappedVector(mousePos, gridSize);
-    DrawCircleV(WorldToScreen(mGridPos), 3, WHITE);
+    // Vector2 mGridPos = GridSnappedVector(mousePos, gridSize);
+    // DrawCircleV(WorldToScreen(mGridPos), 3, WHITE);
 
 
     //Set shader variables and draw ocean
@@ -246,63 +310,72 @@ void MapFrameLoop(){
         currentMap.enemies[d].isVisible = false;
     }
 
-    // //beaches
-    // DotShaderValues(&map_islandShader, 0.3, 80, (Vector3){1, 1, 1});
-    // BeginShaderMode(map_islandShader.shader);
-    // for(int i = 0; i < currentMap.islandLength; i++){
-    //     RenderBeaches(&currentMap.islands[i]);
-    // }
-    // EndShaderMode();
-
-
     PrepShipRangePass();
 
-    for(int i = 0; i < currentMap.fcount; i++){
-        if(!currentMap.friendlies[i].alive)continue;
-        DrawCircleV(WorldToScreen(currentMap.friendlies[i].wPos), WorldToPixels(SHIP_SEARCHRANGE), WHITE);
+    // for(int i = 0; i < currentMap.fcount; i++){
+    //     if(!currentMap.friendlies[i].alive)continue;
+    //     DrawCircleV(WorldToScreen(currentMap.friendlies[i].wPos), WorldToPixels(SHIP_SEARCHRANGE), WHITE);
 
-        for(int d = 0; d < currentMap.ecount; d++){
-            if(!currentMap.enemies[d].alive)continue;
-            if(Vector2Distance(currentMap.friendlies[i].wPos, currentMap.enemies[d].wPos) < SHIP_SEARCHRANGE){
-                currentMap.enemies[d].isVisible = true;
+    //     for(int d = 0; d < currentMap.ecount; d++){
+    //         if(!currentMap.enemies[d].alive)continue;
+    //         if(Vector2Distance(currentMap.friendlies[i].wPos, currentMap.enemies[d].wPos) < SHIP_SEARCHRANGE){
+    //             currentMap.enemies[d].isVisible = true;
+    //             if(!focusing){
+    //                 CallFocus(currentMap.friendlies[i].wPos);
+    //             }
+    //         }
+    //     }
+    // }
+
+    printf("tf count: %d\n", taskForceCount);
+    for(int i = 0; i < taskForceCount; i++){
+        // if(tfs[i].shipCount <= 0) continue;
+        if(tfs[i].team == false) continue;
+        DrawCircleV(WorldToScreen(tfs[i].position), WorldToPixels(SHIP_SEARCHRANGE), WHITE);
+
+        for(int d = 0; d < taskForceCount; d++){
+            if(tfs[d].team == true) continue;
+            // if(tfs[d].shipCount <= 0) continue;
+            if(Vector2Distance(tfs[i].position, tfs[d].position) < SHIP_SEARCHRANGE){
                 if(!focusing){
-                    CallFocus(currentMap.friendlies[i].wPos);
+                    CallFocus(tfs[i].position);
                 }
             }
         }
     }
+
     EndOceanPass();
 
     rlSetTexture(rlGetTextureIdDefault());                                                                                 
     rlBegin(RL_TRIANGLES);   
-    //Set color red
-    Vector3 col = (Vector3){1, 0, 0};
-    SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
-    BeginShaderMode(generalShader.shader);
-    for(int d = 0; d < currentMap.ecount; d++){
-        if(currentMap.enemies[d].isVisible && currentMap.enemies[d].alive){
-            RenderShip(&currentMap.enemies[d], 0.7);
-            if(!focusing){
-                SteerShip(&currentMap.enemies[d], true, currentMap.islands);
-            }
-        }
-    }
-    EndShaderMode();
+    // //Set color red
+    // Vector3 col = (Vector3){1, 0, 0};
+    // SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
+    // BeginShaderMode(generalShader.shader);
+    // for(int d = 0; d < currentMap.ecount; d++){
+    //     if(currentMap.enemies[d].isVisible && currentMap.enemies[d].alive){
+    //         RenderShip(&currentMap.enemies[d], 0.7);
+    //         if(!focusing){
+    //             SteerShip(&currentMap.enemies[d], true, currentMap.islands);
+    //         }
+    //     }
+    // }
+    // EndShaderMode();
 
     //Set color white
-    col = (Vector3){1, 1, 1};
-    SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
-    BeginShaderMode(generalShader.shader);
-    for(int i = 0; i < currentMap.fcount; i++){
-        if(!currentMap.friendlies[i].alive)continue;
-        RenderShip(&currentMap.friendlies[i], 1);
-        if(!focusing){
-            SteerShip(&currentMap.friendlies[i], true, currentMap.islands);
-        }
-    }
+    // Vector3 col = (Vector3){1, 1, 1};
+    // SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
+    // BeginShaderMode(generalShader.shader);
+    // for(int i = 0; i < currentMap.fcount; i++){
+    //     if(!currentMap.friendlies[i].alive)continue;
+    //     RenderShip(&currentMap.friendlies[i], 1);
+    //     if(!focusing){
+    //         SteerShip(&currentMap.friendlies[i], true, currentMap.islands);
+    //     }
+    // }
     rlEnd();
     rlSetTexture(0); 
-    EndShaderMode();
+    // EndShaderMode();
 
     //islands 
     DotShaderValues(&map_islandShader, 0.04, 60, (Vector3){1, 1, 1});
@@ -324,6 +397,50 @@ void MapFrameLoop(){
     //     DrawLineEx(WorldToScreen(Vector2Zero()), WorldToScreen(mousePos), 5, GREEN); 
     // }
     // DrawBeam(Vector2Zero(), mousePos, PI * 0.2, 10, 1, &currentMap, 0.3);
+
+    for(int i = 0; i < taskForceCount; i++){
+       Vector2 tfpos = WorldToScreen(tfs[i].position);
+
+        if(tfs[i].team){
+            if(IsMouseButtonDown(0)){
+                if(Vector2DistanceSqr(tfpos, mousePos_ScreenCoords) < 50){
+                    tfs[i].selected = true;
+                }else{
+                    tfs[i].selected = false;
+                }
+            }
+            if(IsMouseButtonDown(1)){
+                if(tfs[i].selected){
+                    tfs[i].destination = mousePos;
+                }
+            }
+        }
+
+
+        if(!Vector2Equals(Vector2Zero(), tfs[i].destination)){
+            Vector2 delta = Vector2Subtract(tfs[i].destination, tfs[i].position);
+            if(Vector2LengthSqr(delta) < 0.01) {
+                tfs[i].destination = Vector2Zero();
+                continue;
+            }
+            delta = Vector2Scale(Vector2Normalize(delta), tfs[i].min_speed * scaledDeltaTime);
+            tfs[i].position = Vector2Add(tfs[i].position, delta);
+        }
+
+        if(tfs[i].team){
+            if(tfs[i].selected){
+                DrawCircle(WorldToScreen(tfs[i].position).x, WorldToScreen(tfs[i].position).y, 3, BLUE); 
+            }else{
+                DrawCircle(WorldToScreen(tfs[i].position).x, WorldToScreen(tfs[i].position).y, 3, GRAY); 
+            }
+            DrawText("Task Force 32", tfpos.x - 30, tfpos.y - 20, 1, WHITE);
+        }else{
+            if(IsKeyPressed(KEY_S)){
+                DrawCircle(WorldToScreen(tfs[i].position).x, WorldToScreen(tfs[i].position).y, 3, RED); 
+                DrawText("OPFOR", tfpos.x - 30, tfpos.y - 20, 1, RED);
+            }
+        }
+    }
 }
 
 void MapUIRender(){
