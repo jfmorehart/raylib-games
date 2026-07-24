@@ -30,7 +30,7 @@ int backlogLength = 10;
 DisplayLine backLog[10];
 int backLogCham;
 
-extern Map currentMap;
+extern Map mapFromDisk;
 
 int AddToBackLog(char *toadd, int length){
     char * writeto = backLog[backLogCham].lineBuffer;
@@ -61,6 +61,7 @@ void MenuInit(){
     memset(textBuffer, 0, MAXCHARS);
     currentChar = 0;
     memset(displayBuffer, 0, MAXCHARS);
+    backLogCham = 0;
     displayBufferCham = 0;
     printf("loading menu\n");
     const char* hello = "hello";
@@ -93,7 +94,6 @@ void WriteBacklogToDisplayBuffer_Tick(){
 void MenuUpdate(){
 
     ClearBackground(BLACK);
-
 
     if(unscaledTime - lastWriteTime > 0.01){
         WriteBacklogToDisplayBuffer_Tick();
@@ -158,7 +158,7 @@ void MenuUpdate(){
         currentChar = 0;
         memset(displayBuffer, 0, MAXCHARS);
         displayBufferCham = 0;
-        currentMap = LoadMapFile("bergen.campaign");
+        mapFromDisk = LoadMapFile("bergen.campaign");
         SwitchScenes(MapScene);
     }
 

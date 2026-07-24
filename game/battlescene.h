@@ -20,7 +20,7 @@
 #include <stdlib.h> 
 #include <time.h>
 
-extern Map currentMap;
+extern Map mapFromDisk;
 
 extern Vector2 worldZero;
 
@@ -60,23 +60,23 @@ void InitBattleScene(){
 
     //determine which ships are included in the scene
     allShipsIncludedCount = 0;
-    for(int i = 0; i < currentMap.fcount; i++){
-        BattleSceneIntroReset(&currentMap.friendlies[i]);
-        currentMap.friendlies[i].includedInScene = false;
-        if(!currentMap.friendlies[i].alive)continue;
-        if(IsOnScreen(currentMap.friendlies[i].wPos)){
-            currentMap.friendlies[i].includedInScene = true;
-            allShipsIncludedInScene[allShipsIncludedCount] = &currentMap.friendlies[i];
+    for(int i = 0; i < mapFromDisk.fcount; i++){
+        BattleSceneIntroReset(&mapFromDisk.friendlies[i]);
+        mapFromDisk.friendlies[i].includedInScene = false;
+        if(!mapFromDisk.friendlies[i].alive)continue;
+        if(IsOnScreen(mapFromDisk.friendlies[i].wPos)){
+            mapFromDisk.friendlies[i].includedInScene = true;
+            allShipsIncludedInScene[allShipsIncludedCount] = &mapFromDisk.friendlies[i];
             allShipsIncludedCount++;
         }
     }
-    for(int i = 0; i < currentMap.ecount; i++){
-        BattleSceneIntroReset(&currentMap.enemies[i]);
-        currentMap.enemies[i].includedInScene = false;
-        if(!currentMap.enemies[i].alive)continue;
-        if(IsOnScreen(currentMap.enemies[i].wPos)){
-            currentMap.enemies[i].includedInScene = true;
-            allShipsIncludedInScene[allShipsIncludedCount] = &currentMap.enemies[i];
+    for(int i = 0; i < mapFromDisk.ecount; i++){
+        BattleSceneIntroReset(&mapFromDisk.enemies[i]);
+        mapFromDisk.enemies[i].includedInScene = false;
+        if(!mapFromDisk.enemies[i].alive)continue;
+        if(IsOnScreen(mapFromDisk.enemies[i].wPos)){
+            mapFromDisk.enemies[i].includedInScene = true;
+            allShipsIncludedInScene[allShipsIncludedCount] = &mapFromDisk.enemies[i];
             allShipsIncludedCount++;
         }
     }
@@ -90,14 +90,14 @@ void BattleFrameLoop(){
     
     EndOceanPass(); //flush buffer
 
-    for(int d = 0; d < currentMap.ecount; d++){
+    for(int d = 0; d < mapFromDisk.ecount; d++){
         // currentMap.enemies[d].isVisible = false;
-        currentMap.enemies[d].illuminationThisFrame -= scaledDeltaTime * 5;
-        currentMap.enemies[d].illuminationThisFrame = 0;//fmaxf(currentMap.enemies[d].illuminationThisFrame, 0);
+        // currentMap.enemies[d].illuminationThisFrame -= scaledDeltaTime * 5;
+        mapFromDisk.enemies[d].illuminationThisFrame = 0;//fmaxf(currentMap.enemies[d].illuminationThisFrame, 0);
     }
 
-    for(int d = 0; d < currentMap.ecount; d++){
-        currentMap.friendlies[d].isVisible = false;
+    for(int d = 0; d < mapFromDisk.ecount; d++){
+        mapFromDisk.friendlies[d].isVisible = false;
     }
 
     //DRAW BEAMS
@@ -107,15 +107,15 @@ void BattleFrameLoop(){
     rlSetTexture(rlGetTextureIdDefault());   
     BeginBlendMode(BLEND_ADDITIVE);                                                                              
     rlBegin(RL_TRIANGLES);
-    for(int i = 0; i < currentMap.fcount; i++){
-        for(int j = 0; j < currentMap.friendlies[i].batteryCount; j++){
-            RenderBatteryBeam(&currentMap.friendlies[i].batteries[j], &currentMap.friendlies[i]);
+    for(int i = 0; i < mapFromDisk.fcount; i++){
+        for(int j = 0; j < mapFromDisk.friendlies[i].batteryCount; j++){
+            RenderBatteryBeam(&mapFromDisk.friendlies[i].batteries[j], &mapFromDisk.friendlies[i]);
         }
     }
-    for(int i = 0; i < currentMap.ecount; i++){
-        if(!currentMap.enemies[i].alive || !currentMap.enemies[i].includedInScene)continue;
-        for(int j = 0; j < currentMap.enemies[i].batteryCount; j++){
-            RenderBatteryBeam(&currentMap.enemies[i].batteries[j], &currentMap.enemies[i]);
+    for(int i = 0; i < mapFromDisk.ecount; i++){
+        if(!mapFromDisk.enemies[i].alive || !mapFromDisk.enemies[i].includedInScene)continue;
+        for(int j = 0; j < mapFromDisk.enemies[i].batteryCount; j++){
+            RenderBatteryBeam(&mapFromDisk.enemies[i].batteries[j], &mapFromDisk.enemies[i]);
         }
     }
     rlEnd();                                                        
@@ -124,15 +124,19 @@ void BattleFrameLoop(){
     EndBlendMode();
 
     PrepShipRangePass();
-    for(int i = 0; i < currentMap.fcount; i++){
-        if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
-        DrawCircleV(WorldToScreen(currentMap.friendlies[i].wPos), WorldToPixels(SHIP_SEARCHRANGE * 0.5), WHITE);
+    for(int i = 0; i < mapFromDisk.fcount; i++){
+        if(!mapFromDisk.friendlies[i].alive || !mapFromDisk.friendlies[i].includedInScene)continue;
+        DrawCircleV(WorldToScreen(mapFromDisk.friendlies[i].wPos), WorldToPixels(SHIP_SEARCHRANGE * 0.5), WHITE);
 
-        for(int d = 0; d < currentMap.ecount; d++){
-            if(!currentMap.enemies[d].alive || !currentMap.enemies[d].includedInScene)continue;
-            if(Vector2Distance(currentMap.friendlies[i].wPos, currentMap.enemies[d].wPos) < SHIP_SEARCHRANGE){
-                currentMap.enemies[d].isVisible = true;
-                currentMap.friendlies[i].isVisible = true;
+        for(int d = 0; d < mapFromDisk.ecount; d++){
+            if(!mapFromDisk.enemies[d].alive || !mapFromDisk.enemies[d].includedInScene)continue;
+            if(Vector2Distance(mapFromDisk.friendlies[i].wPos, mapFromDisk.enemies[d].wPos) < SHIP_SEARCHRANGE){
+                mapFromDisk.enemies[d].isVisible = true;
+                mapFromDisk.friendlies[i].isVisible = true;
+            }
+            else if (Vector2Distance(mapFromDisk.friendlies[i].wPos, mapFromDisk.enemies[d].wPos) < SHIP_SEARCHRANGE * 1.5){
+                // currentMap.enemies[d].isVisible = true;
+                mapFromDisk.enemies[d].illuminationThisFrame += 0.1 * scaledDeltaTime;
             }
         }
     }
@@ -143,10 +147,10 @@ void BattleFrameLoop(){
     BeginShaderMode(illuminatedShader.shader);
     rlSetTexture(rlGetTextureIdDefault());                                                                                 
     rlBegin(RL_TRIANGLES);       
-    for(int d = 0; d < currentMap.ecount; d++){
-        if(currentMap.enemies[d].isVisible && currentMap.enemies[d].alive && currentMap.enemies[d].includedInScene){
-            RenderShipColor(&currentMap.enemies[d], 0.3, Vector3Scale(col, fminf(1, currentMap.enemies[d].illuminationThisFrame)));
-            SteerShipBattle(&currentMap.enemies[d], true, currentMap.islands);
+    for(int d = 0; d < mapFromDisk.ecount; d++){
+        if(mapFromDisk.enemies[d].illuminationThisFrame > 0.1 && mapFromDisk.enemies[d].alive && mapFromDisk.enemies[d].includedInScene){
+            RenderShipColor(&mapFromDisk.enemies[d], 0.3, Vector3Scale(col, fminf(1, mapFromDisk.enemies[d].illuminationThisFrame)));
+            SteerShipBattle(&mapFromDisk.enemies[d], true, mapFromDisk.islands);
         }
     }
     rlEnd();          
@@ -159,10 +163,10 @@ void BattleFrameLoop(){
     BeginShaderMode(illuminatedShader.shader);
     rlSetTexture(rlGetTextureIdDefault());                                                                                 
     rlBegin(RL_TRIANGLES);       
-    for(int i = 0; i < currentMap.fcount; i++){
-        if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
-        RenderShipColor(&currentMap.friendlies[i], 0.3, col);
-        SteerShipBattle(&currentMap.friendlies[i], false, currentMap.islands);
+    for(int i = 0; i < mapFromDisk.fcount; i++){
+        if(!mapFromDisk.friendlies[i].alive || !mapFromDisk.friendlies[i].includedInScene)continue;
+        RenderShipColor(&mapFromDisk.friendlies[i], 0.3, col);
+        SteerShipBattle(&mapFromDisk.friendlies[i], false, mapFromDisk.islands);
 
         // DrawLineEx(WorldToScreen(currentMap.friendlies[i].wPos), mousePos_ScreenCoords, 3,  WHITE);
         // DrawCircleV(WorldToScreen(currentMap.friendlies[i].wPos), 30, WHITE);
@@ -175,13 +179,13 @@ void BattleFrameLoop(){
     col = (Vector3){0.1, 0.1, 0.1};
     DotShaderValues(&generalShader,0.1, 230, col);
     BeginShaderMode(generalShader.shader);
-    for(int i = 0; i < currentMap.fcount; i++){
-        if(!currentMap.friendlies[i].alive || !currentMap.friendlies[i].includedInScene)continue;
-        ShipCombat(&currentMap.friendlies[i], currentMap.enemies, currentMap.ecount);
+    for(int i = 0; i < mapFromDisk.fcount; i++){
+        if(!mapFromDisk.friendlies[i].alive || !mapFromDisk.friendlies[i].includedInScene)continue;
+        ShipCombat(&mapFromDisk.friendlies[i], mapFromDisk.enemies, mapFromDisk.ecount);
     }
-    for(int i = 0; i < currentMap.ecount; i++){
-        if(!currentMap.enemies[i].alive || !currentMap.enemies[i].includedInScene)continue;
-        ShipCombat(&currentMap.enemies[i], currentMap.friendlies, currentMap.fcount);
+    for(int i = 0; i < mapFromDisk.ecount; i++){
+        if(!mapFromDisk.enemies[i].alive || !mapFromDisk.enemies[i].includedInScene)continue;
+        ShipCombat(&mapFromDisk.enemies[i], mapFromDisk.friendlies, mapFromDisk.fcount);
     }
     EndShaderMode();
 
@@ -198,8 +202,8 @@ void BattleFrameLoop(){
     BeginShaderMode(islandShader.shader);
     rlSetTexture(rlGetTextureIdDefault());                                                                                 
     rlBegin(RL_TRIANGLES);  
-    for(int i = 0; i < currentMap.islandLength; i++){
-        Render(&currentMap.islands[i]);
+    for(int i = 0; i < mapFromDisk.islandLength; i++){
+        Render(&mapFromDisk.islands[i]);
     }
     rlEnd();                                                        
     rlSetTexture(0); 
@@ -232,9 +236,9 @@ void BattleFrameLoop(){
     if(IsMouseButtonDown(0)){
 
         if(!IsKeyDown(KEY_LEFT_SHIFT)){
-            for(int i = 0; i < currentMap.fcount; i++){
-                currentMap.friendlies[i].selected = false;
-                currentMap.enemies[i].selected = false;
+            for(int i = 0; i < mapFromDisk.fcount; i++){
+                mapFromDisk.friendlies[i].selected = false;
+                mapFromDisk.enemies[i].selected = false;
             } 
         }
 
@@ -243,16 +247,16 @@ void BattleFrameLoop(){
         }else{
             DrawCircleV(mousePos_ScreenCoords, 5, GREEN);
         }
-        for(int i = 0; i < currentMap.fcount; i++){
-            if(IsPointInShip(mousePos, &currentMap.friendlies[i], 0.3)){
+        for(int i = 0; i < mapFromDisk.fcount; i++){
+            if(IsPointInShip(mousePos, &mapFromDisk.friendlies[i], 0.3)){
                 DrawCircleV(mousePos_ScreenCoords, 5, RED);
             }
         }
 
-        for(int i = 0; i < currentMap.fcount; i++){
-            if(!currentMap.friendlies[i].alive)continue;
-            if(Vector2Distance(currentMap.friendlies[i].wPos, mousePos) < 0.1){
-                currentMap.friendlies[i].selected = true;
+        for(int i = 0; i < mapFromDisk.fcount; i++){
+            if(!mapFromDisk.friendlies[i].alive)continue;
+            if(Vector2Distance(mapFromDisk.friendlies[i].wPos, mousePos) < 0.1){
+                mapFromDisk.friendlies[i].selected = true;
             }
         }   
     }
@@ -286,10 +290,10 @@ void BattleFrameLoop(){
     }
 
     if(IsMouseButtonDown(1)){
-        for(int i = 0; i < currentMap.fcount; i++){
-            if(currentMap.friendlies[i].selected){
-                currentMap.friendlies[i].moveTargetPosition = mousePos;
-                currentMap.friendlies[i].hasMoveTarget = true;
+        for(int i = 0; i < mapFromDisk.fcount; i++){
+            if(mapFromDisk.friendlies[i].selected){
+                mapFromDisk.friendlies[i].moveTargetPosition = mousePos;
+                mapFromDisk.friendlies[i].hasMoveTarget = true;
             }
         }   
     }

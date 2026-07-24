@@ -22,13 +22,35 @@ typedef struct StringArray{
     int stringIndices[40];
 }StringArray;
 
-void AssignName(Map *map, const char * name);
+typedef struct PolyPoly{
+    char filename[20];
+    Vector2 polyCenter;
+    float polyScale;
+    Island islands[ISLANDCOUNT];
+    int islandLength;
+}PolyPoly;
+
+typedef enum FileType{
+    ShipFile,
+    TaskForceFile,
+    IslandFile,
+    MapFile,
+    LevelFile,
+    PolyPolyFile
+
+} FileType;
+
+
+
+void AssignName(char filename[STRINGARRAY_STRLEN], const char * name);
 
 int AppendStringToStrArr(const char* str, StringArray * strArr);
 
-FILE *GetFile(const char* path);
+bool FileCheck(const char* path);
 
 Map LoadMapFile(const char* path);
+
+PolyPoly LoadPolyFile(const char* path);
 
 int GetMapCount();
 
@@ -37,3 +59,4 @@ char *StringAt(StringArray *strArr, int index);
 void PrintAllStringsInStrArr(StringArray * strArr);
 
 StringArray GetMapNames();
+StringArray GetPolyNames();

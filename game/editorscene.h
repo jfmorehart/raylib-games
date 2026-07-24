@@ -16,7 +16,7 @@ typedef enum EditorMode{
     PlaceIsland
 } EditorMode;
 
-extern Map currentMap;
+extern Map mapFromDisk;
 extern Vector2 worldZero;
 
 EditorMode mode;
@@ -24,6 +24,7 @@ EditorMode mode;
 int currentPointCount;
 Island *currentIsland;
 
+FileType currentFileType;
 Map localMap;
 
 Vector2 dragOffset;
@@ -32,7 +33,8 @@ int indexClicked;
 
 extern Ship destroyerShip;
 
-StringArray allFiles;
+StringArray allMaps;
+StringArray allPolys;
 
 Vector2 PointCenter(Island *is){
     if(!is) {
@@ -120,7 +122,8 @@ void InitEditorScene(){
         localMap = (Map){0};
         AssignName(&localMap, "test.situ");
     }
-    allFiles = GetMapNames();
+    allMaps = GetMapNames();
+    allPolys = GetPolyNames();
 }
 
 void Redraw(Island *is){
@@ -269,20 +272,39 @@ void GenericInput(){
         //     localMap.islands[localMap.islandLength] = currentIsland;
         //     localMap.islandLength++;
         // }
-        if(localMap.filename[0] == 0) return;
+        if(localMap.filename[0] == 0){
+            printf("invalid file name when saving\n");
+            return;
+        }else{
+            printf("beginning to save %s\n", localMap.filename);
+        }
+
         char fullstring[30] = "editor/";
         strcat(fullstring, localMap.filename);
         
         FILE *fptr = fopen(fullstring, "wb");
         if(fptr){
-            // Write some text to the file
-            fwrite(&localMap, sizeof(Map), 1, fptr);   
-            // Close the file
-            fclose(fptr); 
+            if(currentFileType == MapFile){
+                // Write some text to the file
+                fwrite(&localMap, sizeof(Map), 1, fptr);   
+                // Close the file
+                fclose(fptr); 
+                printf("saved map to editor folder");
+            }
+            if(currentFileType == PolyPolyFile){
+                PolyPoly poly = (PolyPoly){0};
+                poly.islandLength = localMap.islandLength;
+                memcpy(poly.islands, localMap.islands, sizeof(Island) * ISLANDCOUNT);
+                memcpy(poly.filename, localMap.filename, STRINGARRAY_STRLEN);
+                // Write some text to the file
+                fwrite(&poly, sizeof(PolyPoly), 1, fptr);   
+                // Close the file
+                fclose(fptr); 
+                printf("saved polyfile to editor folder");
+            }
 
-            printf("saved to editor folder");
-            currentMap = localMap; 
-            printf("named = %s\n", currentMap.filename);
+            mapFromDisk = localMap; 
+            printf("named = %s\n", mapFromDisk.filename);
             mode = PlaceIsland;
             ResetCanvas();
         }
@@ -530,41 +552,44 @@ void PlaceIslandMode(){
         }
     }
 
-    if(localMap.fcount < MAX_SHIPS) {
-        if(IsKeyPressed(KEY_K)){
+    if(currentFileType == MapFile){
+            
+        if(localMap.fcount < MAX_SHIPS) {
+            if(IsKeyPressed(KEY_K)){
 
-            localMap.friendlies[localMap.fcount] = destroyerShip;
-            localMap.friendlies[localMap.fcount].wPos = mousePos;
-            localMap.friendlies[localMap.fcount].team = true;
-            localMap.fcount++;
+                localMap.friendlies[localMap.fcount] = destroyerShip;
+                localMap.friendlies[localMap.fcount].wPos = mousePos;
+                localMap.friendlies[localMap.fcount].team = true;
+                localMap.fcount++;
+            }
+            if(IsKeyPressed(KEY_J)){
+                localMap.friendlies[localMap.fcount] = BattleshipStats;
+                memcpy(localMap.friendlies[localMap.fcount].batteries, BattleshipLoadout, sizeof(BattleshipLoadout)); 
+                localMap.friendlies[localMap.fcount].wPos = mousePos;
+                localMap.friendlies[localMap.fcount].team = true;
+                localMap.fcount++;
+            }
+        }else{
+            DrawText("max fships allotted", 300, 400, 10, RED);
         }
-        if(IsKeyPressed(KEY_J)){
-            localMap.friendlies[localMap.fcount] = BattleshipStats;
-            memcpy(localMap.friendlies[localMap.fcount].batteries, BattleshipLoadout, sizeof(BattleshipLoadout)); 
-            localMap.friendlies[localMap.fcount].wPos = mousePos;
-            localMap.friendlies[localMap.fcount].team = true;
-            localMap.fcount++;
-        }
-    }else{
-        DrawText("max fships allotted", 300, 400, 10, RED);
-    }
 
-    if(localMap.ecount < MAX_SHIPS) {
-        if(IsKeyPressed(KEY_L)){
-            localMap.enemies[localMap.ecount] = destroyerShip;
-            localMap.enemies[localMap.ecount].wPos = mousePos;
-            localMap.enemies[localMap.ecount].team = false;
-            localMap.ecount++;
+        if(localMap.ecount < MAX_SHIPS) {
+            if(IsKeyPressed(KEY_L)){
+                localMap.enemies[localMap.ecount] = destroyerShip;
+                localMap.enemies[localMap.ecount].wPos = mousePos;
+                localMap.enemies[localMap.ecount].team = false;
+                localMap.ecount++;
+            }
+                if(IsKeyPressed(KEY_SEMICOLON)){
+                localMap.enemies[localMap.ecount] = BattleshipStats;
+                memcpy(localMap.enemies[localMap.ecount].batteries, BattleshipLoadout, sizeof(BattleshipLoadout)); 
+                localMap.enemies[localMap.ecount].wPos = mousePos;
+                localMap.enemies[localMap.ecount].team = false;
+                localMap.ecount++;
+            }
+        }else{
+            DrawText("max eships allotted", 300, 430, 10, RED);
         }
-            if(IsKeyPressed(KEY_SEMICOLON)){
-            localMap.enemies[localMap.ecount] = BattleshipStats;
-            memcpy(localMap.enemies[localMap.ecount].batteries, BattleshipLoadout, sizeof(BattleshipLoadout)); 
-            localMap.enemies[localMap.ecount].wPos = mousePos;
-            localMap.enemies[localMap.ecount].team = false;
-            localMap.ecount++;
-        }
-    }else{
-        DrawText("max eships allotted", 300, 430, 10, RED);
     }
 }
 void EditorFrameLoop(){
@@ -584,53 +609,118 @@ void EditorFrameLoop(){
 }
 
 void EditorUILoop(){
-    DrawText("avaliable files", 30, 30, 20, BLUE);
+    DrawText("avaliable campaigns", 30, 30, 20, BLUE);
     DrawText(TextFormat("local map: %s ", localMap.filename), 230, 30, 20, GREEN);
 
     bool enableHighlight = (mousePos_UIScreenCoords.x >0 && mousePos_UIScreenCoords.x < 170);
 
-    for(int i= 0 ; i < allFiles.numStrings; i++){
+    for(int i= 0 ; i < allMaps.numStrings; i++){
 
         if(enableHighlight && mousePos_UIScreenCoords.y > (60 + i * 20) - 0  && mousePos_UIScreenCoords.y < (60 + i * 20) + 20){
-            DrawText(StringAt(&allFiles, i), 30, 60 + i * 20, 20, WHITE);
+            DrawText(StringAt(&allMaps, i), 30, 60 + i * 20, 20, WHITE);
             if(IsMouseButtonPressed(0)){
-                printf("loading map: %s\n", StringAt(&allFiles, i));
-                currentMap = LoadMapFile(StringAt(&allFiles, i));
+                printf("loading map: %s\n", StringAt(&allMaps, i));
+                mapFromDisk = LoadMapFile(StringAt(&allMaps, i));
                 worldTime = 0;
-                localMap = currentMap;
-                printf("islandcount: %d\n", currentMap.islandLength);
+                localMap = mapFromDisk;
+                currentFileType = MapFile;
+                printf("islandcount: %d\n", mapFromDisk.islandLength);
             }
             if(IsKeyPressed(KEY_ENTER)){
-                printf("rename attempt: %s \n", StringAt(&allFiles, i)); //StringAt(&allFiles, i)
+                printf("rename attempt: %s \n", StringAt(&allMaps, i)); //StringAt(&allFiles, i)
                 char fullstring[30] = "editor/";
-                strcat(fullstring, StringAt(&allFiles, i));
+                strcat(fullstring, StringAt(&allMaps, i));
                 if(rename(fullstring, "editor/newname.campaign") == 0){
                     printf("renaming!\n");
-                    allFiles = GetMapNames();
+                    allMaps = GetMapNames();
                 }else{
                     printf("renamefailed\n");
                 }
             }
             if(IsKeyPressed(KEY_BACKSPACE)){
                 char fullstring[30] = "editor/";
-                strcat(fullstring, StringAt(&allFiles, i));
+                strcat(fullstring, StringAt(&allMaps, i));
                 remove(fullstring);
-                allFiles = GetMapNames(); 
+                allMaps = GetMapNames(); 
             }
         }else{
-            DrawText(StringAt(&allFiles, i), 30, 60 + i * 20, 20, BLUE);
+            DrawText(StringAt(&allMaps, i), 30, 60 + i * 20, 20, BLUE);
         }
     }
-    int i = allFiles.numStrings;
+    int i = allMaps.numStrings;
     if(enableHighlight && mousePos_UIScreenCoords.y > (60 + i * 20) - 0  && mousePos_UIScreenCoords.y < (60 + i * 20) + 20){
         if(IsMouseButtonPressed(0)){
-            GetFile("editor/new.campaign");
-            allFiles = GetMapNames();
+            // GetOrMakeFile("editor/new.campaign");
+            if(!FileCheck("editor/new.campaign")){
+                fopen(("editor/new.campaign"), "w");
+            }
+            allMaps = GetMapNames();
             printf("PLUS!!!\n");
         }
         DrawText("+", 30, 60 + i * 20, 20, WHITE);
+        
     }else{
-         DrawText("+", 30, 60 + i * 20, 20, BLUE);
+        DrawText("+", 30, 60 + i * 20, 20, BLUE);
+    }
+
+    int rownumber = allMaps.numStrings + 5;
+    DrawText("avaliable images", 30, 60 + (rownumber) * 20, 20, BLUE);
+    rownumber++;
+
+    for(int i = 0; i < allPolys.numStrings; i++){
+        if(enableHighlight && mousePos_UIScreenCoords.y > (60 + (i + rownumber) * 20) - 0  && mousePos_UIScreenCoords.y < (60 + (i + rownumber) * 20) + 20){
+            DrawText(StringAt(&allPolys, i), 30, 60 + (i + rownumber) * 20, 20, WHITE); 
+            if(IsMouseButtonPressed(0)){
+                printf("loading poly: %s\n", StringAt(&allPolys, i));
+
+                PolyPoly poly = LoadPolyFile(StringAt(&allPolys, i));
+                printf("poly island count = %d\n", poly.islandLength);
+                mapFromDisk = (Map){0};
+                memcpy(mapFromDisk.filename, poly.filename, STRINGARRAY_STRLEN);
+                mapFromDisk.islandLength = poly.islandLength;
+                memcpy(mapFromDisk.islands, poly.islands, sizeof(Island) * ISLANDCOUNT);
+                currentFileType = PolyPolyFile;
+                worldTime = 0;
+                localMap = mapFromDisk;
+                printf("islandcount: %d\n", mapFromDisk.islandLength);
+            }
+            if(IsKeyPressed(KEY_ENTER)){
+                printf("rename attempt: %s \n", StringAt(&allPolys, i)); //StringAt(&allFiles, i)
+                char fullstring[30] = "editor/";
+                strcat(fullstring, StringAt(&allPolys, i));
+                if(rename(fullstring, "editor/newname.poly") == 0){
+                    printf("renaming!\n");
+                    allPolys = GetPolyNames();
+                }else{
+                    printf("renamefailed\n");
+                }
+            }
+            if(IsKeyPressed(KEY_BACKSPACE)){
+                char fullstring[30] = "editor/";
+                strcat(fullstring, StringAt(&allPolys, i));
+                remove(fullstring);
+                allPolys = GetPolyNames(); 
+            }
+        }else{
+            DrawText(StringAt(&allPolys, i), 30, 60 + (i + rownumber) * 20, 20, BLUE);  
+        }
+    }
+
+    rownumber = allPolys.numStrings + allMaps.numStrings + 6;
+
+    //render plus sign
+    if(mousePos_UIScreenCoords.y > (60 + (rownumber + 1) * 20) - 0  && mousePos_UIScreenCoords.y < (60 + (rownumber+ 1) * 20) + 20){
+        DrawText("+", 30, 60 + (rownumber + 1) * 20, 20, WHITE);
+        if(IsMouseButtonPressed(0)){
+            // GetOrMakeFile("editor/new.campaign");
+            if(!FileCheck("editor/new.poly")){
+                fopen(("editor/new.poly"), "w");
+            }
+            allPolys = GetPolyNames();
+        }
+
+    }else{
+        DrawText("+", 30, 60 + (rownumber + 1) * 20, 20, BLUE);
     }
 }
    

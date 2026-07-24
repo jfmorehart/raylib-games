@@ -15,7 +15,7 @@
 
 #define STB_PERLIN_IMPLEMENTATION
 
-extern Map currentMap;
+extern Map mapFromDisk;
 
 float R01(){
     return (float)rand() / RAND_MAX;
@@ -214,8 +214,8 @@ Island *WhatIslandIsThis(Vector2 wPoint, Island *toCheckArray, int islandLength)
 
 bool IsPointWithinIslands(Vector2 wPoint){
 
-    for(int i = 0; i < currentMap.islandLength; i++){
-        if(PointIslandCheck(wPoint, &currentMap.islands[i])){
+    for(int i = 0; i < mapFromDisk.islandLength; i++){
+        if(PointIslandCheck(wPoint, &mapFromDisk.islands[i])){
             return true;
         }
     }

@@ -26,7 +26,7 @@ extern int bulletCount;
 extern int bulletCham;
 extern Bullet bulletPool[];
 
-extern Map currentMap;
+extern Map mapFromDisk;
 
 bool DamageShips(Vector2 position, float radius, Ship **allShips, int count, int damage){
     int h = 0;
@@ -276,7 +276,7 @@ void RenderBatteryBeam(Battery * battery,const Ship * ship){
         Vector2 dir = Vector2Subtract(spreadTarget, batteryPosition);
         dir = Vector2Normalize(dir);
         dir = Vector2Add(batteryPosition , Vector2Scale(dir, ship->scale + 0.006));
-        DrawBeam(dir, spreadTarget, PI * 0.25, 50, SHIP_SEARCHRANGE * 2, &currentMap, 0.3, scaledDeltaTime);
+        DrawBeam(dir, spreadTarget, PI * 0.25, 50, SHIP_SEARCHRANGE * 2, &mapFromDisk, 0.3, scaledDeltaTime);
         //DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(spreadTarget), 5, WHITE);
     }
 }

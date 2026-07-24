@@ -132,6 +132,7 @@ int main(void)
         switch(currentScene){
             case Menu:
             //menuUpdate uses GUI update (below)
+                ClearBackground(BLACK);
             break;
             case MapScene:
                 worldTime += scaledDeltaTime;
@@ -155,19 +156,20 @@ int main(void)
         float diff = (WIDTH - HEIGHT) * 0.4;
         int border = 30;
 
+        if(currentScene != Menu){
+            int grey = 50;
+            Color outlineCol = (Color){grey, grey, grey, 255};
+            DrawRectangle(0, 0, diff, HEIGHT, BLACK);//, int posY, int width, int height, Color color)
+            DrawRectangle(WIDTH-  diff, 0, diff, HEIGHT, BLACK);
+            DrawRectangle(diff, 0, WIDTH - diff * 2,border, BLACK);
+            DrawRectangle(diff, HEIGHT - border, WIDTH - diff * 2, border, BLACK);
 
-        int grey = 50;
-        Color outlineCol = (Color){grey, grey, grey, 255};
-        DrawRectangle(0, 0, diff, HEIGHT, BLACK);//, int posY, int width, int height, Color color)
-        DrawRectangle(WIDTH-  diff, 0, diff, HEIGHT, BLACK);
-        DrawRectangle(diff, 0, WIDTH - diff * 2,border, BLACK);
-        DrawRectangle(diff, HEIGHT - border, WIDTH - diff * 2, border, BLACK);
-
-        DrawLineEx((Vector2){diff, border}, (Vector2){WIDTH - diff, border}, 2, outlineCol);
-        DrawLineEx((Vector2){diff, border}, (Vector2){diff, HEIGHT - border}, 2, outlineCol);
-        DrawLineEx((Vector2){diff, HEIGHT -border}, (Vector2){WIDTH - diff, HEIGHT - border}, 2, outlineCol);
-        DrawLineEx((Vector2){WIDTH - diff, border}, (Vector2){WIDTH -diff, HEIGHT - border}, 2, outlineCol);
-
+            DrawLineEx((Vector2){diff, border}, (Vector2){WIDTH - diff, border}, 2, outlineCol);
+            DrawLineEx((Vector2){diff, border}, (Vector2){diff, HEIGHT - border}, 2, outlineCol);
+            DrawLineEx((Vector2){diff, HEIGHT -border}, (Vector2){WIDTH - diff, HEIGHT - border}, 2, outlineCol);
+            DrawLineEx((Vector2){WIDTH - diff, border}, (Vector2){WIDTH -diff, HEIGHT - border}, 2, outlineCol);
+        }
+       
         EndTextureMode();
         int ws = WIDTH * RSCALE; 
         int hs = HEIGHT * RSCALE;

@@ -19,7 +19,7 @@
 #include <time.h>
 #include <string.h>
 
-Map currentMap;
+Map mapFromDisk;
 
 extern Battery DestroyerLoadout[SHIP_MAXBATTERIES];
 
@@ -77,6 +77,9 @@ void CallFocus(Vector2 wpos){
         RunRoutine("SwitchToBattleRoutine");
         endZoom = 0.4;
 
+
+        //place ships back into worldspace
+
         for(int i = 0 ; i < taskForceCount; i++){
 
             Vector2 delta = Vector2Subtract(tfs[i].destination, tfs[i].position);
@@ -118,20 +121,20 @@ void RandomizeMap(){
 
     // srand(time(NULL));
     for(int i = 0; i < ISLANDCOUNT; i++){
-        currentMap.islands[i] = CreateIsland(); 
+        mapFromDisk.islands[i] = CreateIsland(); 
     }
-    currentMap.islandLength  = ISLANDCOUNT;
+    mapFromDisk.islandLength  = ISLANDCOUNT;
     
-    currentMap.fcount = MAX_SHIPS;
-    for(int i = 0; i < currentMap.fcount; i++){
+    mapFromDisk.fcount = MAX_SHIPS;
+    for(int i = 0; i < mapFromDisk.fcount; i++){
 
-        currentMap.friendlies[i] = DestroyerStats;
-        currentMap.friendlies[i].wPos = RandomWorldPointNoIsland();
-        currentMap.friendlies[i].angle = R01() * 7;
-        currentMap.friendlies->team = true;
-        memcpy(currentMap.friendlies[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout));
-        InitRvecs(&currentMap.friendlies[i]);
-        if(i == 0){destroyerShip = currentMap.friendlies[i];}
+        mapFromDisk.friendlies[i] = DestroyerStats;
+        mapFromDisk.friendlies[i].wPos = RandomWorldPointNoIsland();
+        mapFromDisk.friendlies[i].angle = R01() * 7;
+        mapFromDisk.friendlies->team = true;
+        memcpy(mapFromDisk.friendlies[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout));
+        InitRvecs(&mapFromDisk.friendlies[i]);
+        if(i == 0){destroyerShip = mapFromDisk.friendlies[i];}
     }   
 
 }
@@ -153,14 +156,16 @@ void InitMapScene(){
     // SetShaderValue(ship_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
 
     taskForceCount = 0;
-    for(int i =0 ; i < currentMap.fcount; i++){
+    for(int i =0 ; i < mapFromDisk.fcount; i++){
 
         bool found = false;
+        if(!mapFromDisk.friendlies[i].alive)continue;
+        
         for(int t = 0; t < taskForceCount; t++){ 
             if(tfs[t].shipCount + 1 >= MAX_SHIPS_IN_TF) continue;
-            if(tfs[t].team != currentMap.friendlies[i].team) continue;
-            if(Vector2Distance(currentMap.friendlies[i].wPos, tfs[t].position) < TF_MAX_RADIUS){
-                tfs[t].ships[tfs[t].shipCount] = &currentMap.friendlies[i];
+            if(tfs[t].team != mapFromDisk.friendlies[i].team) continue;
+            if(Vector2Distance(mapFromDisk.friendlies[i].wPos, tfs[t].position) < TF_MAX_RADIUS){
+                tfs[t].ships[tfs[t].shipCount] = &mapFromDisk.friendlies[i];
 
                 //wPos stores offset from tf center in transit
                 tfs[t].ships[tfs[t].shipCount]->wPos = Vector2Subtract(tfs[t].position, tfs[t].ships[tfs[t].shipCount]->wPos);
@@ -175,9 +180,9 @@ void InitMapScene(){
         tfs[taskForceCount] = (TaskForce){0};
         tfs[taskForceCount].shipCount = 0;
         tfs[taskForceCount].min_speed = 0.09;
-        tfs[taskForceCount].team = currentMap.friendlies[i].team;
-        tfs[taskForceCount].position = currentMap.friendlies[i].wPos;
-        tfs[taskForceCount].ships[tfs[taskForceCount].shipCount] = &currentMap.friendlies[i];
+        tfs[taskForceCount].team = mapFromDisk.friendlies[i].team;
+        tfs[taskForceCount].position = mapFromDisk.friendlies[i].wPos;
+        tfs[taskForceCount].ships[tfs[taskForceCount].shipCount] = &mapFromDisk.friendlies[i];
         tfs[taskForceCount].ships[tfs[taskForceCount].shipCount]->wPos = Vector2Zero(); // in transit, wPos becomes offset from tf center
         tfs[taskForceCount].shipCount++;
         taskForceCount++;
@@ -185,14 +190,14 @@ void InitMapScene(){
         // printf("spawning new taskforce- ship - %f, %f", currentMap.friendlies[i].wPos.x,  tfs[taskForceCount].position.x);
     }
 
-    for(int i =0 ; i < currentMap.ecount; i++){
+    for(int i =0 ; i < mapFromDisk.ecount; i++){
 
         bool found = false;
         for(int t = 0; t < taskForceCount; t++){ 
             if(tfs[t].shipCount + 1 >= MAX_SHIPS_IN_TF) continue;
-            if(tfs[t].team != currentMap.enemies[i].team) continue;
-            if(Vector2Distance(currentMap.enemies[i].wPos, tfs[t].position) < TF_MAX_RADIUS){
-                tfs[t].ships[tfs[t].shipCount] = &currentMap.enemies[i];
+            if(tfs[t].team != mapFromDisk.enemies[i].team) continue;
+            if(Vector2Distance(mapFromDisk.enemies[i].wPos, tfs[t].position) < TF_MAX_RADIUS){
+                tfs[t].ships[tfs[t].shipCount] = &mapFromDisk.enemies[i];
 
                 //wPos stores offset from tf center in transit
                 tfs[t].ships[tfs[t].shipCount]->wPos = Vector2Subtract(tfs[t].position, tfs[t].ships[tfs[t].shipCount]->wPos);
@@ -208,8 +213,8 @@ void InitMapScene(){
         tfs[taskForceCount] = (TaskForce){0};
         tfs[taskForceCount].min_speed = 0.09;
         tfs[taskForceCount].team = false;
-        tfs[taskForceCount].position = currentMap.enemies[i].wPos;
-        tfs[taskForceCount].ships[tfs[taskForceCount].shipCount] = &currentMap.enemies[i];
+        tfs[taskForceCount].position = mapFromDisk.enemies[i].wPos;
+        tfs[taskForceCount].ships[tfs[taskForceCount].shipCount] = &mapFromDisk.enemies[i];
         tfs[taskForceCount].ships[tfs[taskForceCount].shipCount]->wPos = Vector2Zero(); // in transit, wPos becomes offset from tf center
         tfs[taskForceCount].shipCount++;
         tfs[taskForceCount].destination = RandomWorldPointNoIsland();
@@ -226,8 +231,8 @@ void MapInputLoop(){
 
         // printf("click \n");
         if(!IsKeyDown(KEY_LEFT_SHIFT)){
-            for(int i = 0; i < currentMap.fcount; i++){
-                currentMap.friendlies[i].selected = false;
+            for(int i = 0; i < mapFromDisk.fcount; i++){
+                mapFromDisk.friendlies[i].selected = false;
             } 
         }
 
@@ -237,18 +242,18 @@ void MapInputLoop(){
             DrawCircleV(mousePos_ScreenCoords, 5, GREEN);
         }
 
-        for(int i = 0; i < currentMap.fcount; i++){
-           if(Vector2Distance(currentMap.friendlies[i].wPos, mousePos) < 0.3){
-                currentMap.friendlies[i].selected = true;
+        for(int i = 0; i < mapFromDisk.fcount; i++){
+           if(Vector2Distance(mapFromDisk.friendlies[i].wPos, mousePos) < 0.3){
+                mapFromDisk.friendlies[i].selected = true;
             }
         }   
     }
     if(IsMouseButtonDown(1)){
         // printf("rclick \n");
-        for(int i = 0; i < currentMap.fcount; i++){
-            if(currentMap.friendlies[i].selected){
-                currentMap.friendlies[i].moveTargetPosition = mousePos;
-                currentMap.friendlies[i].hasMoveTarget = true;
+        for(int i = 0; i < mapFromDisk.fcount; i++){
+            if(mapFromDisk.friendlies[i].selected){
+                mapFromDisk.friendlies[i].moveTargetPosition = mousePos;
+                mapFromDisk.friendlies[i].hasMoveTarget = true;
             }
         }   
     }
@@ -306,8 +311,8 @@ void MapFrameLoop(){
     PrepOceanPass(mousePos_fragCoords, 90, 0.1);
     EndOceanPass(); //flush buffer
 
-    for(int d = 0; d < currentMap.ecount; d++){
-        currentMap.enemies[d].isVisible = false;
+    for(int d = 0; d < mapFromDisk.ecount; d++){
+        mapFromDisk.enemies[d].isVisible = false;
     }
 
     PrepShipRangePass();
@@ -383,8 +388,8 @@ void MapFrameLoop(){
     
     rlSetTexture(rlGetTextureIdDefault());                                                                                 
     rlBegin(RL_TRIANGLES); 
-    for(int i = 0; i < currentMap.islandLength; i++){
-        Render(&currentMap.islands[i]);
+    for(int i = 0; i < mapFromDisk.islandLength; i++){
+        Render(&mapFromDisk.islands[i]);
     }
     rlEnd();
     rlSetTexture(0); 
@@ -424,7 +429,10 @@ void MapFrameLoop(){
                 continue;
             }
             delta = Vector2Scale(Vector2Normalize(delta), tfs[i].min_speed * scaledDeltaTime);
-            tfs[i].position = Vector2Add(tfs[i].position, delta);
+            if(!focusing){
+                tfs[i].position = Vector2Add(tfs[i].position, delta);
+            }
+
         }
 
         if(tfs[i].team){

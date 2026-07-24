@@ -11,7 +11,7 @@
 #include <sys/stat.h> //MACOS
 #endif
 
-FILE *GetFile(const char* path){
+bool FileCheck(const char* path){
 
     printf("loading filesystem\n");
 
@@ -27,44 +27,67 @@ FILE *GetFile(const char* path){
     // Create a file
     fptr = fopen(path, "rb");
     if(!fptr){
-        fptr = fopen(path,"w");
-        // Close the file
-        fclose(fptr);
-        return 0;
+        // fptr = fopen(path,"w");
+        // // Close the file
+        // fclose(fptr);
+        return false;
     }
     fclose(fptr);
-
-    return fptr;
+    return true;
 }
-void AssignName(Map *map, const char * name){
+void AssignName(char filename[STRINGARRAY_STRLEN], const char * name){
+
     bool goodData = true;
     for(int i = 0; i < STRINGARRAY_STRLEN; i++){
         if(name[i] && goodData){
-            map->filename[i] = name[i];
+            filename[i] = name[i];
         }else{
             goodData = false;
-            map->filename[i] = 0;
+            filename[i] = 0;
         }
     }
-    map->filename[STRINGARRAY_STRLEN -1] = 0; //FORCE A NULL TERMINATOR
+    filename[STRINGARRAY_STRLEN -1] = 0; //FORCE A NULL TERMINATOR
+
+    printf("fn = %s\n", filename);
+    printf("path = %s\n", name);
 }
+
 Map LoadMapFile(const char* path){
     Map loadMap;
     char fullpath[30] = "editor/";
     strcat(fullpath, path);
-    FILE * fptr = GetFile (fullpath);
+    bool filexists = FileCheck (fullpath);
     
-    if(fptr){
+    if(filexists){
         printf("found file: %s \n", fullpath);
-        fptr = fopen(fullpath, "rb");
+        FILE * fptr = fopen(fullpath, "rb");
         fread(&loadMap, sizeof(Map), 1, fptr);
         fclose(fptr);
-        AssignName(&loadMap, path);
+        AssignName(loadMap.filename, path);
         return loadMap;
     }
     printf("error: %s, no such file found\n", fullpath);
   return (Map){0};
 }
+
+PolyPoly LoadPolyFile(const char* path){
+    PolyPoly pfile;
+    char fullpath[30] = "editor/";
+    strcat(fullpath, path);
+    bool filexists = FileCheck (fullpath);
+
+    if(filexists){
+        printf("found file: %s \n", fullpath);
+        FILE * fptr = fopen(fullpath, "rb");
+        fread(&pfile, sizeof(PolyPoly), 1, fptr);
+        fclose(fptr);
+        AssignName(pfile.filename, path);
+        return pfile;
+    }
+    printf("error: %s, no such file found\n", fullpath);
+  return (PolyPoly){0}; 
+}
+
 
 int GetMapCount(){
     #ifdef _WIN32
@@ -109,6 +132,24 @@ int AppendStringToStrArr(const char* str, StringArray * strArr){
     strArr->numStrings++;
     return 1;
 }
+bool fileIsType(char * file, char * type){
+
+    char *dotptr = strrchr(file, (int){'.'});
+    char ending[20];
+    bool flipped;
+    for(int i = 1; i < 20; i++){
+        if(dotptr[i] && flipped){
+            ending[i - 1] = dotptr[i];
+        }
+        else {
+            flipped = true;
+            ending[i -1] = 0;
+        }
+    }
+    if(!strcmp(ending, type)) return true;
+    return false;
+}
+
 bool isRecognizedType(char * str){
     char *dotptr = strrchr(str, (int){'.'});
     char ending[20];
@@ -122,9 +163,9 @@ bool isRecognizedType(char * str){
             ending[i -1] = 0;
         }
     }
-    if(!strcmp(ending, "situ")) return true;
+    // if(!strcmp(ending, "situ")) return true;
     if(!strcmp(ending, "campaign")) return true;
-    if(!strcmp(ending, "map")) return true;
+    if(!strcmp(ending, "poly")) return true;
     return false;
 }
 char *StringAt(StringArray *strArr, int index){
@@ -155,7 +196,37 @@ StringArray GetMapNames(){
     for(int i = 0; i < 99; i++){
         entry = readdir(directory);
         if(entry){
-            if(!isRecognizedType(entry->d_name)) continue;
+            if(!fileIsType(entry->d_name, "campaign")) continue;
+            AppendStringToStrArr(entry->d_name, &strArr);
+            printf("%s\n", entry->d_name);
+        }else{
+            PrintAllStringsInStrArr(&strArr);
+            return strArr;
+        }
+    }
+    #endif 
+}
+
+StringArray GetPolyNames(){
+    #ifdef _WIN32
+    _mkdir("editor");
+
+    #elif __APPLE__
+    DIR *directory;
+    struct dirent *entry;
+    directory = opendir("editor");
+    if (directory == NULL) {
+        perror("Unable to open directory");
+        return (StringArray){0};
+    }
+
+    printf("getting map names\n");
+
+    StringArray strArr = (StringArray){0};
+    for(int i = 0; i < 99; i++){
+        entry = readdir(directory);
+        if(entry){
+            if(!fileIsType(entry->d_name, "poly"))continue;
             AppendStringToStrArr(entry->d_name, &strArr);
             printf("%s\n", entry->d_name);
         }else{
