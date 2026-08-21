@@ -44,6 +44,7 @@ DotShader illuminatedShader;
 DotShader skyShader;
 DotShader waterShader;
 DotShader map_islandShader;
+DotShader cut_foamShader;
 
 extern SceneName currentScene;
 
@@ -62,6 +63,7 @@ int ShaderInit(){
     skyShader = CreateDotShader(LoadShader(0,"shaders/sky.fs")); 
     waterShader = CreateDotShader(LoadShader(0,"shaders/water.fs")); 
     map_islandShader = CreateDotShader(LoadShader(0,"shaders/map_islands.fs")); 
+    cut_foamShader = CreateDotShader(LoadShader(0,"shaders/cut_foamShader.fs"));
 
     DotShaderValues(&generalShader, 0.2, 50, (Vector3){1, 1, 1});
     DotShaderValues(&explosionShader, 0.3, 230, (Vector3){1, 1, 1});
@@ -77,6 +79,8 @@ int ShaderInit(){
     SetRes(&skyShader, resolutionVector); 
     SetRes(&waterShader, resolutionVector); 
     SetRes(&map_islandShader, resolutionVector); 
+    SetRes(&cut_foamShader, resolutionVector);
+
     return 0;
 }
 
@@ -91,6 +95,7 @@ void PrepOceanPass(Vector2 specialMousePos, int multiplier, float dotsize){
     FrameRefreshShader(&lightShader, unscaledTime, cameraPosition,  worldScale, specialMousePos);
     FrameRefreshShader(&illuminatedShader, unscaledTime, cameraPosition,  worldScale, specialMousePos);
     FrameRefreshShader(&map_islandShader, unscaledTime, cameraPosition, worldScale, specialMousePos);
+    FrameRefreshShader(&cut_foamShader, unscaledTime, cameraPosition, worldScale, specialMousePos);//, Vector2 camPos, float worldScale, Vector2 special_Mpos)
 
     switch(currentScene){
 
@@ -134,4 +139,6 @@ void UnloadShaders(){
     UnloadShader(lightShader.shader);
     UnloadShader(illuminatedShader.shader);
     UnloadShader(skyShader.shader);
+    UnloadShader(waterShader.shader);
+    UnloadShader(cut_foamShader.shader);
 }

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "cutscene.h"
 
 Font menufont;
 
@@ -58,9 +59,9 @@ void AddLine(char *toadd){
 
 
 void MenuInit(){
-    memset(textBuffer, 0, MAXCHARS);
+    memset(textBuffer, 0, sizeof(char) * MAXCHARS);
     currentChar = 0;
-    memset(displayBuffer, 0, MAXCHARS);
+    memset(displayBuffer, 0, sizeof(char) * MAXCHARS);
     backLogCham = 0;
     displayBufferCham = 0;
     printf("loading menu\n");
@@ -104,7 +105,7 @@ void MenuUpdate(){
 
     while (key > 0){
         // NOTE: Only allow keys in range [32..125]
-        if ((key >= 32) && (key <= 125) && (currentChar < MAXCHARS))
+        if ((key >= 32) && (key <= 125) && (currentChar < MAXCHARS - 1))
         {
             textBuffer[currentChar] = (char)key;
             textBuffer[currentChar+1] = '\0'; // Add null terminator at the end of the string
@@ -131,9 +132,9 @@ void MenuUpdate(){
     }
 
     if(strcmp(textBuffer, "Canaris") == 0){
-        memset(textBuffer, 0, MAXCHARS);
+        memset(textBuffer, 0, sizeof(textBuffer));
         currentChar = 0;
-        memset(displayBuffer, 0, MAXCHARS);
+        memset(displayBuffer, 0, sizeof(displayBuffer));
         displayBufferCham = 0;
         AddLine("Admiral Wilhelm Canaris. Abwehr, Reichsmarine.");
         AddLine("You will be executed in 87 days.");
@@ -145,21 +146,30 @@ void MenuUpdate(){
     }
     
     if(strcmp(textBuffer, "Raeber") == 0){
-        memset(textBuffer, 0, MAXCHARS);
+        memset(textBuffer, 0, sizeof(textBuffer));
         currentChar = 0;
-        memset(displayBuffer, 0, MAXCHARS);
+        memset(displayBuffer, 0, sizeof(displayBuffer));
         displayBufferCham = 0;
         AddLine("Raeber.");
         AddLine("You will survive the war.");
         AddLine("Begin?");
     }
     if(strcmp(textBuffer, "yes") == 0){
+        memset(textBuffer, 0, sizeof(textBuffer));
+        currentChar = 0;
+        memset(displayBuffer, 0, sizeof(displayBuffer));
+        displayBufferCham = 0;
+        mapFromDisk = LoadMapFile("bergen.campaign");
+        SwitchScenes(MapScene);
+    }
+
+    if(strcmp(textBuffer, "capt") == 0){
         memset(textBuffer, 0, MAXCHARS);
         currentChar = 0;
         memset(displayBuffer, 0, MAXCHARS);
         displayBufferCham = 0;
-        mapFromDisk = LoadMapFile("bergen.campaign");
-        SwitchScenes(MapScene);
+        SetCutscene(LoneCaptain);
+        SwitchScenes(CutScene);
     }
 
     DrawText(displayBuffer, 100, RSCALE * HEIGHT / 3, 30, WHITE);
@@ -176,6 +186,10 @@ void MenuUpdate(){
     }
     if(strcmp(textBuffer, "quit") == 0){
         exit(0);
+    }
+    if(strcmp(textBuffer, "sink") == 0){
+        SetCutscene(SinkingEnemy);
+        SwitchScenes(CutScene);
     }
     if(strcmp(textBuffer, "help") == 0){
         help = true;

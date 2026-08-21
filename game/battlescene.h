@@ -53,6 +53,7 @@ extern DotShader illuminatedShader;
 
 void InitBattleScene(){
 
+    printf("cpos %f, %f, wscale %f\n", cameraPosition.x, cameraPosition.y, worldScale);
     worldScale = 0.4;
     timeScale = 1;
     //setup Ship CONSTANTS (overwrite from mapscene)
@@ -60,14 +61,21 @@ void InitBattleScene(){
 
     //determine which ships are included in the scene
     allShipsIncludedCount = 0;
+    int fc = 0;
+    int ec = 0;
+    printf("disk values: fcount %d, ecount %d\n", mapFromDisk.fcount, mapFromDisk.ecount);
+
     for(int i = 0; i < mapFromDisk.fcount; i++){
         BattleSceneIntroReset(&mapFromDisk.friendlies[i]);
         mapFromDisk.friendlies[i].includedInScene = false;
         if(!mapFromDisk.friendlies[i].alive)continue;
+        printf("mapFromDisk.friendlies[%d].wPos) = %f, %f \n", i, mapFromDisk.friendlies[i].wPos.x, mapFromDisk.friendlies[i].wPos.y);
+        printf("w2s %f %f\n", WorldToScreen(mapFromDisk.friendlies[i].wPos).x,  WorldToScreen(mapFromDisk.friendlies[i].wPos).y);
         if(IsOnScreen(mapFromDisk.friendlies[i].wPos)){
             mapFromDisk.friendlies[i].includedInScene = true;
             allShipsIncludedInScene[allShipsIncludedCount] = &mapFromDisk.friendlies[i];
             allShipsIncludedCount++;
+            fc++;
         }
     }
     for(int i = 0; i < mapFromDisk.ecount; i++){
@@ -78,8 +86,10 @@ void InitBattleScene(){
             mapFromDisk.enemies[i].includedInScene = true;
             allShipsIncludedInScene[allShipsIncludedCount] = &mapFromDisk.enemies[i];
             allShipsIncludedCount++;
+            ec++;
         }
     }
+    printf("rendering these ships: friendly %d, enemy%d\n", fc, ec);
 }
 
 void BattleFrameLoop(){
@@ -112,8 +122,10 @@ void BattleFrameLoop(){
             RenderBatteryBeam(&mapFromDisk.friendlies[i].batteries[j], &mapFromDisk.friendlies[i]);
         }
     }
+    int liveEnemies = 0;
     for(int i = 0; i < mapFromDisk.ecount; i++){
         if(!mapFromDisk.enemies[i].alive || !mapFromDisk.enemies[i].includedInScene)continue;
+        liveEnemies++;
         for(int j = 0; j < mapFromDisk.enemies[i].batteryCount; j++){
             RenderBatteryBeam(&mapFromDisk.enemies[i].batteries[j], &mapFromDisk.enemies[i]);
         }
@@ -122,6 +134,9 @@ void BattleFrameLoop(){
     rlSetTexture(0); 
     EndShaderMode();
     EndBlendMode();
+    if(liveEnemies < 1){
+        WonBattleSwitch();
+    }
 
     PrepShipRangePass();
     for(int i = 0; i < mapFromDisk.fcount; i++){
@@ -162,18 +177,24 @@ void BattleFrameLoop(){
     DotShaderValues(&illuminatedShader,0.2, 230, col);
     BeginShaderMode(illuminatedShader.shader);
     rlSetTexture(rlGetTextureIdDefault());                                                                                 
-    rlBegin(RL_TRIANGLES);       
+    rlBegin(RL_TRIANGLES);      
+    int active_fcount = 0;
     for(int i = 0; i < mapFromDisk.fcount; i++){
         if(!mapFromDisk.friendlies[i].alive || !mapFromDisk.friendlies[i].includedInScene)continue;
         RenderShipColor(&mapFromDisk.friendlies[i], 0.3, col);
         SteerShipBattle(&mapFromDisk.friendlies[i], false, mapFromDisk.islands);
-
+        active_fcount++;
         // DrawLineEx(WorldToScreen(currentMap.friendlies[i].wPos), mousePos_ScreenCoords, 3,  WHITE);
         // DrawCircleV(WorldToScreen(currentMap.friendlies[i].wPos), 30, WHITE);
     }
     rlEnd();          
     rlSetTexture(0);    
     EndShaderMode();
+
+    if(active_fcount < 1){
+        //all friendlies lost
+        LostBattleSwitch();
+    }
 
     //trace ship lines
     col = (Vector3){0.1, 0.1, 0.1};

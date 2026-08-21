@@ -13,3 +13,5 @@ void InitMapScene();
 void MapInputLoop();
 void MapFrameLoop();
 void MapUIRender();
+void LostBattleSwitch();
+void WonBattleSwitch();

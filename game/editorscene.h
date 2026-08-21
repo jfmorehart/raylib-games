@@ -16,6 +16,24 @@ typedef enum EditorMode{
     PlaceIsland
 } EditorMode;
 
+typedef enum EditorT{
+    ShipThing,
+    ObjectiveThing,
+} EditorT;
+
+typedef struct EditorThing{
+    bool real; //has ever been allocated
+    Vector2 position; 
+    float size;
+    Color color;
+    EditorT type;
+    void * data;
+} EditorThing;
+
+#define MAX_EDITORTHINGS 100
+EditorThing thingies[MAX_EDITORTHINGS];
+int editorThingCount;
+
 extern Map mapFromDisk;
 extern Vector2 worldZero;
 
@@ -35,6 +53,7 @@ extern Ship destroyerShip;
 
 StringArray allMaps;
 StringArray allPolys;
+
 
 Vector2 PointCenter(Island *is){
     if(!is) {
@@ -120,7 +139,7 @@ void InitEditorScene(){
     }else{
         //bad data
         localMap = (Map){0};
-        AssignName(&localMap, "test.situ");
+        AssignName(localMap.filename, "test.situ");
     }
     allMaps = GetMapNames();
     allPolys = GetPolyNames();
@@ -179,6 +198,57 @@ void GenericInput(){
     if(IsKeyPressed(KEY_B)){
         SwitchScenes(MapScene);
     }
+    if(IsKeyPressed(KEY_M)){
+        if(localMap.objective_count < MAX_OBJECTIVES - 1){
+            if(currentFileType == MapFile) {
+                Objective obj = (Objective){0};
+                obj.position = mousePos;
+                obj.team = false;
+                obj.type = Capital;
+                obj.alive = true;
+                localMap.map_objectives[localMap.objective_count] = obj;
+
+                EditorThing newthing;
+                newthing.data = & localMap.map_objectives[localMap.objective_count];
+                newthing.type = ObjectiveThing;
+                newthing.color = GOLD;
+                newthing.size = 4;
+                newthing.real = true;
+                newthing.position = mousePos;
+                thingies[editorThingCount] = newthing;
+                editorThingCount++; 
+
+                localMap.objective_count++;
+            }
+        }
+       
+    }
+    if(IsKeyPressed(KEY_N)){
+        if(currentFileType == MapFile) {
+            if(localMap.objective_count < MAX_OBJECTIVES - 1){
+                Objective obj = (Objective){0};
+                obj.position = mousePos;
+                obj.team = true;
+                obj.alive = true;
+                obj.type = Capital;
+                localMap.map_objectives[localMap.objective_count] = obj;
+
+
+                EditorThing newthing;
+                newthing.data = & localMap.map_objectives[localMap.objective_count];
+                newthing.type = ObjectiveThing;
+                newthing.color = YELLOW;
+                newthing.size = 4;
+                newthing.real = true;
+                newthing.position = mousePos;
+                thingies[editorThingCount] = newthing;
+                editorThingCount++; 
+
+                localMap.objective_count++;
+            }
+        }
+    }
+
 
     //GROW
     if(IsKeyPressed(KEY_EQUAL)){
@@ -268,10 +338,29 @@ void GenericInput(){
                 //TODO figure out when to increment islandlength
             }
         }
-        // if(currentPointCount > 2){
-        //     localMap.islands[localMap.islandLength] = currentIsland;
-        //     localMap.islandLength++;
-        // }
+
+
+        //apply editor-mode changes to localMap arrays
+        // localMap.objective_count = 0;
+        for(int i = 0; i < editorThingCount; i++){
+            if(!thingies[i].real)continue;
+            if(thingies[i].type == ShipThing){
+                Ship * ship = (Ship *) (thingies[i].data);
+                if(!ship){
+                    printf("unable to pull ship from void *\n");
+                    return;
+                }
+                ship->wPos = thingies[i].position;
+            }else if(thingies[i].type == ObjectiveThing){
+                Objective * obj = (Objective *) thingies[i].data;
+                if(!obj){
+                    printf("unable to pull obj from void *\n");
+                    return; 
+                }
+                obj->position = thingies[i].position;
+            }
+        }
+     
         if(localMap.filename[0] == 0){
             printf("invalid file name when saving\n");
             return;
@@ -364,43 +453,149 @@ void EditIslandMode(){
             // RenderWindow(w, )
 }
 
-float distToNearestShip;
-Ship *shipClicked;
-
-Ship* NearestShip(Vector2 point){
-    Ship* nearest = 0;
+// EditorThing * storedNearestET;
+EditorThing * NearestET(Vector2 point){
+    EditorThing *nearest = 0;
     float dist = 999;
-    for(int i = 0 ; i < localMap.fcount; i++){
-        if(!localMap.friendlies[i].alive)continue;
-        float testDist = Vector2DistanceSqr(localMap.friendlies[i].wPos, point);
-        if(testDist < dist){
-            dist = testDist;
-            nearest = &localMap.friendlies[i];
-        }
-    }
-    for(int i = 0 ; i < localMap.ecount; i++){
-        if(!localMap.enemies[i].alive)continue;
-        float testDist = Vector2DistanceSqr(localMap.enemies[i].wPos, point);
-        if(testDist < dist){
-            dist = testDist;
-            nearest = &localMap.enemies[i];
+    for(int i = 0; i < editorThingCount; i++){
+        if(!thingies[i].real) continue;
+        float td = Vector2DistanceSqr(thingies[i].position, point);
+        if(td < dist){
+            nearest = &thingies[i];
+            dist = td;
         }
     }
     return nearest;
 }
 
+float distToNearestET;
+EditorThing *ETClicked;
 
-/*            //if we arent on an empty slot, find one
-            if(array[w].alive) w = r; 
-            for(int x = w; x < r; x++){
-else{
-            if(!array[w].alive){
+void CleanUpETArray(EditorThing * array, int *setlen){
+
+    //smart version for next time
+    int w  = 0;
+    for(int r = 0; r < MAX_EDITORTHINGS; r++){
+        if(array[r].real){ //full slot
+            if(!array[w].real){ //empty!
                 array[w] = array[r];
-                array[r] = (Ship){0};
+                array[r] = (EditorThing){0}; 
             }
+            w++;
         }
-            }*/
-//this function is slow and way overcomplicated but it WORKS and i thought of it myself so its STAYING
+    }
+    *setlen = w;
+}
+
+
+void LoadEditorThingsFromMap(){
+    editorThingCount = 0;
+    memset(thingies, 0, MAX_EDITORTHINGS * sizeof(EditorThing));
+
+    for(int i = 0; i < localMap.fcount; i++){
+        if(!localMap.friendlies[i].alive) continue;
+        EditorThing newthing;
+        newthing.data = &localMap.friendlies[i];
+        newthing.type = ShipThing;
+        newthing.color = BLUE;
+        newthing.size = localMap.friendlies[i].scale;
+        newthing.real = true;
+        newthing.position = localMap.friendlies[i].wPos;
+        thingies[editorThingCount] = newthing;
+        editorThingCount++;
+    }
+    for(int i = 0; i < localMap.ecount; i++){
+        if(!localMap.enemies[i].alive) continue;
+        EditorThing newthing;
+        newthing.data = &localMap.enemies[i];
+        newthing.type = ShipThing;
+        newthing.color = RED;
+        newthing.size = localMap.enemies[i].scale;
+        newthing.real = true;
+        newthing.position = localMap.enemies[i].wPos;
+        thingies[editorThingCount] = newthing;
+        editorThingCount++;
+    }
+    for(int i = 0; i < localMap.objective_count; i++){
+        if(!localMap.map_objectives[i].alive) continue;
+        EditorThing newthing;
+        newthing.data = &localMap.map_objectives[i];
+        newthing.type = ObjectiveThing;
+        if(localMap.map_objectives[i].team){
+            newthing.color = YELLOW;
+        }else{
+            newthing.color = GOLD;
+        }
+        newthing.size = 4;
+        newthing.real = true;
+        newthing.position = localMap.map_objectives[i].position;
+        thingies[editorThingCount] = newthing;
+        editorThingCount++;
+    }
+}
+
+
+void RebuildSubArrays(){
+    int fs = 0;
+    int es = 0;
+    int objs = 0;
+
+    Ship tempFs[MAX_SHIPS];
+    Ship tempEs[MAX_SHIPS];
+    Objective tempObs[MAX_OBJECTIVES];
+
+    memset(tempEs, 0, MAX_SHIPS * sizeof(Ship));
+    memset(tempFs, 0, MAX_SHIPS * sizeof(Ship));
+    memset(tempObs, 0, MAX_OBJECTIVES * sizeof(Objective));
+
+    for(int i = 0; i < editorThingCount; i++){
+        //by this point the data should have already been cleaned. we should be in a contiguous portion of alive, real editorthing entries
+        if(!thingies[i].real) {
+            perror("well, shit.\n");
+            continue;
+        }   
+
+        if(thingies[i].type == ShipThing){
+            Ship * ship = (Ship *)thingies[i].data;
+            if(!ship){
+                printf("Ship data is fucked\n");
+                return;
+            }   
+            if(ship->team){
+               tempFs[fs] = *ship; //copy DATA, not location
+               fs++;
+            }else{
+                tempEs[es] = *ship; //copy DATA, not location
+                es++;
+            }
+        }else if(thingies[i].type == ObjectiveThing){
+            Objective * obj = (Objective *)thingies[i].data;
+            if(!obj){
+                perror("obj data is fucked\n");
+                return;
+            }
+            tempObs[objs] = *obj;
+            objs++;
+        }
+    }
+    memset(localMap.friendlies, 0, MAX_SHIPS * sizeof(Ship));
+    memset(localMap.enemies, 0, MAX_SHIPS * sizeof(Ship));
+    memset(localMap.map_objectives, 0, MAX_OBJECTIVES * sizeof(Objective));
+
+    localMap.fcount = fs;
+    localMap.ecount = es;
+    localMap.objective_count = objs;
+    for(int i = 0; i < localMap.fcount; i++){
+        localMap.friendlies[i] = tempFs[i];
+    }
+    for(int i = 0; i < localMap.ecount; i++){
+        localMap.enemies[i] = tempEs[i];
+    }
+    for(int i = 0; i < localMap.objective_count; i++){
+        localMap.map_objectives[i] = tempObs[i];
+    }
+}
+
 void CleanUpShipArrays(Ship *array, int *setlen){
 
     //smart version for next time
@@ -501,48 +696,70 @@ void PlaceIslandMode(){
         }
     }
 
-    for(int i = 0; i < localMap.fcount; i++){
-        if(!localMap.friendlies[i].alive)continue;
-        DrawCircleV(WorldToScreen(localMap.friendlies[i].wPos), localMap.friendlies[i].scale * 200 + 3, BLUE);
-    }
-    for(int i = 0 ; i < localMap.ecount; i++){
-        if(!localMap.enemies[i].alive)continue;
-        DrawCircleV(WorldToScreen(localMap.enemies[i].wPos), localMap.enemies[i].scale * 200 + 3, RED);
+    // for(int i = 0; i < localMap.fcount; i++){
+    //     if(!localMap.friendlies[i].alive)continue;
+    //     DrawCircleV(WorldToScreen(localMap.friendlies[i].wPos), localMap.friendlies[i].scale * 200 + 3, BLUE);
+    // }
+    // for(int i = 0 ; i < localMap.ecount; i++){
+    //     if(!localMap.enemies[i].alive)continue;
+    //     DrawCircleV(WorldToScreen(localMap.enemies[i].wPos), localMap.enemies[i].scale * 200 + 3, RED);
+    // }
+
+    // for(int i = 0 ; i < localMap.objective_count; i++){
+    //     if(localMap.map_objectives[i].team){
+    //         DrawCircleV( WorldToScreen(localMap.map_objectives[i].position), 8, YELLOW);    
+    //     }else{
+    //         DrawCircleV(WorldToScreen(localMap.map_objectives[i].position), 8, GOLD);
+    //     }
+    // }
+
+    // printf("editor thing count:%d\n", editorThingCount);
+
+    for(int i = 0; i < MAX_EDITORTHINGS; i++){
+        if(!thingies[i].real) continue;
+        DrawCircleV(WorldToScreen(thingies[i].position), 5, thingies[i].color);
     }
 
 
-    Ship *nearestShip = NearestShip(mousePos);
-    if(nearestShip){
-        distToNearestShip = Vector2Distance(nearestShip->wPos,mousePos);
-        if(distToNearestShip < 0.1){
-            DrawCircleV(WorldToScreen(nearestShip->wPos), 5, WHITE); 
+    EditorThing * nearestET = NearestET(mousePos);
+    if(nearestET){
+        distToNearestET = Vector2Distance(nearestET->position,mousePos);
+        if(distToNearestET < 0.1){
+            DrawCircleV(WorldToScreen(nearestET->position), 5, GRAY); 
             if(IsKeyPressed(KEY_BACKSPACE)){
-                nearestShip->alive = false;
-                if(nearestShip->team){
-                    CleanUpShipArrays(localMap.friendlies, &localMap.fcount);
-                }else{
-                    CleanUpShipArrays(localMap.enemies, &localMap.ecount);
+                nearestET->real= false;
+                if(nearestET->type == ShipThing){
+
+                    //todo unfuck
+                    Ship * ship = (Ship *)nearestET->data;
+                    if(!ship){
+                        printf("Ship data is fucked\n");
+                        return;
+                    }   
+                    ship->alive = false;
                 }
-                printf("fsh %d, esh %d\n", localMap.fcount, localMap.ecount);
+                CleanUpETArray(thingies, &editorThingCount);
+                RebuildSubArrays(); //this breaks all the ET array pointers
+                LoadEditorThingsFromMap(); //this fixes them
             }
         }
     }else{
-        distToNearestShip = 999;
+        distToNearestET = 999;
     }
 
     if(IsMouseButtonPressed(0)){
-        if(distToNearestShip < 0.1){
-            shipClicked = nearestShip;
+        if(distToNearestET < 0.1){
+            ETClicked = nearestET;
         }
     }
     if(IsMouseButtonDown(0)){
-        if(shipClicked){
-            shipClicked->wPos = mousePos;
+        if(ETClicked){
+            ETClicked->position = mousePos;
         }
     }
     if(IsMouseButtonReleased(0)){
         indexClicked = -1;
-        shipClicked = 0;
+        ETClicked = 0;
     }
 
     if(lastClicked){
@@ -551,7 +768,7 @@ void PlaceIslandMode(){
             *lastClicked = (Island){0};
         }
     }
-
+    // printf("ecount = %d\n", localMap.ecount);
     if(currentFileType == MapFile){
             
         if(localMap.fcount < MAX_SHIPS) {
@@ -560,13 +777,38 @@ void PlaceIslandMode(){
                 localMap.friendlies[localMap.fcount] = destroyerShip;
                 localMap.friendlies[localMap.fcount].wPos = mousePos;
                 localMap.friendlies[localMap.fcount].team = true;
+
+                EditorThing newthing;
+                newthing.data = &localMap.friendlies[localMap.fcount];
+                newthing.type = ShipThing;
+                newthing.color = BLUE;
+                newthing.size = 3;
+                newthing.real = true;
+                newthing.position = mousePos;
+                thingies[editorThingCount] = newthing;
+                editorThingCount++;
                 localMap.fcount++;
+               printf("fcount++\n");
+                printf("new friendly destroyer\n");
+
             }
             if(IsKeyPressed(KEY_J)){
                 localMap.friendlies[localMap.fcount] = BattleshipStats;
                 memcpy(localMap.friendlies[localMap.fcount].batteries, BattleshipLoadout, sizeof(BattleshipLoadout)); 
                 localMap.friendlies[localMap.fcount].wPos = mousePos;
                 localMap.friendlies[localMap.fcount].team = true;
+                localMap.friendlies[localMap.fcount].alive = true;
+ 
+
+                EditorThing newthing;
+                newthing.data = &localMap.friendlies[localMap.fcount];
+                newthing.type = ShipThing;
+                newthing.color = BLUE;
+                newthing.size = 5;
+                newthing.real = true;
+                newthing.position = mousePos;
+                thingies[editorThingCount] = newthing;
+                editorThingCount++;
                 localMap.fcount++;
             }
         }else{
@@ -578,13 +820,36 @@ void PlaceIslandMode(){
                 localMap.enemies[localMap.ecount] = destroyerShip;
                 localMap.enemies[localMap.ecount].wPos = mousePos;
                 localMap.enemies[localMap.ecount].team = false;
+
+
+                EditorThing newthing;
+                newthing.data = &localMap.enemies[localMap.ecount];
+                newthing.type = ShipThing;
+                newthing.color = RED;
+                newthing.size = 3;
+                newthing.real = true;
+                newthing.position = mousePos;
+                thingies[editorThingCount] = newthing;
+                editorThingCount++;
                 localMap.ecount++;
             }
-                if(IsKeyPressed(KEY_SEMICOLON)){
+            if(IsKeyPressed(KEY_SEMICOLON)){
                 localMap.enemies[localMap.ecount] = BattleshipStats;
                 memcpy(localMap.enemies[localMap.ecount].batteries, BattleshipLoadout, sizeof(BattleshipLoadout)); 
                 localMap.enemies[localMap.ecount].wPos = mousePos;
                 localMap.enemies[localMap.ecount].team = false;
+
+
+
+                EditorThing newthing;
+                newthing.data = &localMap.enemies[localMap.ecount];
+                newthing.type = ShipThing;
+                newthing.color = RED;
+                newthing.size = 5;
+                newthing.real = true;
+                newthing.position = mousePos;
+                thingies[editorThingCount] = newthing;
+                editorThingCount++;
                 localMap.ecount++;
             }
         }else{
@@ -623,6 +888,9 @@ void EditorUILoop(){
                 mapFromDisk = LoadMapFile(StringAt(&allMaps, i));
                 worldTime = 0;
                 localMap = mapFromDisk;
+                editorThingCount = 0;
+                memset(thingies, 0, sizeof(EditorThing) * MAX_EDITORTHINGS);
+                LoadEditorThingsFromMap();
                 currentFileType = MapFile;
                 printf("islandcount: %d\n", mapFromDisk.islandLength);
             }
@@ -652,7 +920,9 @@ void EditorUILoop(){
         if(IsMouseButtonPressed(0)){
             // GetOrMakeFile("editor/new.campaign");
             if(!FileCheck("editor/new.campaign")){
-                fopen(("editor/new.campaign"), "w");
+                FILE * fptr = fopen(("editor/new.campaign"), "w");
+                fwrite(&(Map){0}, sizeof(Map), 1, fptr);   
+                fclose(fptr);
             }
             allMaps = GetMapNames();
             printf("PLUS!!!\n");
@@ -672,6 +942,10 @@ void EditorUILoop(){
             DrawText(StringAt(&allPolys, i), 30, 60 + (i + rownumber) * 20, 20, WHITE); 
             if(IsMouseButtonPressed(0)){
                 printf("loading poly: %s\n", StringAt(&allPolys, i));
+
+                //clean point list
+                editorThingCount = 0;
+                memset(thingies, 0, sizeof(EditorThing) * MAX_EDITORTHINGS);
 
                 PolyPoly poly = LoadPolyFile(StringAt(&allPolys, i));
                 printf("poly island count = %d\n", poly.islandLength);

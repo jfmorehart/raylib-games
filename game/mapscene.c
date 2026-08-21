@@ -12,6 +12,8 @@
 #include "map.h"
 #include "rlgl.h"
 #include "taskforce.h"
+#include "text.h"
+#include "cutscene.h"
 
 #include <math.h>       
 #include <stdio.h>
@@ -39,8 +41,9 @@ float endZoom;
 Vector2 focusTarget;
 bool isZoomed;
 
-#pragma region routine
+TextBuffer rightBar;
 
+#pragma region routine
 
 
 void TimeRoutine(Routine *routine){
@@ -56,13 +59,23 @@ void TimeRoutine(Routine *routine){
         // printf("End Time Routine");
     }
 }
+void LostBattleSwitch(){
+    SetCutscene(SinkingFriendly);
+    SwitchScenes(CutScene);
+}
+void WonBattleSwitch(){
+    SetCutscene(SinkingEnemy);
+    SwitchScenes(CutScene);
+}
 
 void SwitchToBattleRoutine(Routine * routine){
     float runtime = (unscaledTime - routine->startTime);
     if(runtime >= routine->duration){
         routine->isActive= false;
         focusing = false;
-        SwitchScenes(Battle);
+        SetCutscene(0);
+        SwitchScenes(CutScene);
+        // SwitchScenes(Battle);
     }
 }
 void CallFocus(Vector2 wpos){
@@ -142,6 +155,12 @@ void RandomizeMap(){
 
 void InitMapScene(){
 
+    ClearBuffer(&rightBar);
+    AddBufferText(&rightBar, "LCLICK - Select\n");
+    AddBufferText(&rightBar, "RCLICK - Order\n");
+    AddBufferText(&rightBar, "P - Picket\n");
+    AddBufferText(&rightBar, "SPACE - Next Day\n");
+    AddBufferText(&rightBar, "LCLICK - Select\n");
     // worldScale = 2;
     // cameraPosition = ScreenToWorld((Vector2){WIDTH * 0.5, HEIGHT * 0.5});
     timeScale = 0.1;
@@ -332,7 +351,7 @@ void MapFrameLoop(){
     //     }
     // }
 
-    printf("tf count: %d\n", taskForceCount);
+    // printf("tf count: %d\n", taskForceCount);
     for(int i = 0; i < taskForceCount; i++){
         // if(tfs[i].shipCount <= 0) continue;
         if(tfs[i].team == false) continue;
@@ -340,7 +359,7 @@ void MapFrameLoop(){
 
         for(int d = 0; d < taskForceCount; d++){
             if(tfs[d].team == true) continue;
-            // if(tfs[d].shipCount <= 0) continue;
+            if(tfs[d].shipCount <= 0) continue;
             if(Vector2Distance(tfs[i].position, tfs[d].position) < SHIP_SEARCHRANGE){
                 if(!focusing){
                     CallFocus(tfs[i].position);
@@ -351,9 +370,9 @@ void MapFrameLoop(){
 
     EndOceanPass();
 
-    rlSetTexture(rlGetTextureIdDefault());                                                                                 
-    rlBegin(RL_TRIANGLES);   
-    // //Set color red
+    // rlSetTexture(rlGetTextureIdDefault());                                                                                 
+    // rlBegin(RL_TRIANGLES);   
+   // //Set color red
     // Vector3 col = (Vector3){1, 0, 0};
     // SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
     // BeginShaderMode(generalShader.shader);
@@ -378,8 +397,8 @@ void MapFrameLoop(){
     //         SteerShip(&currentMap.friendlies[i], true, currentMap.islands);
     //     }
     // }
-    rlEnd();
-    rlSetTexture(0); 
+    // rlEnd();
+    // rlSetTexture(0); 
     // EndShaderMode();
 
     //islands 
@@ -395,13 +414,19 @@ void MapFrameLoop(){
     rlSetTexture(0); 
     EndShaderMode();
 
-    // Hit h = IntersectIslandsAndShips(Vector2Zero(), mousePos, &currentMap, 0.3);
-    // if(h.hit){
-    //     DrawLineEx(WorldToScreen(Vector2Zero()), WorldToScreen(h.hitPosition), 5, RED);
-    // }else{
-    //     DrawLineEx(WorldToScreen(Vector2Zero()), WorldToScreen(mousePos), 5, GREEN); 
-    // }
-    // DrawBeam(Vector2Zero(), mousePos, PI * 0.2, 10, 1, &currentMap, 0.3);
+
+    //objectives
+    for(int i = 0; i < mapFromDisk.objective_count; i++){
+        if(mapFromDisk.map_objectives[i].team){
+            DrawCircleV(WorldToScreen(mapFromDisk.map_objectives[i].position), 8, YELLOW);
+        }else{
+            DrawCircleV(WorldToScreen(mapFromDisk.map_objectives[i].position), 8, GOLD);
+        }
+
+    }
+
+
+
 
     for(int i = 0; i < taskForceCount; i++){
        Vector2 tfpos = WorldToScreen(tfs[i].position);
@@ -461,5 +486,6 @@ void MapUIRender(){
     int hrs = (td - days) * 24;
     const char * str = TextFormat("%ddays, %dhrs", days, hrs);
     DrawText(str, diff + border, border - 10, 12, GRAY);
+    DrawText(rightBar.charArray, WIDTH * RSCALE - border - diff - 25, 35, 18, GRAY);
 }
 #pragma endregion

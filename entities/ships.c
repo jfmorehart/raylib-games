@@ -217,7 +217,7 @@ void SteerShipBattle(Ship *ship, bool avoidIslands, Island *islandsToAvoid){
 
 void BattleSceneIntroReset(Ship *ship){
     for(int i = 0; i < ship->batteryCount; i++){
-        ship->batteries[i].lastSearch = scaledTime;
+        ship->batteries[i].lastSearch = scaledTime + R01();
     }
 }
 //runs every frame
