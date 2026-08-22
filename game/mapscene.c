@@ -174,7 +174,7 @@ void InitMapScene(){
     // float dotsize = 0.3;
     // SetShaderValue(ship_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
 
-    taskForceCount = 0;
+    taskForceCount = 0; 
     for(int i =0 ; i < mapFromDisk.fcount; i++){
 
         bool found = false;
@@ -212,6 +212,7 @@ void InitMapScene(){
     for(int i =0 ; i < mapFromDisk.ecount; i++){
 
         bool found = false;
+        if(!mapFromDisk.enemies[i].alive)continue;
         for(int t = 0; t < taskForceCount; t++){ 
             if(tfs[t].shipCount + 1 >= MAX_SHIPS_IN_TF) continue;
             if(tfs[t].team != mapFromDisk.enemies[i].team) continue;
