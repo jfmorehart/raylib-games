@@ -74,7 +74,7 @@ void main()
     float wbrite = pow(1 - abs(fuv.y - 0.5), 4);
     val *= wbrite * dbrite; 
 
-    vec3 col = dotcolor;// * val;
+    vec3 col = dotcolor;
 
     finalColor = vec4(col, val);
 }                                                                                                                                                                                                  

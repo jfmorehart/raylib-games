@@ -60,7 +60,7 @@
         .alive = true,
         .health  = 100,
         .includedInScene = true,
-        .scale = 0.01,
+        .scale = 0.007,
         .searchCooldown = 1,  //<= NOT THE SAME AS RELOAD TIME
         .searchRange = SHIP_SEARCHRANGE * SHIP_SEARCHRANGE,
     };
@@ -70,7 +70,7 @@
         .alive = true,
         .health  = 600,
         .includedInScene = true,
-        .scale = 0.025,
+        .scale = 0.0125,
         .searchCooldown = 1,  //<= NOT THE SAME AS RELOAD TIME
         .searchRange = SHIP_SEARCHRANGE * SHIP_SEARCHRANGE,
     };

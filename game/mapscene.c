@@ -21,6 +21,8 @@
 #include <time.h>
 #include <string.h>
 
+#define DAY_LENGTH 2.5
+
 Map mapFromDisk;
 
 extern Battery DestroyerLoadout[SHIP_MAXBATTERIES];
@@ -43,8 +45,11 @@ bool isZoomed;
 
 TextBuffer rightBar;
 
+PolyPoly cruiser;
+
 #pragma region routine
 
+bool dayActive;
 
 void TimeRoutine(Routine *routine){
 
@@ -52,10 +57,11 @@ void TimeRoutine(Routine *routine){
     float pct = runtime / routine->duration;
     float dt = 1 - fabs(0.5 - pct) / 0.5;
     timeScale = 2 * dt + 0.5;
-
+    dayActive = true;
     if(pct > 1){
+        dayActive = false;
         routine->isActive= false;
-        timeScale = 0.1;
+        timeScale = 0.05;
         // printf("End Time Routine");
     }
 }
@@ -197,6 +203,9 @@ void InitMapScene(){
         //make new!
 
         tfs[taskForceCount] = (TaskForce){0};
+        snprintf(tfs[taskForceCount].name, 20, "TF %d", (taskForceCount + 2) * 21);
+        // tfs[taskForceCount].name = "Task Force" + taskForceCount.toString();
+
         tfs[taskForceCount].shipCount = 0;
         tfs[taskForceCount].min_speed = 0.09;
         tfs[taskForceCount].team = mapFromDisk.friendlies[i].team;
@@ -240,11 +249,14 @@ void InitMapScene(){
         tfs[taskForceCount].destination = RandomWorldPointNoIsland();
         taskForceCount++;
     }
-
+    cruiser = LoadPolyFile("cruiser.poly");
+    // cruiser.polyCenter = ScreenToWorld((Vector2){WIDTH * 1.1, HEIGHT * 0.5});
+    // cruiser.polyScale = 0.4;
 }
 #pragma endregion
 
 #pragma region loop
+
 void MapInputLoop(){
     if(focusing) return;
     if(IsMouseButtonDown(0)){
@@ -268,15 +280,7 @@ void MapInputLoop(){
             }
         }   
     }
-    if(IsMouseButtonDown(1)){
-        // printf("rclick \n");
-        for(int i = 0; i < mapFromDisk.fcount; i++){
-            if(mapFromDisk.friendlies[i].selected){
-                mapFromDisk.friendlies[i].moveTargetPosition = mousePos;
-                mapFromDisk.friendlies[i].hasMoveTarget = true;
-            }
-        }   
-    }
+
     if(IsKeyPressed(KEY_SPACE)){
         RunRoutine("TimeRoutine");
     }
@@ -290,18 +294,6 @@ void MapInputLoop(){
     if(IsKeyDown(KEY_Q)){
         worldScale -= fixedDeltaTime * (worldScale / 0.3) * 0.1;
     }
-    // if(IsKeyDown(KEY_D)){
-    //     cameraPosition.x += fixedDeltaTime * worldScale;
-    // }
-    // if(IsKeyDown(KEY_A)){
-    //     cameraPosition.x -= fixedDeltaTime * worldScale;
-    // }
-    //  if(IsKeyDown(KEY_W)){
-    //     cameraPosition.y += fixedDeltaTime * worldScale;
-    // }
-    // if(IsKeyDown(KEY_S)){
-    //     cameraPosition.y -= fixedDeltaTime * worldScale;
-    // }
 
     if(IsKeyPressed(KEY_R)){
         RandomizeMap();
@@ -337,22 +329,6 @@ void MapFrameLoop(){
 
     PrepShipRangePass();
 
-    // for(int i = 0; i < currentMap.fcount; i++){
-    //     if(!currentMap.friendlies[i].alive)continue;
-    //     DrawCircleV(WorldToScreen(currentMap.friendlies[i].wPos), WorldToPixels(SHIP_SEARCHRANGE), WHITE);
-
-    //     for(int d = 0; d < currentMap.ecount; d++){
-    //         if(!currentMap.enemies[d].alive)continue;
-    //         if(Vector2Distance(currentMap.friendlies[i].wPos, currentMap.enemies[d].wPos) < SHIP_SEARCHRANGE){
-    //             currentMap.enemies[d].isVisible = true;
-    //             if(!focusing){
-    //                 CallFocus(currentMap.friendlies[i].wPos);
-    //             }
-    //         }
-    //     }
-    // }
-
-    // printf("tf count: %d\n", taskForceCount);
     for(int i = 0; i < taskForceCount; i++){
         // if(tfs[i].shipCount <= 0) continue;
         if(tfs[i].team == false) continue;
@@ -370,37 +346,6 @@ void MapFrameLoop(){
     }
 
     EndOceanPass();
-
-    // rlSetTexture(rlGetTextureIdDefault());                                                                                 
-    // rlBegin(RL_TRIANGLES);   
-   // //Set color red
-    // Vector3 col = (Vector3){1, 0, 0};
-    // SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
-    // BeginShaderMode(generalShader.shader);
-    // for(int d = 0; d < currentMap.ecount; d++){
-    //     if(currentMap.enemies[d].isVisible && currentMap.enemies[d].alive){
-    //         RenderShip(&currentMap.enemies[d], 0.7);
-    //         if(!focusing){
-    //             SteerShip(&currentMap.enemies[d], true, currentMap.islands);
-    //         }
-    //     }
-    // }
-    // EndShaderMode();
-
-    //Set color white
-    // Vector3 col = (Vector3){1, 1, 1};
-    // SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
-    // BeginShaderMode(generalShader.shader);
-    // for(int i = 0; i < currentMap.fcount; i++){
-    //     if(!currentMap.friendlies[i].alive)continue;
-    //     RenderShip(&currentMap.friendlies[i], 1);
-    //     if(!focusing){
-    //         SteerShip(&currentMap.friendlies[i], true, currentMap.islands);
-    //     }
-    // }
-    // rlEnd();
-    // rlSetTexture(0); 
-    // EndShaderMode();
 
     //islands 
     DotShaderValues(&map_islandShader, 0.04, 60, (Vector3){1, 1, 1});
@@ -426,13 +371,11 @@ void MapFrameLoop(){
 
     }
 
-
-
-
     for(int i = 0; i < taskForceCount; i++){
        Vector2 tfpos = WorldToScreen(tfs[i].position);
 
-        if(tfs[i].team){
+        if(tfs[i].team && !dayActive){
+
             if(IsMouseButtonDown(0)){
                 if(Vector2DistanceSqr(tfpos, mousePos_ScreenCoords) < 50){
                     tfs[i].selected = true;
@@ -440,21 +383,32 @@ void MapFrameLoop(){
                     tfs[i].selected = false;
                 }
             }
-            if(IsMouseButtonDown(1)){
-                if(tfs[i].selected){
+
+            if(tfs[i].selected){
+                Hit hit = AllIslandsIntersect(mapFromDisk.islands, (Edge){tfs[i].position, mousePos});
+                if(hit.hit){
+                    DrawLineEx(WorldToScreen(tfs[i].position),WorldToScreen(hit.hitPosition), 1, GREEN);
+                    DrawLineEx(WorldToScreen(hit.hitPosition), WorldToScreen(mousePos), 1, RED);
+                }else{
+                    DrawLineEx(WorldToScreen(tfs[i].position), WorldToScreen(mousePos), 1, GREEN);
+                }
+                if(IsMouseButtonDown(1) && !hit.hit){
+                    tfs[i].selected = false;
                     tfs[i].destination = mousePos;
                 }
             }
+
         }
 
-
+        bool validPath = false;
         if(!Vector2Equals(Vector2Zero(), tfs[i].destination)){
             Vector2 delta = Vector2Subtract(tfs[i].destination, tfs[i].position);
-            if(Vector2LengthSqr(delta) < 0.01) {
+            if(Vector2LengthSqr(delta) < 0.01 && !dayActive) {
                 tfs[i].destination = Vector2Zero();
                 continue;
             }
             delta = Vector2Scale(Vector2Normalize(delta), tfs[i].min_speed * scaledDeltaTime);
+            validPath = true;
             if(!focusing){
                 tfs[i].position = Vector2Add(tfs[i].position, delta);
             }
@@ -463,11 +417,38 @@ void MapFrameLoop(){
 
         if(tfs[i].team){
             if(tfs[i].selected){
-                DrawCircle(WorldToScreen(tfs[i].position).x, WorldToScreen(tfs[i].position).y, 3, BLUE); 
+                Vector2 pos = WorldToScreen(tfs[i].position);
+
+                if(validPath){
+                    Vector2 target = tfs[i].destination;
+                    Vector2 delta = Vector2Normalize(Vector2Subtract( target, tfs[i].position));
+                    Vector2 dayPoint = Vector2Add(tfs[i].position, Vector2Scale(delta, SHIPSPEED * DAY_LENGTH));
+                    if(dayActive){
+                        DrawLineEx(WorldToScreen(tfs[i].position), WorldToScreen(target), 1, DARKGRAY);
+                    }else{
+                        DrawLineEx(WorldToScreen(tfs[i].position), WorldToScreen(dayPoint), 2, WHITE);
+                        DrawLineEx(WorldToScreen(dayPoint), WorldToScreen(target), 1,  DARKGRAY);
+                    }
+
+                    // DrawLine(WorldToScreen(tfs[i].position).x, WorldToScreen(tfs[i].position).y, target.x, target.y, WHITE);
+                }
+                DrawCircle(pos.x, pos.y, 3, BLUE); 
             }else{
+
+                if(validPath){
+                    Vector2 target = tfs[i].destination;
+                    Vector2 delta = Vector2Normalize(Vector2Subtract( target, tfs[i].position));
+                    Vector2 dayPoint = Vector2Add(tfs[i].position, Vector2Scale(delta, SHIPSPEED * DAY_LENGTH));
+                    if(dayActive){
+                        DrawLineEx(WorldToScreen(tfs[i].position), WorldToScreen(target), 1, DARKGRAY);
+                    }else{
+                        DrawLineEx(WorldToScreen(tfs[i].position), WorldToScreen(dayPoint), 1.5, GRAY);
+                        DrawLineEx(WorldToScreen(dayPoint), WorldToScreen(target), 1,  DARKGRAY);
+                    }
+                }
                 DrawCircle(WorldToScreen(tfs[i].position).x, WorldToScreen(tfs[i].position).y, 3, GRAY); 
             }
-            DrawText("Task Force 32", tfpos.x - 30, tfpos.y - 20, 1, WHITE);
+            DrawText(tfs[i].name, tfpos.x - 15, tfpos.y - 20, 1, WHITE);
         }else{
             if(IsKeyPressed(KEY_S)){
                 DrawCircle(WorldToScreen(tfs[i].position).x, WorldToScreen(tfs[i].position).y, 3, RED); 
@@ -475,6 +456,7 @@ void MapFrameLoop(){
             }
         }
     }
+
 }
 
 void MapUIRender(){
@@ -488,5 +470,27 @@ void MapUIRender(){
     const char * str = TextFormat("%ddays, %dhrs", days, hrs);
     DrawText(str, diff + border, border - 10, 12, GRAY);
     DrawText(rightBar.charArray, WIDTH * RSCALE - border - diff - 25, 35, 18, GRAY);
+
+    for(int i =0 ;i < taskForceCount; i++){
+        if(tfs[i].selected){
+            DrawText(tfs[i].name, WIDTH * RSCALE - border - diff - 25, 200, 18, WHITE);
+            Vector3 col = (Vector3){1, 1, 1};
+
+            DotShaderValues(&generalShader, 0.2, 12, col);
+            SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
+            BeginShaderMode(generalShader.shader);
+            rlBegin(RL_TRIANGLES);
+            rlColor4ub(255, 255, 255, 255);
+            for(int j = 0; j < tfs[i].shipCount; j++){
+                cruiser.polyCenter = (Vector2){WIDTH * RSCALE * 0.93, 250 + j * 50};
+                cruiser.polyScale = 60;
+                RenderPolyAsUI(cruiser);
+
+            }
+                rlEnd();
+                rlSetTexture(0); 
+                EndShaderMode();
+        }
+    }
 }
 #pragma endregion

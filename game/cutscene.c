@@ -63,14 +63,83 @@ void DrawHorizonObj(float azimuth, float worldWidth, float worldHeight, float di
 
 void RenderPoly(PolyPoly todraw){
     for(int i = 0; i < todraw.islandLength; i++){
-        // todraw.islands[i].scale = 1;
-        // todraw.islands[i].relativePosition = Vector2Zero();
-        Render(&todraw.islands[i]);
-        // DrawTriangle(WorldToScreen((Vector2){100, 0}),WorldToScreen((Vector2){1, 0}), WorldToScreen((Vector2){0, 0}), WHITE);
-        // DrawTriangle(WorldToScreen((Vector2){0, 0}),WorldToScreen((Vector2){100, 0}), WorldToScreen((Vector2){0, 1}), WHITE);
+        //polyCenter
+        //polyScale
+
+
+        Island * island = &todraw.islands[i];
+        // island->relativePosition = todraw.polyCenter;
+        // island->scale = todraw.polyScale;
+
+        for(int i = 0; i < island->edgeCount; i++){
+
+            
+            Vector2 screenPoint0 = WorldToScreen(island->relativePosition);
+            Vector2 screenPoint1 = WorldToScreen(IslandPointToWorld(island, island->points[i]));
+            Vector2 screenPoint2 = WorldToScreen(IslandPointToWorld(island, island->points[(i + 1) % island->edgeCount]));
+
+            //start
+            rlTexCoord2f(0, 0);         
+            rlVertex2f(screenPoint0.x, screenPoint0.y);
+                                                                        
+            // left                                                                                                  
+            rlTexCoord2f((float)i / island->edgeCount, 1);                         
+            rlVertex2f(screenPoint1.x, screenPoint1.y);                                 
+                                                                                                                                
+            // right
+            rlTexCoord2f((float)(i + 1) / island->edgeCount, 1);                                                                                                
+            rlVertex2f(screenPoint2.x, screenPoint2.y);    
+
+            // Vector2 foam1 = Vector2Add(island->relativePosition, Vector2Scale(island->points[i], island->scale));
+            // Vector2 foam2 = Vector2Add(island->relativePosition, Vector2Scale(island->points[(i + 1) % island->edgeCount], island->scale));
+            // DrawLineEx(WorldToScreen(foam1), WorldToScreen(foam2), 1 + timeComponent * 1, WHITE);
+            // DrawTriangle(screenPoint0, screenPoint1, screenPoint2, WHITE);
+        }
     }
 }
 
+Vector2 PolyPoint2Screen(const PolyPoly *pp, const Island * is, Vector2 point){
+    //   return Vector2Add(island->relativePosition, Vector2Scale(objectSpace, island->scale));
+    Vector2 adj = Vector2Add(is->relativePosition, Vector2Scale(point, is->scale));
+    adj.y *= -1;
+    return Vector2Add(pp->polyCenter, Vector2Scale(adj, pp->polyScale));
+    //   return
+}
+
+void RenderPolyAsUI(PolyPoly todraw){
+    for(int i = 0; i < todraw.islandLength; i++){
+        //polyCenter
+        //polyScale
+
+
+        Island * island = &todraw.islands[i];
+
+        for(int i = 0; i < island->edgeCount; i++){
+
+            
+            Vector2 screenPoint0 = PolyPoint2Screen(&todraw, island, Vector2Zero());
+            Vector2 screenPoint1 = PolyPoint2Screen(&todraw, island, island->points[i]);//, const Island *is, Vector2 point) WorldToScreen(IslandPointToWorld(island, island->points[i]));
+            Vector2 screenPoint2 = PolyPoint2Screen(&todraw, island, island->points[(i + 1) % island->edgeCount]);     //WorldToScreen(IslandPointToWorld(island, island->points[(i + 1) % island->edgeCount]));
+
+            //start
+            rlTexCoord2f(0, 0);         
+            rlVertex2f(screenPoint0.x, screenPoint0.y);
+                                                                        
+            // left                                                                                                  
+            rlTexCoord2f((float)i / island->edgeCount, 1);                         
+            rlVertex2f(screenPoint1.x, screenPoint1.y);                                 
+                                                                                                                                
+            // right
+            rlTexCoord2f((float)(i + 1) / island->edgeCount, 1);                                                                                                
+            rlVertex2f(screenPoint2.x, screenPoint2.y);    
+
+            // Vector2 foam1 = Vector2Add(island->relativePosition, Vector2Scale(island->points[i], island->scale));
+            // Vector2 foam2 = Vector2Add(island->relativePosition, Vector2Scale(island->points[(i + 1) % island->edgeCount], island->scale));
+            // DrawLineEx(WorldToScreen(foam1), WorldToScreen(foam2), 1 + timeComponent * 1, WHITE);
+            // DrawTriangle(screenPoint0, screenPoint1, screenPoint2, WHITE);
+        }
+    }
+}
 
 void DrawShipsOnHorizon(){
     Vector3 col = (Vector3){0.2, 0.2, 0.2};

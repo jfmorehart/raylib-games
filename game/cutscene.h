@@ -28,6 +28,7 @@ void SetCutscene(Cutscene cut);
 void DrawHorizonObj(float azimuth, float worldWidth, float worldHeight, float distance);
 
 void RenderPoly(PolyPoly todraw);
+void RenderPolyAsUI(PolyPoly todraw);
 
 void DrawShipsOnHorizon();
 void DrawCaptain();

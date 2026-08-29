@@ -54,7 +54,7 @@ extern DotShader illuminatedShader;
 void InitBattleScene(){
 
     printf("cpos %f, %f, wscale %f\n", cameraPosition.x, cameraPosition.y, worldScale);
-    worldScale = 0.4;
+    worldScale = 0.25;
     timeScale = 1;
     //setup Ship CONSTANTS (overwrite from mapscene)
     DotShaderValues(&generalShader,0.2, 120, (Vector3){1, 1, 1});
@@ -68,7 +68,7 @@ void InitBattleScene(){
     for(int i = 0; i < mapFromDisk.fcount; i++){
         BattleSceneIntroReset(&mapFromDisk.friendlies[i]);
         mapFromDisk.friendlies[i].includedInScene = false;
-        if(!mapFromDisk.friendlies[i].alive)continue;
+        if(!mapFromDisk.friendlies[i].alive) continue;
         printf("mapFromDisk.friendlies[%d].wPos) = %f, %f \n", i, mapFromDisk.friendlies[i].wPos.x, mapFromDisk.friendlies[i].wPos.y);
         printf("w2s %f %f\n", WorldToScreen(mapFromDisk.friendlies[i].wPos).x,  WorldToScreen(mapFromDisk.friendlies[i].wPos).y);
         if(IsOnScreen(mapFromDisk.friendlies[i].wPos)){
@@ -135,6 +135,17 @@ void BattleFrameLoop(){
     EndShaderMode();
     EndBlendMode();
     if(liveEnemies < 1){
+        char fullstring[30] = "livemaps/";
+        strcat(fullstring, mapFromDisk.filename);
+        FILE *fptr = fopen(fullstring, "wb");
+        if(fptr){
+            // Write some text to the file
+            fwrite(&mapFromDisk, sizeof(Map), 1, fptr);   
+            // Close the file
+            fclose(fptr); 
+            printf("saved map to livemaps folder");
+        }
+        // fread(&mapFromDisk, sizeof(Map),1);
         WonBattleSwitch();
     }
 

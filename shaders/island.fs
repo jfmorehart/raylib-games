@@ -98,9 +98,10 @@ void main()
     // noise *= 0.3;
     // noise = pow(scale(noise, 10) * 2, 2) * 0.6;// * 0.5;
     noise = scale(noise, 10);
+
+    float rdot = dotsize * noise * 2;
     noise *= 0.1;
-    float rdot = dotsize + noise;
-    rdot += beach * 5;
+    rdot += beach * 0.3;
     rdot = clamp(rdot, 0, 0.5);
     
     vec2 uvContinuous = wPos * multiplier;
@@ -123,5 +124,6 @@ void main()
     // rec = (1 - fragTexCoord.y) * 0.3 + noise;//
     // rec *= val;
     rec *= (1 - beach) + beach * 5;
+    rec*=2;
     finalColor = vec4(rec, rec, rec, mask + sea);
 }                                                                                                                                                                                                  

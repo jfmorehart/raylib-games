@@ -20,6 +20,7 @@ bool FileCheck(const char* path){
 
     #elif __APPLE__
     mkdir("editor", 0777);
+    mkdir("livemaps", 0777);
     #endif
 
     FILE *fptr;

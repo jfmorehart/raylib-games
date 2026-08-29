@@ -9,6 +9,7 @@
 
 typedef struct TaskForce {
     bool team;
+    char name[20];
     Vector2 position;
     float min_speed;
     float max_detection_range;

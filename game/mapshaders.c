@@ -67,7 +67,7 @@ int ShaderInit(){
 
     DotShaderValues(&generalShader, 0.2, 50, (Vector3){1, 1, 1});
     DotShaderValues(&explosionShader, 0.3, 230, (Vector3){1, 1, 1});
-    DotShaderValues(&lightShader, 0.3, 230, (Vector3){0.2, 0.2, 0.2});
+    DotShaderValues(&lightShader, 0.2, 230, (Vector3){0.2, 0.2, 0.2});
 
     Vector2 resolutionVector = {WIDTH, HEIGHT};  
     SetRes(&islandShader, resolutionVector);
