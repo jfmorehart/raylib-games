@@ -9,6 +9,7 @@
 #include "bullets.h"
 #include "map.h"
 #include "mapscene.h"
+#include "battlescene.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -40,7 +41,16 @@ bool DamageShips(Vector2 position, float radius, Ship **allShips, int count, int
             
             //hit
             h++;
+            //apply damage
             allShips[i]->health -= damage;
+
+            //apply stacks
+            float roll = R01();
+            if(roll > 0){
+                ApplyFireStacks(allShips[i], roll * 100);
+            }
+            
+            //register kill, if appliable
             if(allShips[i]->health < 0){
                 FireSmoke(allShips[i]->wPos, WorldToPixels(SHIP_EXPLOSION_RADIUS * (R01() * 0.5 + 0.5)));
                 allShips[i]->alive = false;
@@ -276,7 +286,7 @@ void RenderBatteryBeam(Battery * battery,const Ship * ship){
         Vector2 dir = Vector2Subtract(spreadTarget, batteryPosition);
         dir = Vector2Normalize(dir);
         dir = Vector2Add(batteryPosition , Vector2Scale(dir, ship->scale + 0.006));
-        DrawBeam(dir, spreadTarget, PI * 0.25, 50, SHIP_SEARCHRANGE * 2, &mapFromDisk, 0.3, scaledDeltaTime);
+        DrawBeam(dir, spreadTarget, PI * 0.25, 50, BATTLE_SEARCHRANGE * 2, &mapFromDisk, 0.3, scaledDeltaTime);
         //DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(spreadTarget), 5, WHITE);
     }
 }

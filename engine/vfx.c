@@ -58,7 +58,8 @@ void FireSmoke(Vector2 position, float radius){
 }
 
 void UpdateAndRenderBlobs(Smoke *pool, int count){
-    rlSetTexture(rlGetTextureIdDefault());                                                                                 
+    rlSetTexture(rlGetTextureIdDefault());          
+    rlColor4f(255, 214, 66, 255);                                                                      
     rlBegin(RL_QUADS);                                                       
                          
     for(int i = 0; i < count; i++){
@@ -90,6 +91,66 @@ void UpdateAndRenderBlobs(Smoke *pool, int count){
     }
     rlEnd();                                                        
     rlSetTexture(0); 
+}
+
+void DrawCircularBeam(Vector2 start, int beamSegments, float radius, Map *m, float scaleMult, float illumbrightness) {
+    Hit hits[BEAMSEGMENTS_MAX] = {0};
+
+    float startingAngle = 0;
+
+    float apb = 2 * PI / (float)beamSegments;
+
+    
+    for(int i = 0; i < beamSegments; i++){
+        Vector2 dir = VfromAngle(startingAngle + apb * i);
+        dir = Vector2Scale(Vector2Normalize(dir), radius);
+        hits[i] = IntersectIslandsAndShips(start, dir, m, scaleMult);
+
+        if(!hits[i].hit || Vector2Length(hits[i].hitPosition) < 0.001){
+            // printf("miss, setting to:(%f, %f)\n",  Vector2Add(start, dir).x, Vector2Add(start, dir).y);
+            hits[i].hitPosition = Vector2Add(start, dir);
+        }
+    }
+
+    for(int i = 1; i < beamSegments; i++){
+
+        Vector2 c = WorldToScreen(start);               
+        Vector2 h1 = WorldToScreen(hits[i - 1].hitPosition); 
+        float l = Vector2Distance(start, hits[i - 1].hitPosition) / radius;
+        float l2 = Vector2Distance(start, hits[i].hitPosition) / radius;
+        Vector2 h2 =  WorldToScreen(hits[i].hitPosition);      
+    
+        //start
+        float uvval = (float)i / beamSegments;
+        rlTexCoord2f(1, uvval);         
+        rlVertex2f(c.x, c.y);
+                                                                    
+        // left                                                                                                  
+        rlTexCoord2f(1 - l, uvval);                         
+        rlVertex2f(h1.x, h1.y);                                 
+                                                                                                                            
+        // right
+        rlTexCoord2f(1 - l2, uvval);                                                                                                
+        rlVertex2f(h2.x, h2.y);               
+    }
+
+    //apply brightnesses;
+    int trackedCount = 0;
+    Ship *alreadyIlluminated[5];
+    for(int i = 0;i < beamSegments; i++){
+        if(hits[i].shipHit){
+            for(int sh = 0; sh < trackedCount; sh++){
+                if(alreadyIlluminated[i] == hits[i].shipHit){
+                    continue;
+                }
+            }
+             float dist = Vector2DistanceSqr(start, hits[i].hitPosition);
+            dist = fmaxf(dist, radius / 5);
+            hits[i].shipHit->illuminationThisFrame += illumbrightness * (radius / dist);
+            // printf("added: %f\n" , illumbrightness * (beamLength / dist));
+            alreadyIlluminated[i] = hits[i].shipHit;
+        }
+    }
 }
 
 void DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, float beamLength, Map *m, float scaleMult, float illumbrightness){

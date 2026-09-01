@@ -30,5 +30,5 @@ void UpdateAndRenderBlobs(Smoke *pool, int count);
 
 #define BEAMSEGMENTS_MAX 50
 
-
+void DrawCircularBeam(Vector2 start, int beamSegments, float radius, Map *m, float scaleMult, float illumbrightness);
 void DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, float beamLength, Map *m, float scaleMult, float illumbrightness);

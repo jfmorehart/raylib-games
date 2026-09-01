@@ -22,6 +22,7 @@
 #include <string.h>
 
 #define DAY_LENGTH 2.5
+#define MAP_SEARCHRANGE 0.3
 
 Map mapFromDisk;
 
@@ -50,6 +51,7 @@ PolyPoly cruiser;
 #pragma region routine
 
 bool dayActive;
+
 
 void TimeRoutine(Routine *routine){
 
@@ -301,6 +303,32 @@ void MapInputLoop(){
     }
 }
 
+float objUpdate_last;
+float objUpdate_delay = 0.2;
+void ObjectiveUpdate(){
+    for(int i = 0; i < mapFromDisk.objective_count; i++){
+        
+        Objective * obj = &mapFromDisk.map_objectives[i];
+
+        if(obj->type == Spotter){ obj->alive = false;} //disable all spotters at the start of each tick
+
+        for(int e = 0; e < taskForceCount; e++){
+            // Ship * en = &mapFromDisk.enemies[e];
+
+            TaskForce * tf = &tfs[e];
+            if(obj->team == tf->team) continue;
+            if(Vector2Distance(obj->position, tf->position) <  MAP_SEARCHRANGE * 1.2){
+                if(obj->type == Spotter){
+                    obj->alive = true; //set them active if they spot something;
+                }
+            }
+        }
+    }
+}
+
+float spotterblink_last;
+float spotterblink_delay = 0.6;
+bool spotters_blink;
 
 void MapFrameLoop(){
 
@@ -333,12 +361,12 @@ void MapFrameLoop(){
     for(int i = 0; i < taskForceCount; i++){
         // if(tfs[i].shipCount <= 0) continue;
         if(tfs[i].team == false) continue;
-        DrawCircleV(WorldToScreen(tfs[i].position), WorldToPixels(SHIP_SEARCHRANGE), WHITE);
+        DrawCircleV(WorldToScreen(tfs[i].position), WorldToPixels( MAP_SEARCHRANGE), WHITE);
 
         for(int d = 0; d < taskForceCount; d++){
             if(tfs[d].team == true) continue;
             if(tfs[d].shipCount <= 0) continue;
-            if(Vector2Distance(tfs[i].position, tfs[d].position) < SHIP_SEARCHRANGE){
+            if(Vector2Distance(tfs[i].position, tfs[d].position) <  MAP_SEARCHRANGE){
                 if(!focusing){
                     CallFocus(tfs[i].position);
                 }
@@ -364,13 +392,30 @@ void MapFrameLoop(){
 
     //objectives
     for(int i = 0; i < mapFromDisk.objective_count; i++){
-        if(mapFromDisk.map_objectives[i].team){
-            DrawCircleV(WorldToScreen(mapFromDisk.map_objectives[i].position), 8, YELLOW);
-        }else{
-            DrawCircleV(WorldToScreen(mapFromDisk.map_objectives[i].position), 8, GOLD);
+        if(mapFromDisk.map_objectives[i].type == Capital){
+            if(mapFromDisk.map_objectives[i].team){
+                DrawCircleV(WorldToScreen(mapFromDisk.map_objectives[i].position), 8, YELLOW);
+            }else{
+                DrawCircleV(WorldToScreen(mapFromDisk.map_objectives[i].position), 8, GOLD);
+            }
         }
-
+        else if(mapFromDisk.map_objectives[i].type == Spotter){
+            if(mapFromDisk.map_objectives[i].alive && spotters_blink) //set to alive when actively spotting smth
+            {
+                DrawCircleV(WorldToScreen(mapFromDisk.map_objectives[i].position), 2, RED);
+            }
+        }
     }
+    if(scaledTime - objUpdate_last > objUpdate_delay){
+        objUpdate_last = scaledTime;
+        ObjectiveUpdate();
+    }
+    if(unscaledTime - spotterblink_last > spotterblink_delay){
+        spotterblink_last = unscaledTime;
+        spotters_blink = !spotters_blink;
+    }
+
+
 
     for(int i = 0; i < taskForceCount; i++){
        Vector2 tfpos = WorldToScreen(tfs[i].position);

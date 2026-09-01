@@ -62,7 +62,7 @@
         .includedInScene = true,
         .scale = 0.007,
         .searchCooldown = 1,  //<= NOT THE SAME AS RELOAD TIME
-        .searchRange = SHIP_SEARCHRANGE * SHIP_SEARCHRANGE,
+        .searchRange = BATTLE_SEARCHRANGE,
     };
 
     Ship BattleshipStats = {
@@ -72,7 +72,7 @@
         .includedInScene = true,
         .scale = 0.0125,
         .searchCooldown = 1,  //<= NOT THE SAME AS RELOAD TIME
-        .searchRange = SHIP_SEARCHRANGE * SHIP_SEARCHRANGE,
+        .searchRange = BATTLE_SEARCHRANGE,
     };
 
     void MakeLoadouts(){

@@ -77,10 +77,11 @@ void main()
     float n1 = ((octaves((cuv + ns * 100 + _Time * 0.01) * 0.5, 3) + 0.5) * 0.5);
     float n2 = ((octaves((cuv + ns * 150 + _Time * 0.01) * 0.5, 3) + 0.5) * 0.5);
 
-    vec3 col = dotcolor * val;
-    col.xy = cuv;
+    // 
+
     float len = length((cuv + vec2(n1, n2)) - 0.5);
     val *= step(len, 0.4);
+    vec3 col = dotcolor * val;
     // val = n1 * 10;
-    finalColor = vec4(val, val ,val , val);
+    finalColor = vec4(col, val);
 }                                                                                                                                                                                                  

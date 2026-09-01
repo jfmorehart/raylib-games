@@ -20,6 +20,7 @@ typedef enum EditorMode{
 typedef enum EditorT{
     ShipThing,
     ObjectiveThing,
+    // SpotterThing,
 } EditorT;
 
 typedef struct EditorThing{
@@ -215,6 +216,8 @@ void GenericInput(){
     if(IsKeyPressed(KEY_B)){
         SwitchScenes(MapScene);
     }
+
+    //objectives
     if(IsKeyPressed(KEY_M)){
         if(localMap.objective_count < MAX_OBJECTIVES - 1){
             if(currentFileType == MapFile) {
@@ -266,6 +269,57 @@ void GenericInput(){
         }
     }
 
+    //spotters
+    if(IsKeyPressed(KEY_I)){
+        if(currentFileType == MapFile) {
+            if(localMap.objective_count < MAX_OBJECTIVES - 1){
+                Objective obj = (Objective){0};
+                obj.position = mousePos;
+                obj.team = true;
+                obj.alive = true;
+                obj.type = Spotter;
+                localMap.map_objectives[localMap.objective_count] = obj;
+
+
+                EditorThing newthing;
+                newthing.data = & localMap.map_objectives[localMap.objective_count];
+                newthing.type = ObjectiveThing;
+                newthing.color = GRAY;
+                newthing.size = 2;
+                newthing.real = true;
+                newthing.position = mousePos;
+                thingies[editorThingCount] = newthing;
+                editorThingCount++; 
+
+                localMap.objective_count++;
+            }
+        }
+    }
+     if(IsKeyPressed(KEY_O)){
+        if(currentFileType == MapFile) {
+            if(localMap.objective_count < MAX_OBJECTIVES - 1){
+                Objective obj = (Objective){0};
+                obj.position = mousePos;
+                obj.team = false;
+                obj.alive = true;
+                obj.type = Spotter;
+                localMap.map_objectives[localMap.objective_count] = obj;
+
+
+                EditorThing newthing;
+                newthing.data = & localMap.map_objectives[localMap.objective_count];
+                newthing.type = ObjectiveThing;
+                newthing.color = DARKGRAY;
+                newthing.size = 2;
+                newthing.real = true;
+                newthing.position = mousePos;
+                thingies[editorThingCount] = newthing;
+                editorThingCount++; 
+
+                localMap.objective_count++;
+            }
+        }
+    }
 
     //GROW
     if(IsKeyPressed(KEY_EQUAL)){
@@ -538,12 +592,22 @@ void LoadEditorThingsFromMap(){
         EditorThing newthing;
         newthing.data = &localMap.map_objectives[i];
         newthing.type = ObjectiveThing;
-        if(localMap.map_objectives[i].team){
-            newthing.color = YELLOW;
-        }else{
-            newthing.color = GOLD;
+        if(localMap.map_objectives[i].type == Capital){
+            if(localMap.map_objectives[i].team){
+                newthing.color = YELLOW;
+            }else{
+                newthing.color = GOLD;
+            }
+            newthing.size = 4;
+        }else if(localMap.map_objectives[i].type == Spotter){
+            if(localMap.map_objectives[i].team){
+                newthing.color = GRAY;
+            }else{
+                newthing.color = DARKGRAY;
+            }
+            newthing.size = 2;
         }
-        newthing.size = 4;
+
         newthing.real = true;
         newthing.position = localMap.map_objectives[i].position;
         thingies[editorThingCount] = newthing;

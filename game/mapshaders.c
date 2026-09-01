@@ -124,7 +124,7 @@ void PrepShipRangePass(){
         break;
 
         case Battle:{
-            DotShaderValues(&oceanShader, 0.07, 250, (Vector3){0,0, 0});
+            DotShaderValues(&oceanShader, 0.03, 250, (Vector3){0,0, 0});
         }
         break;
     }

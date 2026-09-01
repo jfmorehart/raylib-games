@@ -22,7 +22,7 @@ Font cutfont;
 PolyPoly sub;
 PolyPoly capt;
 PolyPoly conning;
-float sceneDurations[] = {5, 5, 5, 5, 5};
+float sceneDurations[] = {0.5, 0.5, 0.5, 0.5, 0.5};
 float startCutsceneTime;
 
 Vector2 focusTarget;

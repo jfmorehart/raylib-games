@@ -8,7 +8,7 @@
 
 typedef enum ObjectiveType{
     Capital,
-    Radar,
+    Spotter,
     CoastalDefense
 } ObjectiveType;
 

@@ -12,7 +12,7 @@ WIN_LIBS = vendor/raylib-win64/lib/libraylib.a -lopengl32 -lgdi32 -lwinmm -stati
 
 all: savo
 
-NEEDSCOMPILE = game/main.o engine/helpers.o entities/islands.o engine/routines.o entities/ships.o entities/bullets.o engine/vfx.o game/mapscene.o engine/filesystem.o game/mapshaders.o engine/UI.o game/shiploadouts.o engine/audio.o engine/text.o game/cutscene.o
+NEEDSCOMPILE = game/main.o engine/helpers.o entities/islands.o engine/routines.o entities/ships.o entities/bullets.o engine/vfx.o game/mapscene.o engine/filesystem.o game/mapshaders.o engine/UI.o game/shiploadouts.o engine/audio.o engine/text.o game/cutscene.o game/battlescene.o
 WINSOURCES = $(NEEDSCOMPILE:.o=.c)    
 DEPS = $(NEEDSCOMPILE:.o=.d)
 
