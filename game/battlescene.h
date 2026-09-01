@@ -11,6 +11,7 @@
 #include "vfx.h"
 #include "map.h"
 #include "mapscene.h"
+#include "cutscene.h"
 
 #include "rlgl.h"
 
@@ -23,6 +24,7 @@
 extern Map mapFromDisk;
 
 extern Vector2 worldZero;
+extern PolyPoly cruiser;
 
 int allShipsIncludedCount;
 Ship *allShipsIncludedInScene[MAX_SHIPS + MAX_SHIPS];
@@ -50,6 +52,10 @@ extern DotShader generalShader;
 extern DotShader explosionShader;
 extern DotShader lightShader;
 extern DotShader illuminatedShader;
+
+bool battleOver;
+bool wonBattle;
+float battleOverTime;
 
 void InitBattleScene(){
 
@@ -93,6 +99,18 @@ void InitBattleScene(){
 }
 
 void BattleFrameLoop(){
+
+    if(battleOver && unscaledTime - battleOverTime > 3){
+        battleOver = false;
+        battleOverTime = 0;
+        if(wonBattle){
+            WonBattleSwitch();
+        }else{
+            LostBattleSwitch();
+        }
+    }
+
+
     int grey = 1;
     ClearBackground((Color){ grey, grey,grey * 3, 255 });
     //Set shader variables and draw ocean
@@ -134,19 +152,23 @@ void BattleFrameLoop(){
     rlSetTexture(0); 
     EndShaderMode();
     EndBlendMode();
-    if(liveEnemies < 1){
-        char fullstring[30] = "livemaps/";
-        strcat(fullstring, mapFromDisk.filename);
-        FILE *fptr = fopen(fullstring, "wb");
-        if(fptr){
-            // Write some text to the file
-            fwrite(&mapFromDisk, sizeof(Map), 1, fptr);   
-            // Close the file
-            fclose(fptr); 
-            printf("saved map to livemaps folder");
-        }
+    if(liveEnemies < 1 && !battleOver){
+        // char fullstring[30] = "livemaps/";
+        // strcat(fullstring, mapFromDisk.filename);
+        // FILE *fptr = fopen(fullstring, "wb");
+        // if(fptr){
+        //     // Write some text to the file
+        //     fwrite(&mapFromDisk, sizeof(Map), 1, fptr);   
+        //     // Close the file
+        //     fclose(fptr); 
+        //     printf("saved map to livemaps folder");
+        // }
         // fread(&mapFromDisk, sizeof(Map),1);
-        WonBattleSwitch();
+        
+        wonBattle = true;
+        battleOver = true;
+        battleOverTime = unscaledTime;
+        // WonBattleSwitch();
     }
 
     PrepShipRangePass();
@@ -202,8 +224,11 @@ void BattleFrameLoop(){
     rlSetTexture(0);    
     EndShaderMode();
 
-    if(active_fcount < 1){
+    if(active_fcount < 1 && !battleOver){
         //all friendlies lost
+        wonBattle = false;
+        battleOver = true;
+        battleOverTime = unscaledTime;
         LostBattleSwitch();
     }
 
@@ -345,4 +370,25 @@ void BattleUIRender(){
     const char * str = TextFormat("%ddays, %dhrs, %dmins", days, hrs, mins);
     DrawText(str, diff + border, border - 10, 12, GRAY);
     DrawText("Battle Off Cape Esperance",diff + border + 250, border - 10, 12, GRAY);
+
+    int numSel = 0;
+    for(int i = 0 ; i < mapFromDisk.fcount; i++){
+        if(mapFromDisk.friendlies[i].selected){
+            DrawText("Kobayashi Maru", WIDTH * RSCALE - border - diff - 25, 200 + numSel * 80, 18, WHITE);
+            Vector3 col = (Vector3){1, 1, 1};
+
+            DotShaderValues(&generalShader, 0.2, 150, col);
+            SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
+            BeginShaderMode(generalShader.shader);
+            rlBegin(RL_TRIANGLES);
+            rlColor4ub(255, 255, 255, 255);
+            cruiser.polyCenter = (Vector2){WIDTH * RSCALE * 0.93, 245 + numSel * 80};
+            numSel++;
+            cruiser.polyScale = 60;
+            RenderPolyAsUI(cruiser);
+            rlEnd();
+            rlSetTexture(0); 
+            EndShaderMode();
+        }
+    }
 }

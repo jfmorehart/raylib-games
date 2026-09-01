@@ -9,6 +9,7 @@
 #include "filesystem.h"
 #include "UI.h"
 #include "shiploadouts.h"
+#include "text.h"
 #include <string.h>
 
 typedef enum EditorMode{
@@ -54,6 +55,7 @@ extern Ship destroyerShip;
 StringArray allMaps;
 StringArray allPolys;
 
+extern TextBuffer rightBar;
 
 Vector2 PointCenter(Island *is){
     if(!is) {
@@ -125,6 +127,21 @@ void ResetCanvas(){
 
 
 void InitEditorScene(){
+
+
+    ClearBuffer(&rightBar);
+    AddBufferText(&rightBar, "LCLICK - Select\n");
+    AddBufferText(&rightBar, "ENTER - Rename\n");
+    AddBufferText(&rightBar, "BKSP - delete\n");
+    AddBufferText(&rightBar, "\n");
+    AddBufferText(&rightBar, "Place Mode - default\n");
+    AddBufferText(&rightBar, "In place mode:\n LCLICK - select\n drag - move\n BKSP - delete \n + -  rescale\n");
+
+    AddBufferText(&rightBar, "\n");
+    AddBufferText(&rightBar, "E - Edit mode\n");
+    AddBufferText(&rightBar, "In edit mode:\n LCLICK - new point\n S - Save");
+
+
 
     worldScale = 2;
     cameraPosition = worldZero;
@@ -874,6 +891,11 @@ void EditorFrameLoop(){
 }
 
 void EditorUILoop(){
+
+    float diff = (WIDTH - HEIGHT) * 0.4;
+    int border = 30;
+    DrawText(rightBar.charArray, WIDTH * RSCALE - border - diff - 25, 35, 18, GRAY);
+
     DrawText("avaliable campaigns", 30, 30, 20, BLUE);
     DrawText(TextFormat("local map: %s ", localMap.filename), 230, 30, 20, GREEN);
 

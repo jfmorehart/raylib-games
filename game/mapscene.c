@@ -161,6 +161,7 @@ void RandomizeMap(){
 
 void InitMapScene(){
 
+    dayActive = false;
     ClearBuffer(&rightBar);
     AddBufferText(&rightBar, "LCLICK - Select\n");
     AddBufferText(&rightBar, "RCLICK - Order\n");

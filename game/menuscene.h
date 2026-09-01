@@ -23,6 +23,15 @@ typedef struct DisplayLine{
     int renderedCharCount; //if this == length, we're done.
 }DisplayLine;
 
+
+typedef enum Campaign{
+    Raenin, 
+    Lutzo, 
+    Kenning, 
+    Artem
+}Campaign;
+Campaign selected;
+
 char displayBuffer[MAXCHARS];
 int displayBufferCham = 0;
 float lastWriteTime;
@@ -65,8 +74,10 @@ void MenuInit(){
     backLogCham = 0;
     displayBufferCham = 0;
     printf("loading menu\n");
-    const char* hello = "hello";
-    printf("strlen hello = %d\n", strlen(hello));
+
+    // const char* hello = "hello";
+    // printf("strlen hello = %d\n", strlen(hello));
+
     menufont = LoadFont("assets/jackinput.ttf");
     currentChar = 0;
     memset(textBuffer, 0, sizeof(textBuffer));
@@ -74,7 +85,7 @@ void MenuInit(){
     help = false;
 
     AddLine("remaining names:");
-    AddLine("Canaris, Raeber, Ciliax, Lutjens");
+    AddLine("Raenin, Lutzo, Kenning, Artem");
 }
 
 
@@ -91,7 +102,8 @@ void WriteBacklogToDisplayBuffer_Tick(){
     }
 }
 
-
+float lastBlink = 0;
+bool blinkON;
 void MenuUpdate(){
 
     ClearBackground(BLACK);
@@ -99,6 +111,11 @@ void MenuUpdate(){
     if(unscaledTime - lastWriteTime > 0.01){
         WriteBacklogToDisplayBuffer_Tick();
         lastWriteTime = unscaledTime;
+    }
+
+    if(unscaledTime - lastBlink > 0.4){
+        lastBlink = unscaledTime;
+        blinkON = !blinkON;
     }
 
     int key = GetCharPressed();
@@ -122,38 +139,64 @@ void MenuUpdate(){
         textBuffer[currentChar] = '\0';
     }
     // printf("%s", buffer);
-    DrawText("SAVO_C            __ development version 0.15 __", 100, 30, 30, DARKGRAY);
+    DrawText("SAVO_C            __ development version 0.17 __", 100, 30, 30, DARKGRAY);
     DrawText("made by spacemann", WIDTH * RSCALE - 260, HEIGHT * RSCALE - 30, 20, DARKGRAY);
-    DrawText("menu commands: play, cut, edit, quit, help", 100, 60, 30, DARKGRAY);
+    DrawText("menu commands: edit, quit, help, cut, sink", 100, 60, 30, DARKGRAY);
 
     if(help){
         DrawText("play: M1 -> select, M2 -> order. Space -> next day. P -> editor", 100, RSCALE *HEIGHT/3 + 50, 30, GRAY);
         DrawText("edit: E -> wind: (Click -> new vertex) P -> place: (JKL; -> +ship). S to save.", 100, RSCALE *HEIGHT/3 + 100, 30, GRAY);
     }
 
-    if(strcmp(textBuffer, "Canaris") == 0){
+    if(strcmp(textBuffer, "Raenin") == 0){
+        selected = Raenin;
+
         memset(textBuffer, 0, sizeof(textBuffer));
         currentChar = 0;
         memset(displayBuffer, 0, sizeof(displayBuffer));
         displayBufferCham = 0;
-        AddLine("Admiral Wilhelm Canaris. Abwehr, Reichsmarine.");
+        AddLine("Admiral Wilhelm Raenin.");
         AddLine("You will be executed in 87 days.");
         AddLine("At your disposal are the battleships:");
-        AddLine("Scharnhorst");
-        AddLine("Tirpitz");
+        AddLine("Scharnitz");
+        AddLine("Tirphorst");
         AddLine("and nine destroyers");
-        AddLine("Begin?");
+        AddLine("Begin? (y/n)");
     }
     
-    if(strcmp(textBuffer, "Raeber") == 0){
+    if(strcmp(textBuffer, "Lutzo") == 0){
+        selected = Lutzo;
         memset(textBuffer, 0, sizeof(textBuffer));
         currentChar = 0;
         memset(displayBuffer, 0, sizeof(displayBuffer));
         displayBufferCham = 0;
-        AddLine("Raeber.");
-        AddLine("You will survive the war.");
-        AddLine("Begin?");
+        AddLine("Lutzo.");
+        AddLine("You will not survive the war.");
+        AddLine("Begin? (y/n)");
     }
+
+    if(strcmp(textBuffer, "Kenning") == 0){
+        selected = Kenning;
+
+        memset(textBuffer, 0, sizeof(textBuffer));
+        currentChar = 0;
+        memset(displayBuffer, 0, sizeof(displayBuffer));
+        displayBufferCham = 0;
+        AddLine("Lutzo.");
+        AddLine("You will not survive the war.");
+        AddLine("Begin? (y/n)");
+    }
+    if(strcmp(textBuffer, "Artem") == 0){
+        selected = Lutzo;
+        memset(textBuffer, 0, sizeof(textBuffer));
+        currentChar = 0;
+        memset(displayBuffer, 0, sizeof(displayBuffer));
+        displayBufferCham = 0;
+        AddLine("Lutzo.");
+        AddLine("You will not survive the war.");
+        AddLine("Begin? (y/n)");
+    }
+
     if(strcmp(textBuffer, "yes") == 0){
         memset(textBuffer, 0, sizeof(textBuffer));
         currentChar = 0;
@@ -173,6 +216,9 @@ void MenuUpdate(){
     }
 
     DrawText(displayBuffer, 100, RSCALE * HEIGHT / 3, 30, WHITE);
+    if(blinkON){
+        DrawText(">", 80, RSCALE * HEIGHT - 100, 30, WHITE);
+    }
     DrawText(textBuffer, 100, RSCALE * HEIGHT - 100, 30, GRAY);
 
     if(strcmp(textBuffer, "cut") == 0){
