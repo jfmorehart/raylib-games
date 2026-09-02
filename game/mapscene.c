@@ -135,6 +135,15 @@ void FocusRoutine(Routine *routine){
 }
 #pragma endregion
 
+Vector2 PickRandomLegalDestination(Vector2 fromPoint){
+    Vector2 rand = RandomWorldPointNoIsland();
+    Hit hit = AllIslandsIntersect(mapFromDisk.islands, (Edge){fromPoint, rand});
+    if(hit.hit){
+        Vector2 delta = Vector2Subtract(hit.hitPosition, fromPoint);
+        return Vector2Subtract(hit.hitPosition, Vector2Scale(delta, 0.1));
+    }
+    return rand;
+}
 #pragma region init
 void RandomizeMap(){
 
@@ -249,7 +258,9 @@ void InitMapScene(){
         tfs[taskForceCount].ships[tfs[taskForceCount].shipCount] = &mapFromDisk.enemies[i];
         tfs[taskForceCount].ships[tfs[taskForceCount].shipCount]->wPos = Vector2Zero(); // in transit, wPos becomes offset from tf center
         tfs[taskForceCount].shipCount++;
-        tfs[taskForceCount].destination = RandomWorldPointNoIsland();
+
+        tfs[taskForceCount].destination = PickRandomLegalDestination(tfs[taskForceCount].position);
+        
         taskForceCount++;
     }
     cruiser = LoadPolyFile("cruiser.poly");
@@ -450,8 +461,13 @@ void MapFrameLoop(){
         if(!Vector2Equals(Vector2Zero(), tfs[i].destination)){
             Vector2 delta = Vector2Subtract(tfs[i].destination, tfs[i].position);
             if(Vector2LengthSqr(delta) < 0.01 && !dayActive) {
-                tfs[i].destination = Vector2Zero();
-                continue;
+                if(tfs[i].team){
+                    tfs[i].destination = Vector2Zero();
+                    continue;
+                }else{
+                    tfs[i].destination = PickRandomLegalDestination(tfs[i].position);
+                }
+
             }
             delta = Vector2Scale(Vector2Normalize(delta), tfs[i].min_speed * scaledDeltaTime);
             validPath = true;
