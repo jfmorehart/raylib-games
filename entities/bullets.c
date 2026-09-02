@@ -21,7 +21,7 @@
     float spread;
     float damage;
 } Gun;*/
- #define SHIP_EXPLOSION_RADIUS 0.03
+
 
 extern int bulletCount;
 extern int bulletCham;
@@ -52,7 +52,7 @@ bool DamageShips(Vector2 position, float radius, Ship **allShips, int count, int
             
             //register kill, if appliable
             if(allShips[i]->health < 0){
-                FireSmoke(allShips[i]->wPos, WorldToPixels(SHIP_EXPLOSION_RADIUS * (R01() * 0.5 + 0.5)));
+                FireSmoke(allShips[i]->wPos, WorldToPixels(SHIP_EXPLOSION_RADIUS * (R01() * 0.4 + 0.4)));
                 allShips[i]->alive = false;
             }
         }
@@ -74,7 +74,7 @@ void UpdateAndRenderBullets(Bullet *array, int bulletCount, Ship **canDamageArra
             //damage calca
             if(DamageShips(array[i].tPos, array[i].expRadius, canDamageArray, canDamageLength, array[i].damage)){
                 float expSize = (R01() * 0.6 + 0.6);
-                FireSmoke(array[i].tPos, WorldToPixels(array[i].expRadius * expSize * 2)); 
+                FireSmoke(array[i].tPos, WorldToPixels(array[i].expRadius * expSize * 1.2)); 
             }else{
                 FireSplash(array[i].tPos, WorldToPixels(array[i].expRadius));
             }
@@ -272,16 +272,17 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
 }
 void RenderBatteryBeam(Battery * battery,const Ship * ship){
     Vector2 batteryPosition = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), battery->batteryOffset_Y * ship->scale));
-    if(battery->shipTarget && ship->alive){        
+    if(battery->shipTarget && ship->alive){  
+        if(battery->shipTarget->illuminationThisFrame > 0.5) return;
         Gun btype = battery->BatteryType;
         Vector2 rvec = Vector2Scale(RVec_Perlin(battery->_r_index, 0.3), 0.5);
         float tdist = Vector2Distance(batteryPosition, battery->shipTarget->wPos);
-        float innaccuracy = battery->batterySpread * tdist;
-        float accuracy = (btype.range + btype.range * ((battery->timesTargeted + 1) * 0.08));
+        float innaccuracy = battery->batterySpread * tdist * tdist;
+        float accuracy = (btype.range + btype.range * ((battery->timesTargeted + 1) * 0.04));
         float btime = tdist / BULLET_SPEED * BATTLESCENE_SPEEDMULT;
         Vector2 vel = Vector2Scale(Vector2Normalize(VfromAngle(battery->shipTarget->angle)), SHIPSPEED * BATTLESCENE_SPEEDMULT);
         Vector2 movingTarget = Vector2Add(battery->shipTarget->wPos, Vector2Scale(vel, btime));
-        Vector2 spreadTarget = Vector2Add(movingTarget, Vector2Scale(rvec,  fminf(innaccuracy / accuracy, 0.3)));
+        Vector2 spreadTarget = Vector2Add(movingTarget, Vector2Scale(rvec,  fmax(innaccuracy / accuracy, 0.1)));
         // Vector2 spreadTarget = battery->shipTarget->wPos;
         Vector2 dir = Vector2Subtract(spreadTarget, batteryPosition);
         dir = Vector2Normalize(dir);

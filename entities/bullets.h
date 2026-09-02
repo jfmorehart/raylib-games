@@ -11,6 +11,7 @@
 
 #define BULLET_SPEED 0.05
 #define MAX_GUNS_PER_BATTERY 3
+#define SHIP_EXPLOSION_RADIUS 0.03
 
 typedef struct {
     float range;

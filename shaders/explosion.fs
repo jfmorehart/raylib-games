@@ -74,8 +74,8 @@ void main()
     // veccol = val * color;//mask * vec3(1, 0, 0) + col * (1 - mask);
     // val = 1;
 
-    float n1 = ((octaves((cuv + ns * 100 + _Time * 0.01) * 0.5, 3) + 0.5) * 0.5);
-    float n2 = ((octaves((cuv + ns * 150 + _Time * 0.01) * 0.5, 3) + 0.5) * 0.5);
+    float n1 = ((octaves((cuv + ns * 100 + _Time * 0.05) * 0.5, 3) + 0.5) * 0.5);
+    float n2 = ((octaves((cuv + ns * 200 + _Time * 0.05) * 0.5, 3) + 0.5) * 0.5);
 
     // 
 

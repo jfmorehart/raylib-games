@@ -11,6 +11,7 @@
 #include "map.h"
 #include "mapscene.h"
 #include "cutscene.h"
+#include "bullets.h"
 #include "battlescene.h"
 
 #include "rlgl.h"
@@ -66,6 +67,9 @@ void UpdateAndRenderFireStacks(){
     bool tickDamage = unscaledTime - firetick_last > firetick_delay;
     if(tickDamage) firetick_last = unscaledTime;
 
+    rlSetTexture(rlGetTextureIdDefault());          
+    rlBegin(RL_QUADS);    
+
     for(int i = 0; i < MAX_FIRESTACKS; i++){
 
         if(firestacks[i].alive){
@@ -74,6 +78,13 @@ void UpdateAndRenderFireStacks(){
                     //UPDATE
                     if(tickDamage){
                         firestacks[i].attached->health -= firestacks[i].amount * 0.06;
+                        if(firestacks[i].attached->health < 1) 
+                        {
+                            FireSmoke(firestacks[i].attached->wPos, WorldToPixels(SHIP_EXPLOSION_RADIUS * (R01() * 0.4 + 0.4)));
+                            firestacks[i].attached->alive = false;
+                            firestacks[i].alive = false;
+                        }
+
                         firestacks[i].amount *= 0.94;
                         if(firestacks[i].amount < 3) firestacks[i].alive = false;
                     }
@@ -81,7 +92,25 @@ void UpdateAndRenderFireStacks(){
                     //RENDER
                     float angle = firestacks[i].attached->angle;
                     Vector2 objspaceOff = (Vector2){cosf(angle) * firestacks[i].localOffset.x, sinf(angle) * firestacks[i].localOffset.y};
-                    DrawCircleV(WorldToScreen(Vector2Add(objspaceOff, firestacks[i].attached->wPos)), firestacks[i].amount * 0.15, ORANGE);
+                    // DrawCircleV(WorldToScreen(Vector2Add(objspaceOff, firestacks[i].attached->wPos)), firestacks[i].amount * 0.15, ORANGE);
+
+                    Vector2 c = WorldToScreen(Vector2Add(objspaceOff, firestacks[i].attached->wPos));
+                    float r = firestacks[i].amount * 0.15;             
+                    rlTexCoord2f(0, 0);                                                                                                
+                    rlVertex2f(c.x - r, c.y - r);                                                                                        
+                                                                                
+                    // bottom-left                                                                                                     
+                    rlTexCoord2f(0, 1);                         
+                    rlVertex2f(c.x - r, c.y + r);                                 
+                                                                                                                                        
+                    // bottom-right
+                    rlTexCoord2f(1, 1);                                                                                                
+                    rlVertex2f(c.x + r, c.y + r);                 
+                                                                                
+                    // top-right                                                                                                       
+                    rlTexCoord2f(1, 0);
+                    rlVertex2f(c.x + r, c.y - r);  
+
                     printf("rendering live firestack %d, \n", i);
 
 
@@ -97,6 +126,8 @@ void UpdateAndRenderFireStacks(){
 
         }
     }
+    rlEnd();                                                        
+    rlSetTexture(0); 
 }
 void ApplyFireStacks(Ship * toship, int amount){
     firestacks[fcham].alive = true;
@@ -130,7 +161,6 @@ void InitBattleScene(){
         if(IsOnScreen(mapFromDisk.friendlies[i].wPos)){
             mapFromDisk.friendlies[i].includedInScene = true;
             allShipsIncludedInScene[allShipsIncludedCount] = &mapFromDisk.friendlies[i];
-            ApplyFireStacks(&mapFromDisk.friendlies[i], 70);
             allShipsIncludedCount++;
             fc++;
         }
@@ -143,7 +173,6 @@ void InitBattleScene(){
             mapFromDisk.enemies[i].includedInScene = true;
             allShipsIncludedInScene[allShipsIncludedCount] = &mapFromDisk.enemies[i];
             allShipsIncludedCount++;
-            ApplyFireStacks(&mapFromDisk.enemies[i], 70);
             ec++;
         }
     }
@@ -327,7 +356,7 @@ void BattleFrameLoop(){
     EndBlendMode();
     //Explosions!
     col = (Vector3){1, 0.83, 0.25};
-    DotShaderValues(&explosionShader, 0.15, 230, col);
+    DotShaderValues(&explosionShader, 0.45, 230, col);
     // SetShaderValue(explosionShader.shader, explosionShader.dloc, &col, SHADER_UNIFORM_VEC3);
     BeginShaderMode(explosionShader.shader);
     UpdateAndRenderBlobs(smokePool, smokeCount);

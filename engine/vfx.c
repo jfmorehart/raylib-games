@@ -59,7 +59,6 @@ void FireSmoke(Vector2 position, float radius){
 
 void UpdateAndRenderBlobs(Smoke *pool, int count){
     rlSetTexture(rlGetTextureIdDefault());          
-    rlColor4f(255, 214, 66, 255);                                                                      
     rlBegin(RL_QUADS);                                                       
                          
     for(int i = 0; i < count; i++){
@@ -165,7 +164,10 @@ void DrawBeam(Vector2 start, Vector2 target, float angle, int beamSegments, floa
     for(int i = 0; i < beamSegments; i++){
         Vector2 dir = VfromAngle(startingAngle + apb * i);
         dir = Vector2Scale(Vector2Normalize(dir), beamLength);
-        hits[i] = IntersectIslandsAndShips(start, dir, m, scaleMult);
+
+        hits[i] = RayAllShipsIntersect((Edge){start, Vector2Add(start, dir)}, m->enemies, m->ecount, scaleMult);
+
+        // hits[i] = IntersectIslandsAndShips(start, dir, m, scaleMult);
 
         if(!hits[i].hit || Vector2Length(hits[i].hitPosition) < 0.001){
             // printf("miss, setting to:(%f, %f)\n",  Vector2Add(start, dir).x, Vector2Add(start, dir).y);
