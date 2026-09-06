@@ -1,6 +1,9 @@
 #pragma once
 #include "routines.h"
 
+#define DAY_LENGTH 2.5
+#define MAP_SEARCHRANGE 0.3
+
 void TimeRoutine(Routine *routine);
 
 

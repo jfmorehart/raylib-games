@@ -10,6 +10,7 @@
 #include "map.h"
 #include "mapscene.h"
 #include "battlescene.h"
+#include "audio.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -74,9 +75,11 @@ void UpdateAndRenderBullets(Bullet *array, int bulletCount, Ship **canDamageArra
             //damage calca
             if(DamageShips(array[i].tPos, array[i].expRadius, canDamageArray, canDamageLength, array[i].damage)){
                 float expSize = (R01() * 0.6 + 0.6);
-                FireSmoke(array[i].tPos, WorldToPixels(array[i].expRadius * expSize * 1.2)); 
+                FireSmoke(array[i].tPos, WorldToPixels(array[i].expRadius * expSize * 1.2));
+                PlayExplosionSound(WorldToPixels(array[i].expRadius * expSize * 1.2), array[i].tPos);
             }else{
                 FireSplash(array[i].tPos, WorldToPixels(array[i].expRadius));
+                PlaySplashSound(WorldToPixels(array[i].expRadius), array[i].tPos);
             }
            
             continue;
@@ -143,6 +146,7 @@ void FireBullet(Vector2 start, Vector2 target, Gun btype){
 
     //gunsmoke
     FireSmoke(Vector2Add(start, Vector2Scale(Vector2Normalize(delta), 0.01)), WorldToPixels(b->expRadius * 0.5));
+    PlayBulletSound(btype, start);
 }
 
 bool CanBatterySeeThis(Vector2 batteryPosition, float batteryAngle, Battery *battery, Vector2 target){
@@ -191,6 +195,7 @@ void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 targ
             // DrawTriangle(WorldToScreen(batteryPosition), WorldToScreen(Vector2Add(target, perp)),  WorldToScreen(Vector2Add(target, perp)), WHITE);
             // DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(Vector2Subtract(target, perp)), 20, WHITE);
             FireBullet(batteryPosition, spreadTarget, battery->BatteryType);
+            // PlayWave(Boom1, 0.3 * )
             battery->timesTargeted++;
         }
     }

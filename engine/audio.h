@@ -6,6 +6,7 @@
 #include <string.h>
 #include "helpers.h"
 #include "raymath.h"
+#include "shiploadouts.h"
 
 
 typedef enum WaveType{
@@ -34,6 +35,26 @@ typedef struct Note{
     //gets set every buffer refill
     float phase;
 }Note;
+
+//wave types
+typedef enum JMSound{
+    Boom1, 
+    Boom2, 
+    Boom3, 
+    Splash,
+    Crack
+}JMSound;
+//stores the actual wave data, cannot switch types after alloc
+typedef struct JMWaveBuffer{
+    JMSound type;
+    float * buffer;
+    unsigned int bufferMax;
+}JMWaveBuffer;
+
+void PlayWave(JMSound type, float multiplier);
+void PlayBulletSound(Gun g, Vector2 postion);
+void PlayExplosionSound(float size, Vector2 position);
+void PlaySplashSound(float size, Vector2 position);
 
 AudioStream stream;
 #define SAMPLE_RATE 44100

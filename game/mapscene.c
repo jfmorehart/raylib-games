@@ -14,15 +14,13 @@
 #include "taskforce.h"
 #include "text.h"
 #include "cutscene.h"
+#include "mapscene.h"
 
 #include <math.h>       
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
-
-#define DAY_LENGTH 2.5
-#define MAP_SEARCHRANGE 0.3
 
 Map mapFromDisk;
 
@@ -161,7 +159,7 @@ void RandomizeMap(){
         mapFromDisk.friendlies[i] = DestroyerStats;
         mapFromDisk.friendlies[i].wPos = RandomWorldPointNoIsland();
         mapFromDisk.friendlies[i].angle = R01() * 7;
-        mapFromDisk.friendlies->team = true;
+        mapFromDisk.friendlies[i].team = true;
         memcpy(mapFromDisk.friendlies[i].batteries, DestroyerLoadout, sizeof(DestroyerLoadout));
         InitRvecs(&mapFromDisk.friendlies[i]);
         if(i == 0){destroyerShip = mapFromDisk.friendlies[i];}

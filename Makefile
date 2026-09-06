@@ -3,7 +3,7 @@ MAKEFLAGS += --warn-undefined-variables
 CFLAGS = -Wall -O2 $(shell pkg-config --cflags raylib) -MMD -MP -I. -Iengine -Ientities -Igame -flto                                                   
 LIBS = /opt/homebrew/opt/raylib/lib/libraylib.a -framework OpenGL -framework Cocoa -framework IOKit
 
-CBUILDFLAGS = -Wall $(shell pkg-config --cflags raylib) -MMD -MP -I. -Iengine -Ientities -Igame -g -O0    
+CBUILDFLAGS = -Wall $(shell pkg-config --cflags raylib) -MMD -MP -I. -Iengine -Ientities -Igame -g -O0 -fsanitize=address,undefined -fno-omit-frame-pointer
 
 #WIN
 WIN_CC = x86_64-w64-mingw32-gcc
@@ -20,8 +20,12 @@ savo: $(NEEDSCOMPILE)
 	cc $(CFLAGS) -o savo $(NEEDSCOMPILE) $(LIBS)  -Wl,-x, -dead_strip
 	strip -x savo
 
-debug: $(NEEDSCOMPILE:.o=.c)               
+debug: $(NEEDSCOMPILE:.o=.c)       
 	cc $(CBUILDFLAGS) -o savo  $(NEEDSCOMPILE:.o=.c) $(LIBS) 
+	export ASAN_SYMBOLIZER_PATH=$$(xcrun -f llvm-symbolizer) 
+	export UBSAN_OPTIONS=print_stacktrace=1 
+	export ASAN_OPTIONS=detect_leaks=0 
+	./savo
 
 run: savo
 	./savo

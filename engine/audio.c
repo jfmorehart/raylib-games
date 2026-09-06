@@ -6,6 +6,10 @@
 #include "raymath.h"
 #include "audio.h"
 
+
+#define RFXGEN_IMPLEMENTATION 
+#include"vendor/rfxgen/rfxgen.h"
+
 AudioStream stream;
 float buffer[BUFFER_SIZE];
 
@@ -285,6 +289,44 @@ void PlayClick(float predictiveTime){
     currentNoteInClick++;
 }
 
+//stores original (generated) sounds. large files
+JMWaveBuffer wave_buffers [5];
+
+//stores the instance, pooled, can be messed with safely.
+typedef struct JMWaveInstance{
+    bool active;
+    JMSound type;
+    float multiplier;
+    unsigned int bufferPoint;
+}JMWaveInstance;
+
+int wave_next;
+#define MAX_WAVES 30
+JMWaveInstance wave_instances[MAX_WAVES];
+
+void PlayWave(JMSound type, float multiplier){
+    wave_instances[wave_next].type = type;
+    wave_instances[wave_next].multiplier = multiplier;
+    wave_instances[wave_next].active = true;
+    wave_instances[wave_next].bufferPoint = 0;
+    wave_next++;
+    if(wave_next >= MAX_WAVES) wave_next = 0;
+}
+
+int last;
+void PlayBulletSound(Gun g, Vector2 postion){
+    //todo robustify!
+    PlayWave(last, 0.1);
+
+    last++;
+    if(last > 2) last = 0;
+}
+void PlayExplosionSound(float size, Vector2 position){
+    PlayWave(Crack, 0.03 * size);
+}
+void PlaySplashSound(float size, Vector2 position){
+    PlayWave(Splash, 0.01 * size);
+}
 
 void InitAudio(){
 
@@ -302,7 +344,37 @@ void InitAudio(){
 
     noteCount = 0;
     WriteSong();
-    WriteClick();
+    // WriteClick();
+    
+
+
+    unsigned int boom_frames;
+    WaveParams boom;
+    boom = LoadWaveParams("assets/boom.rfx");
+    wave_buffers[0].type = Boom1;
+    wave_buffers[0].buffer = GenerateWave(boom, &boom_frames);
+    wave_buffers[0].bufferMax =  boom_frames;
+
+    boom = LoadWaveParams("assets/boom2.rfx");
+    wave_buffers[1].type = Boom2;
+    wave_buffers[1].buffer = GenerateWave(boom, &boom_frames);
+    wave_buffers[1].bufferMax =  boom_frames;
+
+    boom = LoadWaveParams("assets/boom3.rfx");
+    wave_buffers[2].type = Boom3;
+    wave_buffers[2].buffer = GenerateWave(boom, &boom_frames);
+    wave_buffers[2].bufferMax =  boom_frames;
+
+    boom = LoadWaveParams("assets/splash.rfx");
+    wave_buffers[3].type = Splash;
+    wave_buffers[3].buffer = GenerateWave(boom, &boom_frames);
+    wave_buffers[3].bufferMax =  boom_frames;
+
+    boom = LoadWaveParams("assets/crack.rfx");
+    wave_buffers[4].type = Crack;
+    wave_buffers[4].buffer = GenerateWave(boom, &boom_frames);
+    wave_buffers[4].bufferMax =  boom_frames;
+
 }
 
 void EndAllNotes(){
@@ -351,8 +423,26 @@ bool started = false;
 Note * noiseNote;
 Note *crashNote;
 
+
+
 void ProcessAudio(){
     
+    if(IsKeyPressed(KEY_ONE)){
+        PlayWave(Boom1, 0.2);
+    }
+    if(IsKeyPressed(KEY_TWO)){
+        PlayWave(Boom2, 0.2);
+    }
+    if(IsKeyPressed(KEY_THREE)){
+        PlayWave(Boom3, 0.2);
+    }
+    if(IsKeyPressed(KEY_FOUR)){
+        PlayWave(Splash, 0.2);
+    }
+    if(IsKeyPressed(KEY_FIVE)){
+        PlayWave(Crack, 0.2);
+    }
+
     switch(currentScene){
         case Menu:
             if(unscaledTime > 2){
@@ -388,7 +478,10 @@ void ProcessAudio(){
     if (IsAudioStreamProcessed(stream))
     {
         memset(buffer, 0, sizeof(buffer));
+        
         float invs = 1.00 / SAMPLE_RATE;
+
+        //music section
         float nstepStart = nstep;
         for(int n = 0; n < noteCount; n++){
             
@@ -413,7 +506,6 @@ void ProcessAudio(){
                     note->amp = (sin(unscaledTime + i * invs) + 1) * 0.5 * 0.1;
                 }
 
-
                 ntimes = Clamp(ntimes, 0, 1);//, float min, float max)
                 float val = harm(note->wt, note->phase, note->harmonics, 1.5, nstep) * (1 - ntimes);
                 // val += CalcWave(WhiteNoise, phase) * (1 - ntime);
@@ -427,6 +519,26 @@ void ProcessAudio(){
                 }
             }
         }
+
+        // nstep = nstepStart;
+        for (int i = 0; i < BUFFER_SIZE; i++)
+        {      
+            for(int w = 0; w < MAX_WAVES; w++){
+                JMWaveInstance * thisWave;
+                thisWave = &wave_instances[w];
+                
+                JMWaveBuffer * soundOriginal = &wave_buffers[thisWave->type];
+
+                if(thisWave->active){
+                    buffer[i] += soundOriginal->buffer[thisWave->bufferPoint] * thisWave->multiplier;
+                    thisWave->bufferPoint++;
+                    if(thisWave->bufferPoint >= soundOriginal->bufferMax){
+                        thisWave->active = false;
+                    }
+                }
+            }
+        }
+
 
         //postprocessing
         for (int i = 0; i < BUFFER_SIZE; i++)

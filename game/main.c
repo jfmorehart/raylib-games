@@ -13,6 +13,7 @@
 #include "menuscene.h"
 #include "engine/audio.h"
 #include "game/cutscene.h"
+#include"vendor/rfxgen/rfxgen.h"
 
 #include <math.h>       
 #include <stdio.h>

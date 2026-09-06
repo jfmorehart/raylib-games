@@ -13,6 +13,7 @@
 #include "cutscene.h"
 #include "bullets.h"
 #include "battlescene.h"
+#include "mapscene.h"
 
 #include "rlgl.h"
 
@@ -134,6 +135,7 @@ void ApplyFireStacks(Ship * toship, int amount){
     firestacks[fcham].amount = amount;
     firestacks[fcham].attached = toship;
     firestacks[fcham].localOffset = RVec(toship->scale);
+    fcham++;
     printf("applying firestack\n");
 }
 
@@ -169,7 +171,7 @@ void InitBattleScene(){
         BattleSceneIntroReset(&mapFromDisk.enemies[i]);
         mapFromDisk.enemies[i].includedInScene = false;
         if(!mapFromDisk.enemies[i].alive)continue;
-        if(IsOnScreen(mapFromDisk.enemies[i].wPos)){
+        if(Vector2Distance(mapFromDisk.enemies[i].wPos, cameraPosition) < MAP_SEARCHRANGE * 1.5){
             mapFromDisk.enemies[i].includedInScene = true;
             allShipsIncludedInScene[allShipsIncludedCount] = &mapFromDisk.enemies[i];
             allShipsIncludedCount++;
@@ -204,7 +206,7 @@ void BattleFrameLoop(){
         mapFromDisk.enemies[d].illuminationThisFrame = 0;//fmaxf(currentMap.enemies[d].illuminationThisFrame, 0);
     }
 
-    for(int d = 0; d < mapFromDisk.ecount; d++){
+    for(int d = 0; d < mapFromDisk.fcount; d++){
         mapFromDisk.friendlies[d].isVisible = false;
     }
 
