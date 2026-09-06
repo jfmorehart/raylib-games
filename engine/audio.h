@@ -51,7 +51,7 @@ typedef struct JMWaveBuffer{
     unsigned int bufferMax;
 }JMWaveBuffer;
 
-void PlayWave(JMSound type, float multiplier);
+void PlayWave(JMSound type, float multiplier, float pan);
 void PlayBulletSound(Gun g, Vector2 postion);
 void PlayExplosionSound(float size, Vector2 position);
 void PlaySplashSound(float size, Vector2 position);

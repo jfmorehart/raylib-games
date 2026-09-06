@@ -11,7 +11,7 @@
 #include"vendor/rfxgen/rfxgen.h"
 
 AudioStream stream;
-float buffer[BUFFER_SIZE];
+float buffer[BUFFER_SIZE * 2];
 
 float sineFrequency = 440;
 float phase = 0;
@@ -296,6 +296,7 @@ JMWaveBuffer wave_buffers [5];
 typedef struct JMWaveInstance{
     bool active;
     JMSound type;
+    float pan;// rigtht to left, 0 to 1
     float multiplier;
     unsigned int bufferPoint;
 }JMWaveInstance;
@@ -304,8 +305,9 @@ int wave_next;
 #define MAX_WAVES 30
 JMWaveInstance wave_instances[MAX_WAVES];
 
-void PlayWave(JMSound type, float multiplier){
+void PlayWave(JMSound type, float multiplier, float pan){
     wave_instances[wave_next].type = type;
+    wave_instances[wave_next].pan = pan;
     wave_instances[wave_next].multiplier = multiplier;
     wave_instances[wave_next].active = true;
     wave_instances[wave_next].bufferPoint = 0;
@@ -313,19 +315,23 @@ void PlayWave(JMSound type, float multiplier){
     if(wave_next >= MAX_WAVES) wave_next = 0;
 }
 
+float WPos2Pan(Vector2 worldPos){
+    float x = WorldToScreen(worldPos).x;
+    return (x / WIDTH);
+}
 int last;
 void PlayBulletSound(Gun g, Vector2 postion){
     //todo robustify!
-    PlayWave(last, 0.1);
+    PlayWave((JMSound)last, 0.1, WPos2Pan(postion));
 
     last++;
     if(last > 2) last = 0;
 }
 void PlayExplosionSound(float size, Vector2 position){
-    PlayWave(Crack, 0.03 * size);
+    PlayWave(Crack, 0.03 * size, WPos2Pan(position));
 }
 void PlaySplashSound(float size, Vector2 position){
-    PlayWave(Splash, 0.01 * size);
+    PlayWave(Splash, 0.01 * size, WPos2Pan(position));
 }
 
 void InitAudio(){
@@ -335,8 +341,8 @@ void InitAudio(){
     // Set the number of samples the stream will keep in memory at a time to BUFFER_SIZE
     SetAudioStreamBufferSizeDefault(BUFFER_SIZE);
 
-    // Init raw audio stream (sample rate: 44100, sample size: 32bit-float, channels: 1-mono)
-    stream = LoadAudioStream(SAMPLE_RATE, 32, 1);
+    // Init raw audio stream (sample rate: 44100, sample size: 32bit-float, channels: 2-stereo)
+    stream = LoadAudioStream(SAMPLE_RATE, 32, 2);
 
     float pan = 0.5;
     SetAudioStreamPan(stream, pan);
@@ -344,7 +350,7 @@ void InitAudio(){
 
     noteCount = 0;
     WriteSong();
-    // WriteClick();
+    WriteClick();
     
 
 
@@ -427,21 +433,21 @@ Note *crashNote;
 
 void ProcessAudio(){
     
-    if(IsKeyPressed(KEY_ONE)){
-        PlayWave(Boom1, 0.2);
-    }
-    if(IsKeyPressed(KEY_TWO)){
-        PlayWave(Boom2, 0.2);
-    }
-    if(IsKeyPressed(KEY_THREE)){
-        PlayWave(Boom3, 0.2);
-    }
-    if(IsKeyPressed(KEY_FOUR)){
-        PlayWave(Splash, 0.2);
-    }
-    if(IsKeyPressed(KEY_FIVE)){
-        PlayWave(Crack, 0.2);
-    }
+    // if(IsKeyPressed(KEY_ONE)){
+    //     PlayWave(Boom1, 0.2);
+    // }
+    // if(IsKeyPressed(KEY_TWO)){
+    //     PlayWave(Boom2, 0.2);
+    // }
+    // if(IsKeyPressed(KEY_THREE)){
+    //     PlayWave(Boom3, 0.2);
+    // }
+    // if(IsKeyPressed(KEY_FOUR)){
+    //     PlayWave(Splash, 0.2);
+    // }
+    // if(IsKeyPressed(KEY_FIVE)){
+    //     PlayWave(Crack, 0.2);
+    // }
 
     switch(currentScene){
         case Menu:
@@ -494,23 +500,29 @@ void ProcessAudio(){
                 continue;
             }
             nstep = nstepStart;
-            for (int i = 0; i < BUFFER_SIZE; i++)
+            for (int f = 0; f < BUFFER_SIZE; f++)
             {
+                int i = f * 2; //each F frame has two I's, left and right
+
                 nstep += 0.02; 
                 
-                // buffer[i] = CalcWave(FBMNoise, nstep * 0.3 + 0.5 * sin(nstep * 0.01));
-                float ntimes = ((unscaledTime + i * invs) - note->startTime) * invd;
+                float ntimes = ((unscaledTime + f * invs) - note->startTime) * invd;
                 if(ntimes < 0) continue;
 
                 if(note == crashNote){
-                    note->amp = (sin(unscaledTime + i * invs) + 1) * 0.5 * 0.1;
+                    note->amp = (sin(unscaledTime + f * invs) + 1) * 0.5 * 0.1;
                 }
 
                 ntimes = Clamp(ntimes, 0, 1);//, float min, float max)
                 float val = harm(note->wt, note->phase, note->harmonics, 1.5, nstep) * (1 - ntimes);
-                // val += CalcWave(WhiteNoise, phase) * (1 - ntime);
       
-                buffer[i] += val * note->amp;
+                //LEFT
+                buffer[i] += val * note->amp * 1;
+                
+                //RIGHT
+                buffer[i + 1] += val * note->amp * 1; 
+
+
                 note->phase += note->phaseAdd;
 
                 if (note->phase >= 2 * PI)
@@ -520,9 +532,9 @@ void ProcessAudio(){
             }
         }
 
-        // nstep = nstepStart;
-        for (int i = 0; i < BUFFER_SIZE; i++)
+        for (int f = 0; f < BUFFER_SIZE; f++)
         {      
+            int i = f * 2;
             for(int w = 0; w < MAX_WAVES; w++){
                 JMWaveInstance * thisWave;
                 thisWave = &wave_instances[w];
@@ -530,7 +542,11 @@ void ProcessAudio(){
                 JMWaveBuffer * soundOriginal = &wave_buffers[thisWave->type];
 
                 if(thisWave->active){
-                    buffer[i] += soundOriginal->buffer[thisWave->bufferPoint] * thisWave->multiplier;
+                    //LEFT
+                    buffer[i] += soundOriginal->buffer[thisWave->bufferPoint] * thisWave->multiplier *  (1 - thisWave->pan);
+
+                    //RIGHT
+                    buffer[i + 1] += soundOriginal->buffer[thisWave->bufferPoint] * thisWave->multiplier * (thisWave->pan);
                     thisWave->bufferPoint++;
                     if(thisWave->bufferPoint >= soundOriginal->bufferMax){
                         thisWave->active = false;
@@ -541,7 +557,7 @@ void ProcessAudio(){
 
 
         //postprocessing
-        for (int i = 0; i < BUFFER_SIZE; i++)
+        for (int i = 0; i < BUFFER_SIZE * 2; i++)
         {
             buffer[i] = tanh(buffer[i] * 1);
             // buffer[i]= Clamp(buffer[i], -1, 1);
