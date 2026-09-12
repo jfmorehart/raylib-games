@@ -14,6 +14,8 @@
 #include "engine/audio.h"
 #include "game/cutscene.h"
 #include"vendor/rfxgen/rfxgen.h"
+#include "troopscene.h"
+#include "shiploadouts.h"
 
 #include <math.h>       
 #include <stdio.h>
@@ -28,16 +30,20 @@ Shader postProcess_frag;
 
 void RunOnStart(){
 
+    CreateWordBank();
     scenes[0] = (Scene){Menu, MenuInit};
     scenes[1] = (Scene){MapScene, InitMapScene};
     scenes[2] = (Scene){Battle, InitBattleScene};
     scenes[3] = (Scene){CutScene, InitCutScene};
     scenes[4] = (Scene){Editor, InitEditorScene};
+    scenes[5] = (Scene){TroopScene, InitTroopScene};
 
     routines[0] = (Routine){"TimeRoutine", false, true, -999, 2, 2, TimeRoutine};
     routines[1] = (Routine){"FocusRoutine", false, true, -999, 1, 1, FocusRoutine};
     routines[2] = (Routine){"SwitchToBattleRoutine", false, true, -999, 1, 1, SwitchToBattleRoutine};
     routineCount = 3; //update with full number!
+
+    LoadShipIcons();
 
     InitWindow(WIDTH, HEIGHT, "raylib");
     
@@ -157,7 +163,7 @@ int main(void)
         float diff = (WIDTH - HEIGHT) * 0.4;
         int border = 30;
 
-        if(currentScene != Menu){
+        if(currentScene != Menu && currentScene != TroopScene){
             int grey = 50;
             Color outlineCol = (Color){grey, grey, grey, 255};
             DrawRectangle(0, 0, diff, HEIGHT, BLACK);//, int posY, int width, int height, Color color)
@@ -204,6 +210,9 @@ int main(void)
             break;
             case Editor:
                EditorUILoop();
+            break;
+            case TroopScene:
+                TroopUIUpdate();
             break;
         }
 

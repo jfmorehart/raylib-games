@@ -203,7 +203,7 @@ void MenuUpdate(){
         memset(displayBuffer, 0, sizeof(displayBuffer));
         displayBufferCham = 0;
         mapFromDisk = LoadMapFile("bergen.campaign");
-        SwitchScenes(MapScene);
+        SwitchScenes(TroopScene);
     }
 
     if(strcmp(textBuffer, "capt") == 0){

@@ -44,7 +44,7 @@ bool isZoomed;
 
 TextBuffer rightBar;
 
-PolyPoly cruiser;
+extern PolyPoly cruiser;
 
 #pragma region routine
 
@@ -195,7 +195,8 @@ void InitMapScene(){
 
         bool found = false;
         if(!mapFromDisk.friendlies[i].alive)continue;
-        
+        InitRvecs(&mapFromDisk.friendlies[i]);
+
         for(int t = 0; t < taskForceCount; t++){ 
             if(tfs[t].shipCount + 1 >= MAX_SHIPS_IN_TF) continue;
             if(tfs[t].team != mapFromDisk.friendlies[i].team) continue;
@@ -232,6 +233,7 @@ void InitMapScene(){
 
         bool found = false;
         if(!mapFromDisk.enemies[i].alive)continue;
+        InitRvecs(&mapFromDisk.enemies[i]);
         for(int t = 0; t < taskForceCount; t++){ 
             if(tfs[t].shipCount + 1 >= MAX_SHIPS_IN_TF) continue;
             if(tfs[t].team != mapFromDisk.enemies[i].team) continue;
@@ -261,7 +263,7 @@ void InitMapScene(){
         
         taskForceCount++;
     }
-    cruiser = LoadPolyFile("cruiser.poly");
+
     // cruiser.polyCenter = ScreenToWorld((Vector2){WIDTH * 1.1, HEIGHT * 0.5});
     // cruiser.polyScale = 0.4;
 }
@@ -540,16 +542,18 @@ void MapUIRender(){
             SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
             BeginShaderMode(generalShader.shader);
             rlBegin(RL_TRIANGLES);
-            rlColor4ub(255, 255, 255, 255);
+            // rlColor4ub(255, 255, 255, 255);
             for(int j = 0; j < tfs[i].shipCount; j++){
-                cruiser.polyCenter = (Vector2){WIDTH * RSCALE * 0.93, 250 + j * 50};
-                cruiser.polyScale = 60;
-                RenderPolyAsUI(cruiser);
-
+                RenderShipIconAtPoint(tfs[i].ships[j], 60, (Vector2){WIDTH * RSCALE * 0.91, 250 + j * 100});
+                // DrawText(tfs[i].ships[j]->name, cruiser.polyCenter.x, cruiser.polyCenter.y, 12, WHITE);
             }
-                rlEnd();
-                rlSetTexture(0); 
-                EndShaderMode();
+            rlEnd();
+            rlSetTexture(0); 
+            EndShaderMode();
+
+            for(int j = 0; j < tfs[i].shipCount; j++){
+                DrawText(tfs[i].ships[j]->shipName, WIDTH * RSCALE * 0.87 ,280 + j * 100, 15, GRAY);
+            }
         }
     }
 }

@@ -290,7 +290,7 @@ void PlayClick(float predictiveTime){
 }
 
 //stores original (generated) sounds. large files
-JMWaveBuffer wave_buffers [5];
+JMWaveBuffer wave_buffers [7];
 
 //stores the instance, pooled, can be messed with safely.
 typedef struct JMWaveInstance{
@@ -319,16 +319,21 @@ float WPos2Pan(Vector2 worldPos){
     float x = WorldToScreen(worldPos).x;
     return (x / WIDTH);
 }
-int last;
+int lastBoom;
 void PlayBulletSound(Gun g, Vector2 postion){
     //todo robustify!
-    PlayWave((JMSound)last, 0.1, WPos2Pan(postion));
+    PlayWave((JMSound)lastBoom, 0.1, WPos2Pan(postion));
 
-    last++;
-    if(last > 2) last = 0;
+    lastBoom++;
+    if(lastBoom > 2) lastBoom = 0;
 }
+int lastCrack;
+
 void PlayExplosionSound(float size, Vector2 position){
-    PlayWave(Crack, 0.03 * size, WPos2Pan(position));
+    
+    PlayWave((JMSound)lastCrack, 0.1 * size, WPos2Pan(position));
+    lastCrack++;
+    if(lastCrack > 2) lastCrack = 0;
 }
 void PlaySplashSound(float size, Vector2 position){
     PlayWave(Splash, 0.01 * size, WPos2Pan(position));
@@ -356,7 +361,7 @@ void InitAudio(){
 
     unsigned int boom_frames;
     WaveParams boom;
-    boom = LoadWaveParams("assets/boom.rfx");
+    boom = LoadWaveParams("assets/boom1.rfx");
     wave_buffers[0].type = Boom1;
     wave_buffers[0].buffer = GenerateWave(boom, &boom_frames);
     wave_buffers[0].bufferMax =  boom_frames;
@@ -376,10 +381,20 @@ void InitAudio(){
     wave_buffers[3].buffer = GenerateWave(boom, &boom_frames);
     wave_buffers[3].bufferMax =  boom_frames;
 
-    boom = LoadWaveParams("assets/crack.rfx");
-    wave_buffers[4].type = Crack;
+    boom = LoadWaveParams("assets/explo.rfx");
+    wave_buffers[4].type = Explo1;
     wave_buffers[4].buffer = GenerateWave(boom, &boom_frames);
     wave_buffers[4].bufferMax =  boom_frames;
+
+    boom = LoadWaveParams("assets/explo2.rfx");
+    wave_buffers[5].type = Explo2;
+    wave_buffers[5].buffer = GenerateWave(boom, &boom_frames);
+    wave_buffers[5].bufferMax =  boom_frames;
+
+    boom = LoadWaveParams("assets/explo3.rfx");
+    wave_buffers[6].type = Explo3;
+    wave_buffers[6].buffer = GenerateWave(boom, &boom_frames);
+    wave_buffers[6].bufferMax =  boom_frames;
 
 }
 
@@ -450,6 +465,7 @@ void ProcessAudio(){
     // }
 
     switch(currentScene){
+        case TroopScene:
         case Menu:
             if(unscaledTime > 2){
                 if(!started){
@@ -478,6 +494,8 @@ void ProcessAudio(){
             crashNote = &notes[noteCount];
             noteCount++;
             if(noteCount >= MAX_NOTES) noteCount = 0;
+        break;
+        default:
         break;
     }
     

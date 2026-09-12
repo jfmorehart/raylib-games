@@ -40,7 +40,7 @@ void AssignName(char filename[STRINGARRAY_STRLEN], const char * name){
 
     bool goodData = true;
     for(int i = 0; i < STRINGARRAY_STRLEN; i++){
-        if(name[i] && goodData){
+        if(goodData && name[i]){
             filename[i] = name[i];
         }else{
             goodData = false;

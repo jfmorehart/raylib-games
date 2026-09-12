@@ -30,6 +30,10 @@ void DrawHorizonObj(float azimuth, float worldWidth, float worldHeight, float di
 void RenderPoly(PolyPoly todraw);
 void RenderPolyAsUI(PolyPoly todraw);
 
+
+void RenderShipIconAtPoint(Ship * ship, int polyScale, Vector2 point);
+
+
 void DrawShipsOnHorizon();
 void DrawCaptain();
 

@@ -1,8 +1,7 @@
     #include "bullets.h"
     #include "ships.h"
     #include "shiploadouts.h"
-
-
+    #include "string.h"
 
     Gun FiveInch = {
         .range = 0.3,
@@ -60,7 +59,17 @@
         .alive = true,
         .health  = 100,
         .includedInScene = true,
-        .scale = 0.007,
+        .scale = 0.008,
+        .searchCooldown = 1,  //<= NOT THE SAME AS RELOAD TIME
+        .searchRange = BATTLE_SEARCHRANGE,
+    };
+
+    Ship CruiserStats = {
+        .batteryCount = 3,
+        .alive = true,
+        .health = 300,
+        .includedInScene = true,
+        .scale = 0.012,
         .searchCooldown = 1,  //<= NOT THE SAME AS RELOAD TIME
         .searchRange = BATTLE_SEARCHRANGE,
     };
@@ -70,10 +79,16 @@
         .alive = true,
         .health  = 600,
         .includedInScene = true,
-        .scale = 0.0125,
+        .scale = 0.015,
         .searchCooldown = 1,  //<= NOT THE SAME AS RELOAD TIME
         .searchRange = BATTLE_SEARCHRANGE,
     };
+
+    void LoadShipIcons(){
+        cruiser = LoadPolyFile("cruiser.poly");
+        battleship = LoadPolyFile("battleship.poly");
+        destroyer = LoadPolyFile("destroyer.poly");
+    }
 
     void MakeLoadouts(){
         DestroyerLoadout[0] = twoGun;
@@ -111,6 +126,67 @@
         for(int i = 0; i < ship->batteryCount; i++){
             ship->batteries[i]._r_index = R01();
         }
+        if(ship->shipName[0] == 0){
+            CreateShipName_NonAlloc(ship->shipName);
+        }
+        if(ship->captName[0] == 0){
+            CreateCaptainName_NonAlloc(ship->captName);
+        }
     }
+
+
+    // string * names;
+
+    int count_a;
+    int count_b;
+    int count_c;
+
+    char capt_a[32][32];
+    char capt_b[32][32];
+    char capt_c[32][32];
+
+
+    int sc_a;
+    int sc_b;
+    int sc_c;
+    char ship_a[32][32];
+    char ship_b[32][32];
+    char ship_c[32][32];
+
+    void LoadIntoBank(char * filename, int *count, char bank[32][32]){
+        char * test = LoadFileText(filename);
+        const char ** temp = TextSplit(test, '\n', count);
+        for(int i = 0; i < *count; i++){
+            strcpy(bank[i], temp[i]);
+        }
+        // UnloadFileText(filename);
+    }
+
+    void CreateWordBank(){
+
+        LoadIntoBank("assets/CAPT_A.txt", &count_a, capt_a);
+        LoadIntoBank("assets/CAPT_B.txt", &count_b, capt_b);
+        LoadIntoBank("assets/CAPT_C.txt", &count_c, capt_c);
+        
+
+        LoadIntoBank("assets/SHIP_A.txt", &sc_a, ship_a);
+        LoadIntoBank("assets/SHIP_B.txt", &sc_b, ship_b);
+        LoadIntoBank("assets/SHIP_C.txt", &sc_c, ship_c);
+        // printf("%d first names, %d initials, %d last names loaded.\n", count_a, count_b, count_c);
+
+        // char capt[30];
+
+        // snprintf(capt, 30, "%s %s %s", capt_a[rand() % count_a], capt_b[rand() % count_b], capt_c[rand() % count_c]);
+        // printf("%s\n", capt);
+    }
+
+    void CreateCaptainName_NonAlloc(char * writeTo){
+        snprintf(writeTo, 30, "%s %s %s", capt_a[rand() % count_a], capt_b[rand() % count_b], capt_c[rand() % count_c]);
+    }
+
+    void CreateShipName_NonAlloc(char * writeTo){
+        snprintf(writeTo, 30, "%s%s %s", ship_a[rand() % sc_a], ship_b[rand() % sc_b], ship_c[rand() % sc_c]);
+    }
+
 
 

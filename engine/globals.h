@@ -41,7 +41,8 @@ typedef enum SceneName{
     MapScene,
     Battle,
     CutScene,
-    Editor
+    Editor,
+    TroopScene
 }SceneName;
 SceneName currentScene;
 
@@ -51,7 +52,7 @@ typedef struct Scene{
 }Scene;
 
 
-#define SCENECOUNT 5
+#define SCENECOUNT 6
 Scene scenes[SCENECOUNT];
 
 Vector2 destOffset;

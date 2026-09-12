@@ -42,7 +42,9 @@ typedef enum JMSound{
     Boom2, 
     Boom3, 
     Splash,
-    Crack
+    Explo1, 
+    Explo2, 
+    Explo3
 }JMSound;
 //stores the actual wave data, cannot switch types after alloc
 typedef struct JMWaveBuffer{
@@ -73,7 +75,7 @@ AudioStream stream;
 #define C2 261
 #define D2 293
 
-#define bpm 120
+#define bpm 100
 
 void InitAudio();
 

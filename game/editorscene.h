@@ -861,6 +861,7 @@ void PlaceIslandMode(){
 
                 EditorThing newthing;
                 newthing.data = &localMap.friendlies[localMap.fcount];
+                localMap.friendlies[localMap.fcount].shipType = Destroyer;
                 newthing.type = ShipThing;
                 newthing.color = BLUE;
                 newthing.size = 3;
@@ -875,6 +876,7 @@ void PlaceIslandMode(){
             }
             if(IsKeyPressed(KEY_J)){
                 localMap.friendlies[localMap.fcount] = BattleshipStats;
+                localMap.friendlies[localMap.fcount].shipType = Battleship;
                 memcpy(localMap.friendlies[localMap.fcount].batteries, BattleshipLoadout, sizeof(BattleshipLoadout)); 
                 localMap.friendlies[localMap.fcount].wPos = mousePos;
                 localMap.friendlies[localMap.fcount].team = true;
@@ -901,7 +903,7 @@ void PlaceIslandMode(){
                 localMap.enemies[localMap.ecount] = destroyerShip;
                 localMap.enemies[localMap.ecount].wPos = mousePos;
                 localMap.enemies[localMap.ecount].team = false;
-
+                localMap.enemies[localMap.ecount].shipType = Destroyer;
 
                 EditorThing newthing;
                 newthing.data = &localMap.enemies[localMap.ecount];
@@ -919,8 +921,7 @@ void PlaceIslandMode(){
                 memcpy(localMap.enemies[localMap.ecount].batteries, BattleshipLoadout, sizeof(BattleshipLoadout)); 
                 localMap.enemies[localMap.ecount].wPos = mousePos;
                 localMap.enemies[localMap.ecount].team = false;
-
-
+                localMap.enemies[localMap.ecount].shipType = Battleship;
 
                 EditorThing newthing;
                 newthing.data = &localMap.enemies[localMap.ecount];

@@ -136,6 +136,7 @@ void ApplyFireStacks(Ship * toship, int amount){
     firestacks[fcham].attached = toship;
     firestacks[fcham].localOffset = RVec(toship->scale);
     fcham++;
+    if(fcham >= MAX_FIRESTACKS) fcham = 0;
     printf("applying firestack\n");
 }
 
@@ -481,18 +482,20 @@ void BattleUIRender(){
     int numSel = 0;
     for(int i = 0 ; i < mapFromDisk.fcount; i++){
         if(mapFromDisk.friendlies[i].selected){
-            DrawText("Kobayashi Maru", WIDTH * RSCALE - border - diff - 25, 200 + numSel * 80, 18, WHITE);
+            DrawText(mapFromDisk.friendlies[i].shipName, WIDTH * RSCALE - border - diff - 25, 200 + numSel * 80, 18, WHITE);
             Vector3 col = (Vector3){1, 1, 1};
 
-            DotShaderValues(&generalShader, 0.2, 150, col);
+            DotShaderValues(&generalShader, 0.2, 70, col);
             SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
             BeginShaderMode(generalShader.shader);
             rlBegin(RL_TRIANGLES);
             rlColor4ub(255, 255, 255, 255);
-            cruiser.polyCenter = (Vector2){WIDTH * RSCALE * 0.93, 245 + numSel * 80};
+
+            RenderShipIconAtPoint(&mapFromDisk.friendlies[i], 60, (Vector2){WIDTH * RSCALE * 0.93, 245 + numSel * 80});//
+            // cruiser.polyCenter = (Vector2){WIDTH * RSCALE * 0.93, 245 + numSel * 80};
             numSel++;
-            cruiser.polyScale = 60;
-            RenderPolyAsUI(cruiser);
+            // cruiser.polyScale = 60;
+            // RenderPolyAsUI(cruiser);
             rlEnd();
             rlSetTexture(0); 
             EndShaderMode();

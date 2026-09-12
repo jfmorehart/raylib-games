@@ -27,6 +27,10 @@ float startCutsceneTime;
 
 Vector2 focusTarget;
 
+extern PolyPoly cruiser;
+extern PolyPoly destroyer;
+extern PolyPoly battleship;
+
 void InitCutScene(){
     worldScale = 2;
     focusTarget = cameraPosition;
@@ -104,6 +108,24 @@ Vector2 PolyPoint2Screen(const PolyPoly *pp, const Island * is, Vector2 point){
     adj.y *= -1;
     return Vector2Add(pp->polyCenter, Vector2Scale(adj, pp->polyScale));
     //   return
+}
+
+void RenderShipIconAtPoint(Ship * ship, int polyScale, Vector2 point){
+    if(ship->shipType == Cruiser){
+        cruiser.polyCenter = point;
+        cruiser.polyScale =polyScale;
+        RenderPolyAsUI(cruiser);
+    }
+    else if(ship->shipType == Destroyer){
+        destroyer.polyCenter = point;
+        destroyer.polyScale = polyScale;
+        RenderPolyAsUI(destroyer);
+    }
+    else if(ship->shipType == Battleship){
+        battleship.polyCenter = point;
+        battleship.polyScale =polyScale;
+        RenderPolyAsUI(battleship);
+    }
 }
 
 void RenderPolyAsUI(PolyPoly todraw){

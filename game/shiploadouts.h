@@ -1,6 +1,7 @@
     #pragma once
     #include "bullets.h"
     #include "ships.h"
+    #include "cutscene.h"
 
     extern Gun FiveInch;
     extern Gun EightInch;
@@ -17,3 +18,14 @@
     void MakeLoadouts();
 
     void InitRvecs(Ship *ship);
+
+
+    PolyPoly cruiser;
+    PolyPoly destroyer;
+    PolyPoly battleship;
+
+    void LoadShipIcons();
+
+    void CreateWordBank();
+    void CreateCaptainName_NonAlloc(char * writeTo);
+    void CreateShipName_NonAlloc(char * writeTo);

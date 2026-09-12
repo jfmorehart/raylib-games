@@ -16,11 +16,23 @@
 #define BATTLE_SEARCHRANGE 0.3
 #define SHIP_MAXBATTERIES 6
 
+typedef enum ShipType{
+    Patrol,
+    Destroyer,
+    Cruiser, 
+    Battleship
+}ShipType;
+
 typedef struct Ship{
     //basics
     bool alive;
     bool includedInScene;
     bool isVisible;// always true 
+
+    char shipName [30];
+    char captName[30];
+
+    ShipType shipType;
 
     bool team;
     Vector2 wPos;
