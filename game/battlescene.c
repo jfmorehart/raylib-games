@@ -152,7 +152,7 @@ void ApplyFireStacks(Ship * toship, int amount){
 
 void InitBattleScene(){
 
-    lastContactTime = 8;
+    lastContactTime = scaledTime + 5;
 
     printf("cpos %f, %f, wscale %f\n", cameraPosition.x, cameraPosition.y, worldScale);
     worldScale = 0.25;
@@ -218,7 +218,7 @@ void BattleFrameLoop(){
                     avgF = Vector2Add(avgF,allShipsIncludedInScene[i]->wPos);
                     fc++;
                 }else{
-                    avgE = Vector2Add(avgF, allShipsIncludedInScene[i]->wPos);
+                    avgE = Vector2Add(avgE, allShipsIncludedInScene[i]->wPos);
                     ec++;
                 }
             }
@@ -236,9 +236,8 @@ void BattleFrameLoop(){
                     allShipsIncludedInScene[i]->wPos = Vector2Subtract(allShipsIncludedInScene[i]->wPos, diff);
                 }
             }
+            DisengageBattleSwitch();
         }
-
-        DisengageBattleSwitch();
         return;
     }
 
