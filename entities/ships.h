@@ -13,7 +13,7 @@
 #define SHIPTURN 2
 #define SHIPSPEED 0.1
 #define SHIP_BLEND_MAX 0.15
-#define BATTLE_SEARCHRANGE 0.3
+#define BATTLE_SEARCHRANGE 0.2
 #define SHIP_MAXBATTERIES 6
 
 typedef enum ShipType{

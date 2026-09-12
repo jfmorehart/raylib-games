@@ -69,6 +69,10 @@ void LostBattleSwitch(){
     SetCutscene(SinkingFriendly);
     SwitchScenes(CutScene);
 }
+void DisengageBattleSwitch(){
+    SetCutscene(DisengageBattle);
+    SwitchScenes(CutScene);
+}
 void WonBattleSwitch(){
     SetCutscene(SinkingEnemy);
     SwitchScenes(CutScene);
@@ -101,11 +105,19 @@ void CallFocus(Vector2 wpos){
 
         for(int i = 0 ; i < taskForceCount; i++){
 
+            bool inbattle = Vector2Distance(tfs[i].position, focusTarget) < MAP_SEARCHRANGE + TF_MAX_RADIUS;
+
             Vector2 delta = Vector2Subtract(tfs[i].destination, tfs[i].position);
             delta = Vector2Normalize(delta);
 
             for(int s = 0; s < tfs[i].shipCount; s++){
                 if(tfs[i].ships[s]){
+                    if(inbattle){
+                        tfs[i].ships[s]->includedInScene = true;
+                    }else{
+                        tfs[i].ships[s]->includedInScene = false;
+                    }
+
                     tfs[i].ships[s]->wPos = Vector2Add(tfs[i].position, tfs[i].ships[s]->wPos);
 
                     tfs[i].ships[s]->moveTargetPosition = tfs[i].destination;
@@ -204,9 +216,10 @@ void InitMapScene(){
                 tfs[t].ships[tfs[t].shipCount] = &mapFromDisk.friendlies[i];
 
                 //wPos stores offset from tf center in transit
-                tfs[t].ships[tfs[t].shipCount]->wPos = Vector2Subtract(tfs[t].position, tfs[t].ships[tfs[t].shipCount]->wPos);
+                tfs[t].ships[tfs[t].shipCount]->wPos = Vector2Subtract(tfs[t].ships[tfs[t].shipCount]->wPos, tfs[t].position);
                 tfs[t].shipCount++;
                 found = true;
+                break;
             }   
         }
         if(found) continue;
@@ -241,9 +254,10 @@ void InitMapScene(){
                 tfs[t].ships[tfs[t].shipCount] = &mapFromDisk.enemies[i];
 
                 //wPos stores offset from tf center in transit
-                tfs[t].ships[tfs[t].shipCount]->wPos = Vector2Subtract(tfs[t].position, tfs[t].ships[tfs[t].shipCount]->wPos);
+                tfs[t].ships[tfs[t].shipCount]->wPos = Vector2Subtract(tfs[t].ships[tfs[t].shipCount]->wPos, tfs[t].position);
                 tfs[t].shipCount++;
                 found = true;
+                break;
             }   
         }
         if(found) continue;
@@ -524,7 +538,7 @@ void MapFrameLoop(){
 void MapUIRender(){
     float diff = (WIDTH - HEIGHT) * 0.4;
     int border = 30;
-    float dayscaler = 470;
+    float dayscaler = 245;
     float sct = worldTime * dayscaler;  
     float td = sct / (60.00 * 24.00);
     int days = floorf(td);

@@ -38,7 +38,7 @@ void RunOnStart(){
     scenes[4] = (Scene){Editor, InitEditorScene};
     scenes[5] = (Scene){TroopScene, InitTroopScene};
 
-    routines[0] = (Routine){"TimeRoutine", false, true, -999, 2, 2, TimeRoutine};
+    routines[0] = (Routine){"TimeRoutine", false, true, -999, 4, 2, TimeRoutine};
     routines[1] = (Routine){"FocusRoutine", false, true, -999, 1, 1, FocusRoutine};
     routines[2] = (Routine){"SwitchToBattleRoutine", false, true, -999, 1, 1, SwitchToBattleRoutine};
     routineCount = 3; //update with full number!

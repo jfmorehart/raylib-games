@@ -308,6 +308,8 @@ void UpdateCutScene(){
             case SinkingFriendly:
                 SwitchScenes(MapScene);
                 break;
+            case DisengageBattle:
+                SwitchScenes(MapScene);
             default:
                 break;
         }
@@ -333,6 +335,9 @@ void UpdateCutScene(){
         case SinkingFriendly:
             DrawSinking();
             break;
+        case DisengageBattle:
+            DrawShipsOnHorizon();
+            break;
     }
 }
 
@@ -344,11 +349,14 @@ void CutSceneUIUpdate(){
             DrawTextPro(cutfont, "once more to sea...", (Vector2){WIDTH * 0.3, HEIGHT + 30}, Vector2Zero(), 0, 30, 1,WHITE);
             break;
         case ShipsOnHorizon:
-            DrawTextPro(cutfont, "large enemy force to our southwest...", (Vector2){WIDTH * 0.3, HEIGHT + 30}, Vector2Zero(), 0, 30, 1, WHITE);
+            DrawTextPro(cutfont, "an enemy force approaches", (Vector2){WIDTH * 0.3, HEIGHT + 30}, Vector2Zero(), 0, 30, 1, WHITE);
             break;
      case SinkingEnemy:
             DrawTextPro(cutfont, "enemy sinking", (Vector2){WIDTH * 0.3, HEIGHT + 30}, Vector2Zero(), 0, 30, 1, WHITE);
             break;
+        case DisengageBattle:
+            DrawTextPro(cutfont, "the enemy drifts off into the distance", (Vector2){WIDTH * 0.3, HEIGHT + 30}, Vector2Zero(), 0, 30, 1, WHITE);
+        break;
     }
     
 }

@@ -174,7 +174,7 @@ void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 targ
     // }
     Gun btype = battery->BatteryType;
     Vector2 rvec = RVec_Perlin(battery->_r_index, 1);
-    float tdist = Vector2Distance(batteryPosition, target);
+    float tdist =powf(Vector2Distance(batteryPosition, target), 2);
     float innaccuracy = battery->batterySpread * tdist;
     float accuracy = (btype.range * ((battery->timesTargeted + 1) * 0.15));
     float btime = tdist / BULLET_SPEED * BATTLESCENE_SPEEDMULT;
@@ -215,6 +215,11 @@ Ship *BatteryAquireTarget(const Ship *ship, Ship *targetShipsArray, int arrayLen
 
 void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *battery){
 
+    if(battery->currentState == Off){
+        if(scaledTime > battery->lightOnTime){
+            battery->currentState = Searching;
+        }
+    }
     //ranging lines
     float batteryAngle = atan2f(battery->batteryForward.y, battery->batteryForward.x) + ship->angle;
     Vector2 batteryPosition = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), battery->batteryOffset_Y * ship->scale));
@@ -244,8 +249,12 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
             //schedule retarget
             battery->shipTarget = 0;
             battery->timesTargeted = 0;
+            battery->currentState = Lingering;
             return;
         } 
+
+        //engaging
+        // battery->currentState = Engaging;
       
         //CHECK IF BATTERY CAN ENGAGE 
         //Range, Angle
@@ -255,13 +264,32 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
             // if(battery->timesTargeted > 4) battery->timesTargeted = 4;
             // printf("firing on %p, time %d, spread = ", battery->shipTarget, battery->timesTargeted);
             Vector2 movement = Vector2Scale(VfromAngle(battery->shipTarget->angle), SHIPSPEED);
-            BatteryEngageTarget(batteryPosition, battery, battery->shipTarget->wPos, movement);
+            float localforward = battery->currentAngle_local + batteryAngle;
+
+            Vector2 dir = Vector2Subtract(battery->shipTarget->wPos, batteryPosition);
+            float localTarget = SignedAngle(atan2f(dir.y, dir.x),localforward);
+
+            if(fabsf(localTarget) < DEG2RAD * 10){ //BEAM WIDTH
+                BatteryEngageTarget(batteryPosition, battery, battery->shipTarget->wPos, movement);
+                battery->currentState = Engaging;
+            }
+
         }else{
             //schedule retarget
             battery->shipTarget = 0;
             battery->timesTargeted = 0;
+            battery->currentState = Searching;
         }
     }else{
+
+        //either searching or idle 
+        // if(unscaledTime - battery->lastFireTimes[0] < 3 && battery->currentState == Lingering){
+        //     battery->currentState = Lingering;
+        //     //can be interrupted by search
+        // }else{
+        //     battery->currentState = Off;
+        // }
+
 
         //check if we can find new target
         if(scaledTime - battery->lastSearch > battery->BatteryType.reloadTime){
@@ -269,17 +297,35 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
             // if(!ship->team){
             //     printf("conducting search! delay = %f, last search: %f\n", battery->searchCooldown, battery->lastSearch );
             // }
-
+            battery->currentState = Searching;
             battery->lastSearch = scaledTime + battery->searchCooldown * (R01() * 0.4 + 0.8);
             battery->shipTarget = BatteryAquireTarget(ship, targetShips, arrayLen, battery, batteryPosition);
+            if(battery->shipTarget){
+                battery->currentState = Engaging;
+            }
         }
     }
+    AimBatteryBeam(battery, ship);
 }
-void RenderBatteryBeam(Battery * battery,const Ship * ship){
+
+void AimBatteryBeam(Battery * battery, const Ship * ship){
+    if(battery->currentState == Off || battery->currentState == Lingering) return;
+
+
     Vector2 batteryPosition = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), battery->batteryOffset_Y * ship->scale));
-    if(battery->shipTarget && ship->alive){  
-        if(battery->shipTarget->illuminationThisFrame > 0.5) return;
-        Gun btype = battery->BatteryType;
+    Gun btype = battery->BatteryType;
+    //calculate where we ARE aiming
+    float batForward = atan2f(battery->batteryForward.y, battery->batteryForward.x);
+
+    float turretWorldForward  = batForward + ship->angle;
+
+    float worldTarget;
+
+    if(battery->currentState == Searching){
+        //pingpong
+        worldTarget = sin(scaledTime * 0.1) * battery->traverseAmount * DEG2RAD * 0.5 + turretWorldForward; 
+    }
+    else if(battery->currentState == Engaging){
         Vector2 rvec = Vector2Scale(RVec_Perlin(battery->_r_index, 0.3), 0.5);
         float tdist = Vector2Distance(batteryPosition, battery->shipTarget->wPos);
         float innaccuracy = battery->batterySpread * tdist * tdist;
@@ -289,10 +335,42 @@ void RenderBatteryBeam(Battery * battery,const Ship * ship){
         Vector2 movingTarget = Vector2Add(battery->shipTarget->wPos, Vector2Scale(vel, btime));
         Vector2 spreadTarget = Vector2Add(movingTarget, Vector2Scale(rvec,  fmax(innaccuracy / accuracy, 0.1)));
         // Vector2 spreadTarget = battery->shipTarget->wPos;
+
+        //spreadTarget is where we WANT to be aiming
         Vector2 dir = Vector2Subtract(spreadTarget, batteryPosition);
-        dir = Vector2Normalize(dir);
-        dir = Vector2Add(batteryPosition , Vector2Scale(dir, ship->scale + 0.006));
-        DrawBeam(dir, spreadTarget, PI * 0.25, 50, BATTLE_SEARCHRANGE * 2, &mapFromDisk, 0.3, scaledDeltaTime);
+        worldTarget = atan2f(dir.y, dir.x);
+    }else worldTarget = 0;
+
+
+    float localTarget = SignedAngle(turretWorldForward , worldTarget);
+
+    //ADJUST AIM
+    float amt = fminf(BEAM_TRAVERSE_SPEED * scaledDeltaTime, fabsf(localTarget - battery->currentAngle_local));
+    if(localTarget - battery->currentAngle_local > 0){
+        battery->currentAngle_local += amt;
+    }else{
+        battery->currentAngle_local -= amt;
+    }
+    //LOCK TO TRAVERSE AMT
+    if(battery->currentAngle_local >= battery->traverseAmount * 0.5 * DEG2RAD){
+        battery->currentAngle_local = battery->traverseAmount * 0.5 * DEG2RAD;
+    } else if (battery->currentAngle_local <= -battery->traverseAmount * 0.5 * DEG2RAD){
+        battery->currentAngle_local = -battery->traverseAmount * 0.5 * DEG2RAD;
+    }
+}
+
+
+void RenderBatteryBeam(Battery * battery,const Ship * ship){
+    Vector2 batteryPosition = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), battery->batteryOffset_Y * ship->scale));
+    if(ship->alive && battery->currentState != Off){  
+        
+        float batForward = atan2f(battery->batteryForward.y, battery->batteryForward.x);
+
+        float turretWorldForward  = batForward + ship->angle;
+      
+        Vector2 beamdir = (Vector2){cos(turretWorldForward + battery->currentAngle_local), sin(turretWorldForward + battery->currentAngle_local)};
+        Vector2 start_offset = Vector2Add(batteryPosition , Vector2Scale(beamdir, ship->scale + 0.006));
+        DrawBeam(start_offset, Vector2Add(start_offset, Vector2Scale(beamdir,10)), PI * 0.25, 50, BATTLE_SEARCHRANGE * 2, &mapFromDisk, 0.3, scaledDeltaTime);
         //DrawLineEx(WorldToScreen(batteryPosition), WorldToScreen(spreadTarget), 5, WHITE);
     }
 }

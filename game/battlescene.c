@@ -41,7 +41,14 @@ extern DotShader lightShader;
 extern DotShader illuminatedShader;
 
 bool battleOver;
-bool wonBattle;
+
+typedef enum EndBattleTypes{
+    Won,
+    Lost, 
+    Disengage
+}EndBattleTypes;
+
+EndBattleTypes wonlostbattle;
 float battleOverTime;
 
 int fcham;
@@ -63,6 +70,8 @@ int splashCham;
 int splashCount = 100;
 Smoke splashPool[100];
 
+float lastContactTime;
+float disengageTime  = 10;
 
 void UpdateAndRenderFireStacks(){
     bool tickDamage = unscaledTime - firetick_last > firetick_delay;
@@ -143,6 +152,8 @@ void ApplyFireStacks(Ship * toship, int amount){
 
 void InitBattleScene(){
 
+    lastContactTime = 8;
+
     printf("cpos %f, %f, wscale %f\n", cameraPosition.x, cameraPosition.y, worldScale);
     worldScale = 0.25;
     timeScale = 1;
@@ -157,12 +168,12 @@ void InitBattleScene(){
 
     for(int i = 0; i < mapFromDisk.fcount; i++){
         BattleSceneIntroReset(&mapFromDisk.friendlies[i]);
-        mapFromDisk.friendlies[i].includedInScene = false;
+        // mapFromDisk.friendlies[i].includedInScene = false;
         if(!mapFromDisk.friendlies[i].alive) continue;
         printf("mapFromDisk.friendlies[%d].wPos) = %f, %f \n", i, mapFromDisk.friendlies[i].wPos.x, mapFromDisk.friendlies[i].wPos.y);
         printf("w2s %f %f\n", WorldToScreen(mapFromDisk.friendlies[i].wPos).x,  WorldToScreen(mapFromDisk.friendlies[i].wPos).y);
-        if(IsOnScreen(mapFromDisk.friendlies[i].wPos)){
-            mapFromDisk.friendlies[i].includedInScene = true;
+        if(mapFromDisk.friendlies[i].includedInScene){
+            // mapFromDisk.friendlies[i].includedInScene = true;
             allShipsIncludedInScene[allShipsIncludedCount] = &mapFromDisk.friendlies[i];
             allShipsIncludedCount++;
             fc++;
@@ -170,10 +181,10 @@ void InitBattleScene(){
     }
     for(int i = 0; i < mapFromDisk.ecount; i++){
         BattleSceneIntroReset(&mapFromDisk.enemies[i]);
-        mapFromDisk.enemies[i].includedInScene = false;
+        // mapFromDisk.enemies[i].includedInScene = false;
         if(!mapFromDisk.enemies[i].alive)continue;
-        if(Vector2Distance(mapFromDisk.enemies[i].wPos, cameraPosition) < MAP_SEARCHRANGE * 1.5){
-            mapFromDisk.enemies[i].includedInScene = true;
+        if(mapFromDisk.enemies[i].includedInScene){
+            // mapFromDisk.enemies[i].includedInScene = true;
             allShipsIncludedInScene[allShipsIncludedCount] = &mapFromDisk.enemies[i];
             allShipsIncludedCount++;
             ec++;
@@ -187,11 +198,48 @@ void BattleFrameLoop(){
     if(battleOver && unscaledTime - battleOverTime > 3){
         battleOver = false;
         battleOverTime = 0;
-        if(wonBattle){
+        if(wonlostbattle == Won){
             WonBattleSwitch();
-        }else{
+        }else if(wonlostbattle == Lost){
             LostBattleSwitch();
+        }else if(wonlostbattle == Disengage){
+
+            //move ships safe distance away
+
+            Vector2 avgF = Vector2Zero();
+            float fc = 0;
+            float ec =0;
+            Vector2 avgE = Vector2Zero();
+
+            for(int i = 0; i < allShipsIncludedCount; i++){
+                if(!allShipsIncludedInScene[i]->alive) continue;
+
+                if(allShipsIncludedInScene[i]->team){
+                    avgF = Vector2Add(avgF,allShipsIncludedInScene[i]->wPos);
+                    fc++;
+                }else{
+                    avgE = Vector2Add(avgF, allShipsIncludedInScene[i]->wPos);
+                    ec++;
+                }
+            }
+            avgF = Vector2Scale(avgF, 1.00/fc);
+            avgE = Vector2Scale(avgE, 1.00/ec);
+            Vector2 diff = Vector2Subtract(avgF, avgE);
+            diff = Vector2Scale(Vector2Normalize(diff), 0.1);
+            
+            for(int i = 0; i < allShipsIncludedCount; i++){
+                if(!allShipsIncludedInScene[i]->alive) continue;
+
+                if(allShipsIncludedInScene[i]->team){
+                    allShipsIncludedInScene[i]->wPos = Vector2Add(diff, allShipsIncludedInScene[i]->wPos);
+                }else{
+                    allShipsIncludedInScene[i]->wPos = Vector2Subtract(allShipsIncludedInScene[i]->wPos, diff);
+                }
+            }
         }
+
+        DisengageBattleSwitch();
+        return;
     }
 
     int grey = 1;
@@ -282,6 +330,7 @@ void BattleFrameLoop(){
         if(mapFromDisk.enemies[d].illuminationThisFrame > 0.1 && mapFromDisk.enemies[d].alive && mapFromDisk.enemies[d].includedInScene){
             RenderShipColor(&mapFromDisk.enemies[d], 0.3, Vector3Scale(col, fminf(1, mapFromDisk.enemies[d].illuminationThisFrame)));
             SteerShipBattle(&mapFromDisk.enemies[d], true, mapFromDisk.islands);
+            lastContactTime = unscaledTime;
         }
     }
     rlEnd();          
@@ -371,10 +420,10 @@ void BattleFrameLoop(){
 
     if(active_fcount < 1 && !battleOver){
         //all friendlies lost
-        wonBattle = false;
+        wonlostbattle = Lost;
         battleOver = true;
         battleOverTime = unscaledTime;
-        LostBattleSwitch();
+        // LostBattleSwitch();
     }
 
     if(liveEnemies < 1 && !battleOver){
@@ -390,10 +439,17 @@ void BattleFrameLoop(){
         // }
         // fread(&mapFromDisk, sizeof(Map),1);
         
-        wonBattle = true;
+        wonlostbattle = Won;
         battleOver = true;
         battleOverTime = unscaledTime;
         // WonBattleSwitch();
+    }
+    if(!battleOver && unscaledTime - lastContactTime > disengageTime){
+        //DISENGAGE
+        wonlostbattle  = Disengage;
+        battleOverTime = unscaledTime;
+        battleOver = true;
+
     }
 
 

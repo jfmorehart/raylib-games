@@ -18,3 +18,4 @@ void MapFrameLoop();
 void MapUIRender();
 void LostBattleSwitch();
 void WonBattleSwitch();
+void DisengageBattleSwitch();

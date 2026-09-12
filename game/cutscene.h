@@ -16,7 +16,8 @@ typedef enum Cutscene{
     ShipsOnHorizon,
     LoneCaptain,
     SinkingFriendly,
-    SinkingEnemy
+    SinkingEnemy,
+    DisengageBattle
 } Cutscene;
 
 void InitCutScene();

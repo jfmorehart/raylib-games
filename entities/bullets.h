@@ -13,6 +13,8 @@
 #define MAX_GUNS_PER_BATTERY 3
 #define SHIP_EXPLOSION_RADIUS 0.03
 
+#define INTRO_SPREAD 12
+
 typedef struct {
     float range;
     float reloadTime;
@@ -26,12 +28,20 @@ extern Gun EightInch;// = {0.25, 4, 0.13, 0.04};
 extern Gun SixteenInch;// = {0.4, 8, 0.2, 0.03};
 
 typedef struct Ship Ship;
+
+typedef enum BatteryState{
+    Off,
+    Searching,
+    Engaging,
+    Lingering
+}BatteryState;
+
 typedef struct Battery{
     //stats
     int gunCount;
     Gun BatteryType;
     float batterySpread;
-
+    BatteryState currentState;
     //hk
     float lastFireTimes[MAX_GUNS_PER_BATTERY];
 
@@ -39,6 +49,8 @@ typedef struct Battery{
     float batteryOffset_Y;
     Vector2 batteryForward;
     float traverseAmount;
+    float currentAngle_local; //for beams
+    float lightOnTime;
 
     //targeting
     Ship *shipTarget;
@@ -49,6 +61,7 @@ typedef struct Battery{
     //for noise smoothing
     float _r_index;
 }Battery;
+#define BEAM_TRAVERSE_SPEED 0.3
 
 typedef struct{
     PooledObject pObj;
@@ -83,3 +96,5 @@ void BatteryEngageTarget(Vector2 batteryPosition, Battery *battery, Vector2 targ
 void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *battery);
 
 void RenderBatteryBeam(Battery * battery,const Ship * ship);
+
+void AimBatteryBeam(Battery * battery, const Ship * ship);

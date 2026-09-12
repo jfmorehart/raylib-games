@@ -42,7 +42,6 @@ extern DotShader lightShader;
 extern DotShader illuminatedShader;
 
 bool battleOver;
-bool wonBattle;
 float battleOverTime;
 
 typedef struct FireStack{
