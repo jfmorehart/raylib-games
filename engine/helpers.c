@@ -345,3 +345,13 @@ Hit IntersectIslandsAndShips(Vector2 start, Vector2 angle, Map *m, float scaleMu
     }
     return (Hit){false, Vector2Zero()};
 }
+
+Vector2 PickRandomLegalDestination(Vector2 fromPoint){
+    Vector2 rand = RandomWorldPointNoIsland();
+    Hit hit = AllIslandsIntersect(mapFromDisk.islands, (Edge){fromPoint, rand});
+    if(hit.hit){
+        Vector2 delta = Vector2Subtract(hit.hitPosition, fromPoint);
+        return Vector2Subtract(hit.hitPosition, Vector2Scale(delta, 0.1));
+    }
+    return rand;
+}

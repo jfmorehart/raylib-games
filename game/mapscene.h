@@ -1,5 +1,6 @@
 #pragma once
 #include "routines.h"
+#include "taskforce.h"
 
 #define DAY_LENGTH 2.5
 #define MAP_SEARCHRANGE 0.3
@@ -19,3 +20,6 @@ void MapUIRender();
 void LostBattleSwitch();
 void WonBattleSwitch();
 void DisengageBattleSwitch();
+
+void DehydrateTaskForces(int tf_count, TaskForce * tfs, Fleet * friendly, Fleet * enemy);
+void RehydrateTaskForces(int * tf_length, TaskForce *torehydrate, Fleet * friendly, Fleet * enemy, Map * placeShipsIn);

@@ -11,6 +11,11 @@
 #include "shiploadouts.h"
 #include "text.h"
 #include <string.h>
+#include "mapscene.h"
+
+
+extern TaskForce activeTFs [MAX_TFS];
+extern int taskForceCount;
 
 typedef enum EditorMode{
     WindIsland,
@@ -149,7 +154,8 @@ void InitEditorScene(){
     mode = PlaceIsland;
     timeScale = 0;
 
-    Map loadMap = LoadMapFile("test.situ");
+    Map loadMap = LoadMapFile("new.map");
+    CompleteRehydrateMap(&loadMap);
 
     if(loadMap.islandLength > 0 && loadMap.islandLength <  ISLANDCOUNT){
         //good data
@@ -157,7 +163,7 @@ void InitEditorScene(){
     }else{
         //bad data
         localMap = (Map){0};
-        AssignName(localMap.filename, "test.situ");
+        AssignName(localMap.filename, "new.map");
     }
     allMaps = GetMapNames();
     allPolys = GetPolyNames();
@@ -224,7 +230,7 @@ void GenericInput(){
                 Objective obj = (Objective){0};
                 obj.position = mousePos;
                 obj.team = false;
-                obj.type = Capital;
+                obj.type = ReachTarget;
                 obj.alive = true;
                 localMap.map_objectives[localMap.objective_count] = obj;
 
@@ -250,7 +256,7 @@ void GenericInput(){
                 obj.position = mousePos;
                 obj.team = true;
                 obj.alive = true;
-                obj.type = Capital;
+                obj.type = ReachTarget;
                 localMap.map_objectives[localMap.objective_count] = obj;
 
 
@@ -374,7 +380,7 @@ void GenericInput(){
     //QUIT
     if(IsKeyPressed(KEY_Q)){
 
-        FILE* fptr = fopen("test.campaign","w");
+        FILE* fptr = fopen("test.map","w");
         if(fptr){
             fclose(fptr);
         }
@@ -446,7 +452,28 @@ void GenericInput(){
         if(fptr){
             if(currentFileType == MapFile){
                 // Write some text to the file
-                fwrite(&localMap, sizeof(Map), 1, fptr);   
+                MapRecord dehydrated = DehydrateMap(&localMap);
+                Fleet friendlyFleet;
+                Fleet enemyFleet;
+                CreateTaskForcesFromMapFile(&localMap);
+                DehydrateTaskForces(taskForceCount, activeTFs, &friendlyFleet, &enemyFleet);
+                fwrite(&dehydrated, sizeof(MapRecord), 1, fptr);   
+
+                char fname [30];
+                ReAppendSuffix(fname, fullstring, "_f.fleet");
+                FILE *fffptr = fopen(fname, "wb");
+                if(fffptr){
+                    fwrite(&friendlyFleet, sizeof(Fleet), 1, fffptr);
+                    fclose(fffptr);
+                }else {printf("error: failed to write fleet");}
+
+                ReAppendSuffix(fname, fullstring, "_e.fleet");
+                FILE *ffeptr = fopen(fname, "wb");
+                if(ffeptr){
+                    fwrite(&enemyFleet, sizeof(Fleet), 1, ffeptr);
+                    fclose(ffeptr);
+                }else {printf("error: failed to write fleet");}
+
                 // Close the file
                 fclose(fptr); 
                 printf("saved map to editor folder");
@@ -592,7 +619,7 @@ void LoadEditorThingsFromMap(){
         EditorThing newthing;
         newthing.data = &localMap.map_objectives[i];
         newthing.type = ObjectiveThing;
-        if(localMap.map_objectives[i].type == Capital){
+        if(localMap.map_objectives[i].type == ReachTarget){
             if(localMap.map_objectives[i].team){
                 newthing.color = YELLOW;
             }else{
@@ -973,6 +1000,8 @@ void EditorUILoop(){
             if(IsMouseButtonPressed(0)){
                 printf("loading map: %s\n", StringAt(&allMaps, i));
                 mapFromDisk = LoadMapFile(StringAt(&allMaps, i));
+                CompleteRehydrateMap(&mapFromDisk);
+
                 worldTime = 0;
                 localMap = mapFromDisk;
                 editorThingCount = 0;
@@ -985,7 +1014,7 @@ void EditorUILoop(){
                 printf("rename attempt: %s \n", StringAt(&allMaps, i)); //StringAt(&allFiles, i)
                 char fullstring[30] = "editor/";
                 strcat(fullstring, StringAt(&allMaps, i));
-                if(rename(fullstring, "editor/newname.campaign") == 0){
+                if(rename(fullstring, "editor/newname.map") == 0){
                     printf("renaming!\n");
                     allMaps = GetMapNames();
                 }else{
@@ -1006,9 +1035,9 @@ void EditorUILoop(){
     if(enableHighlight && mousePos_UIScreenCoords.y > (60 + i * 20) - 0  && mousePos_UIScreenCoords.y < (60 + i * 20) + 20){
         if(IsMouseButtonPressed(0)){
             // GetOrMakeFile("editor/new.campaign");
-            if(!FileCheck("editor/new.campaign")){
-                FILE * fptr = fopen(("editor/new.campaign"), "w");
-                fwrite(&(Map){0}, sizeof(Map), 1, fptr);   
+            if(!FileCheck("editor/new.map")){
+                FILE * fptr = fopen(("editor/new.map"), "w");
+                fwrite(&(MapRecord){0}, sizeof(MapRecord), 1, fptr);   
                 fclose(fptr);
             }
             allMaps = GetMapNames();

@@ -29,3 +29,6 @@
     void CreateWordBank();
     void CreateCaptainName_NonAlloc(char * writeTo);
     void CreateShipName_NonAlloc(char * writeTo);
+
+    void RehydrateShip(Ship * torehydrate, ShipLog log);
+    ShipLog Dehydrate(Ship * ship);

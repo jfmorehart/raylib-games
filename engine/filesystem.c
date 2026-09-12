@@ -53,8 +53,35 @@ void AssignName(char filename[STRINGARRAY_STRLEN], const char * name){
     printf("path = %s\n", name);
 }
 
-Map LoadMapFile(const char* path){
+void ReAppendSuffix(char* dest, char * toread, const char * toappend){
+    int count;
+    const char ** split = TextSplit(toread, '.', &count);
+    snprintf(dest, 30, "%s%s", split[0], toappend);
+}
+
+void RehydrateMap(Map * toreh, MapRecord * record){
+    *toreh = (Map){0}; 
+    snprintf(toreh->filename, 20, "%s", record->filename);
+    toreh->objective_count = record->objective_count;
+    memcpy(toreh->map_objectives, record->map_objectives, sizeof(Objective) * record->objective_count);
+    toreh->islandLength = record->islandLength;
+    memcpy(toreh->islands, record->islands, sizeof(Island) * record->islandLength);
+}
+MapRecord DehydrateMap(Map * dehydrate){
+    MapRecord dry = (MapRecord){0};
+    snprintf(dry.filename, 20, "%s", dehydrate->filename);
+
+    dry.objective_count = dehydrate->objective_count;
+    memcpy(dry.map_objectives, dehydrate->map_objectives, sizeof(Objective) * dry.objective_count);
+    dry.islandLength = dehydrate->islandLength;
+    memcpy(dry.islands, dehydrate->islands, sizeof(Island) * dry.islandLength);
+    return dry;
+}
+
+Map LoadMapFile(const char* path){ //rehydrates from MapRecord
     Map loadMap;
+    MapRecord fromDisk;
+
     char fullpath[30] = "editor/";
     strcat(fullpath, path);
     bool filexists = FileCheck (fullpath);
@@ -62,13 +89,31 @@ Map LoadMapFile(const char* path){
     if(filexists){
         printf("found file: %s \n", fullpath);
         FILE * fptr = fopen(fullpath, "rb");
-        fread(&loadMap, sizeof(Map), 1, fptr);
+        fread(&fromDisk, sizeof(MapRecord), 1, fptr);
         fclose(fptr);
-        AssignName(loadMap.filename, path);
+        AssignName(fromDisk.filename, path);
+        RehydrateMap(&loadMap, &fromDisk);
         return loadMap;
     }
     printf("error: %s, no such file found\n", fullpath);
   return (Map){0};
+}
+
+Fleet LoadFleetFile(const char* path){
+    Fleet pfile;
+    char fullpath[30] = "editor/";
+    strcat(fullpath, path);
+    bool filexists = FileCheck (fullpath);
+
+    if(filexists){
+        printf("found file: %s \n", fullpath);
+        FILE * fptr = fopen(fullpath, "rb");
+        fread(&pfile, sizeof(Fleet), 1, fptr);
+        fclose(fptr);
+        return pfile;
+    }
+    printf("error: %s, no such file found\n", fullpath);
+  return (Fleet){0}; 
 }
 
 PolyPoly LoadPolyFile(const char* path){
@@ -165,7 +210,7 @@ bool isRecognizedType(char * str){
         }
     }
     // if(!strcmp(ending, "situ")) return true;
-    if(!strcmp(ending, "campaign")) return true;
+    if(!strcmp(ending, "map")) return true;
     if(!strcmp(ending, "poly")) return true;
     return false;
 }
@@ -197,7 +242,7 @@ StringArray GetMapNames(){
     for(int i = 0; i < 99; i++){
         entry = readdir(directory);
         if(entry){
-            if(!fileIsType(entry->d_name, "campaign")) continue;
+            if(!fileIsType(entry->d_name, "map")) continue;
             AppendStringToStrArr(entry->d_name, &strArr);
             printf("%s\n", entry->d_name);
         }else{

@@ -10,6 +10,9 @@
 #include <direct.h> //WINDOWS
 #elif __APPLE__
 #include <sys/stat.h> //MACOS
+
+#include "fleet.h"
+
 #endif
 
 #define STRINGARRAY_STRLEN 20
@@ -52,6 +55,8 @@ Map LoadMapFile(const char* path);
 
 PolyPoly LoadPolyFile(const char* path);
 
+Fleet LoadFleetFile(const char* path);
+
 int GetMapCount();
 
 char *StringAt(StringArray *strArr, int index);
@@ -60,3 +65,6 @@ void PrintAllStringsInStrArr(StringArray * strArr);
 
 StringArray GetMapNames();
 StringArray GetPolyNames();
+
+void ReAppendSuffix(char* dest, char * toread, const char * toappend);
+MapRecord DehydrateMap(Map * dehydrate);

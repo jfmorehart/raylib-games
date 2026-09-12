@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "cutscene.h"
+#include "taskforce.h"
 
 Font menufont;
 
@@ -202,7 +203,8 @@ void MenuUpdate(){
         currentChar = 0;
         memset(displayBuffer, 0, sizeof(displayBuffer));
         displayBufferCham = 0;
-        mapFromDisk = LoadMapFile("bergen.campaign");
+        mapFromDisk = LoadMapFile("bergen.map");
+        CompleteRehydrateMap(&mapFromDisk);
         SwitchScenes(TroopScene);
     }
 

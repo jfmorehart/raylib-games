@@ -227,3 +227,4 @@ void ShipCombat(Ship *ship, Ship *targetShipsArray, int arrayLen){
         BatteryUpdate(ship, targetShipsArray, arrayLen, &ship->batteries[i]);
     }
 }
+

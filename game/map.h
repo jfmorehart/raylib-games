@@ -7,7 +7,7 @@
 // #include "shiploadouts.h"
 
 typedef enum ObjectiveType{
-    Capital,
+    ReachTarget,
     Spotter,
     CoastalDefense
 } ObjectiveType;
@@ -36,3 +36,14 @@ typedef struct Map{
     int objective_count;
     Objective map_objectives[MAX_OBJECTIVES];
 }Map;
+
+typedef struct MapRecord{
+    char filename[20];
+
+    Island islands[ISLANDCOUNT];
+    int islandLength;
+
+    int objective_count;
+    Objective map_objectives[MAX_OBJECTIVES];
+
+}MapRecord;

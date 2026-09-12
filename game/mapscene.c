@@ -15,12 +15,16 @@
 #include "text.h"
 #include "cutscene.h"
 #include "mapscene.h"
+#include "filesystem.h"
 
 #include <math.h>       
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+
+extern TaskForce activeTFs [MAX_TFS];
+extern int taskForceCount;
 
 Map mapFromDisk;
 
@@ -105,25 +109,25 @@ void CallFocus(Vector2 wpos){
 
         for(int i = 0 ; i < taskForceCount; i++){
 
-            bool inbattle = Vector2Distance(tfs[i].position, focusTarget) < MAP_SEARCHRANGE + TF_MAX_RADIUS;
+            bool inbattle = Vector2Distance(activeTFs[i].position, focusTarget) < MAP_SEARCHRANGE + TF_MAX_RADIUS;
 
-            Vector2 delta = Vector2Subtract(tfs[i].destination, tfs[i].position);
+            Vector2 delta = Vector2Subtract(activeTFs[i].destination, activeTFs[i].position);
             delta = Vector2Normalize(delta);
 
-            for(int s = 0; s < tfs[i].shipCount; s++){
-                if(tfs[i].ships[s]){
+            for(int s = 0; s < activeTFs[i].shipCount; s++){
+                if(activeTFs[i].ships[s]){
                     if(inbattle){
-                        tfs[i].ships[s]->includedInScene = true;
+                        activeTFs[i].ships[s]->includedInScene = true;
                     }else{
-                        tfs[i].ships[s]->includedInScene = false;
+                        activeTFs[i].ships[s]->includedInScene = false;
                     }
 
-                    tfs[i].ships[s]->wPos = Vector2Add(tfs[i].position, tfs[i].ships[s]->wPos);
+                    activeTFs[i].ships[s]->wPos = Vector2Add(activeTFs[i].position, activeTFs[i].ships[s]->wPos);
 
-                    tfs[i].ships[s]->moveTargetPosition = tfs[i].destination;
-                    tfs[i].ships[s]->hasMoveTarget = true;
+                    activeTFs[i].ships[s]->moveTargetPosition = activeTFs[i].destination;
+                    activeTFs[i].ships[s]->hasMoveTarget = true;
 
-                    tfs[i].ships[s]->angle = atan2f(delta.y, delta.x);
+                    activeTFs[i].ships[s]->angle = atan2f(delta.y, delta.x);
                 }
             }
         }
@@ -145,15 +149,7 @@ void FocusRoutine(Routine *routine){
 }
 #pragma endregion
 
-Vector2 PickRandomLegalDestination(Vector2 fromPoint){
-    Vector2 rand = RandomWorldPointNoIsland();
-    Hit hit = AllIslandsIntersect(mapFromDisk.islands, (Edge){fromPoint, rand});
-    if(hit.hit){
-        Vector2 delta = Vector2Subtract(hit.hitPosition, fromPoint);
-        return Vector2Subtract(hit.hitPosition, Vector2Scale(delta, 0.1));
-    }
-    return rand;
-}
+
 #pragma region init
 void RandomizeMap(){
 
@@ -201,83 +197,8 @@ void InitMapScene(){
     // resLoc = GetShaderLocation(ship_frag, "dotsize");   
     // float dotsize = 0.3;
     // SetShaderValue(ship_frag, resLoc, &dotsize, SHADER_UNIFORM_FLOAT);
-
-    taskForceCount = 0; 
-    for(int i =0 ; i < mapFromDisk.fcount; i++){
-
-        bool found = false;
-        if(!mapFromDisk.friendlies[i].alive)continue;
-        InitRvecs(&mapFromDisk.friendlies[i]);
-
-        for(int t = 0; t < taskForceCount; t++){ 
-            if(tfs[t].shipCount + 1 >= MAX_SHIPS_IN_TF) continue;
-            if(tfs[t].team != mapFromDisk.friendlies[i].team) continue;
-            if(Vector2Distance(mapFromDisk.friendlies[i].wPos, tfs[t].position) < TF_MAX_RADIUS){
-                tfs[t].ships[tfs[t].shipCount] = &mapFromDisk.friendlies[i];
-
-                //wPos stores offset from tf center in transit
-                tfs[t].ships[tfs[t].shipCount]->wPos = Vector2Subtract(tfs[t].ships[tfs[t].shipCount]->wPos, tfs[t].position);
-                tfs[t].shipCount++;
-                found = true;
-                break;
-            }   
-        }
-        if(found) continue;
-        //TRIED ALL TFS AND DIDNT FIT INTO ANY!
-        //make new!
-
-        tfs[taskForceCount] = (TaskForce){0};
-        snprintf(tfs[taskForceCount].name, 20, "TF %d", (taskForceCount + 2) * 21);
-        // tfs[taskForceCount].name = "Task Force" + taskForceCount.toString();
-
-        tfs[taskForceCount].shipCount = 0;
-        tfs[taskForceCount].min_speed = 0.09;
-        tfs[taskForceCount].team = mapFromDisk.friendlies[i].team;
-        tfs[taskForceCount].position = mapFromDisk.friendlies[i].wPos;
-        tfs[taskForceCount].ships[tfs[taskForceCount].shipCount] = &mapFromDisk.friendlies[i];
-        tfs[taskForceCount].ships[tfs[taskForceCount].shipCount]->wPos = Vector2Zero(); // in transit, wPos becomes offset from tf center
-        tfs[taskForceCount].shipCount++;
-        taskForceCount++;
-
-        // printf("spawning new taskforce- ship - %f, %f", currentMap.friendlies[i].wPos.x,  tfs[taskForceCount].position.x);
-    }
-
-    for(int i =0 ; i < mapFromDisk.ecount; i++){
-
-        bool found = false;
-        if(!mapFromDisk.enemies[i].alive)continue;
-        InitRvecs(&mapFromDisk.enemies[i]);
-        for(int t = 0; t < taskForceCount; t++){ 
-            if(tfs[t].shipCount + 1 >= MAX_SHIPS_IN_TF) continue;
-            if(tfs[t].team != mapFromDisk.enemies[i].team) continue;
-            if(Vector2Distance(mapFromDisk.enemies[i].wPos, tfs[t].position) < TF_MAX_RADIUS){
-                tfs[t].ships[tfs[t].shipCount] = &mapFromDisk.enemies[i];
-
-                //wPos stores offset from tf center in transit
-                tfs[t].ships[tfs[t].shipCount]->wPos = Vector2Subtract(tfs[t].ships[tfs[t].shipCount]->wPos, tfs[t].position);
-                tfs[t].shipCount++;
-                found = true;
-                break;
-            }   
-        }
-        if(found) continue;
-        //TRIED ALL TFS AND DIDNT FIT INTO ANY!
-        //make new!
-
-        tfs[taskForceCount].shipCount = 0;
-        tfs[taskForceCount] = (TaskForce){0};
-        tfs[taskForceCount].min_speed = 0.09;
-        tfs[taskForceCount].team = false;
-        tfs[taskForceCount].position = mapFromDisk.enemies[i].wPos;
-        tfs[taskForceCount].ships[tfs[taskForceCount].shipCount] = &mapFromDisk.enemies[i];
-        tfs[taskForceCount].ships[tfs[taskForceCount].shipCount]->wPos = Vector2Zero(); // in transit, wPos becomes offset from tf center
-        tfs[taskForceCount].shipCount++;
-
-        tfs[taskForceCount].destination = PickRandomLegalDestination(tfs[taskForceCount].position);
-        
-        taskForceCount++;
-    }
-
+    CreateTaskForcesFromMapFile(&mapFromDisk);
+    TFShipsWorldToLocal();
     // cruiser.polyCenter = ScreenToWorld((Vector2){WIDTH * 1.1, HEIGHT * 0.5});
     // cruiser.polyScale = 0.4;
 }
@@ -340,11 +261,14 @@ void ObjectiveUpdate(){
         for(int e = 0; e < taskForceCount; e++){
             // Ship * en = &mapFromDisk.enemies[e];
 
-            TaskForce * tf = &tfs[e];
+            TaskForce * tf = &activeTFs[e];
             if(obj->team == tf->team) continue;
             if(Vector2Distance(obj->position, tf->position) <  MAP_SEARCHRANGE * 1.2){
                 if(obj->type == Spotter){
                     obj->alive = true; //set them active if they spot something;
+                }else if (obj->type == ReachTarget){
+                    SwitchScenes(Menu);
+                    return;
                 }
             }
         }
@@ -385,15 +309,15 @@ void MapFrameLoop(){
 
     for(int i = 0; i < taskForceCount; i++){
         // if(tfs[i].shipCount <= 0) continue;
-        if(tfs[i].team == false) continue;
-        DrawCircleV(WorldToScreen(tfs[i].position), WorldToPixels( MAP_SEARCHRANGE), WHITE);
+        if(activeTFs[i].team == false) continue;
+        DrawCircleV(WorldToScreen(activeTFs[i].position), WorldToPixels( MAP_SEARCHRANGE), WHITE);
 
         for(int d = 0; d < taskForceCount; d++){
-            if(tfs[d].team == true) continue;
-            if(tfs[d].shipCount <= 0) continue;
-            if(Vector2Distance(tfs[i].position, tfs[d].position) <  MAP_SEARCHRANGE){
+            if(activeTFs[d].team == true) continue;
+            if(activeTFs[d].shipCount <= 0) continue;
+            if(Vector2Distance(activeTFs[i].position, activeTFs[d].position) <  MAP_SEARCHRANGE){
                 if(!focusing){
-                    CallFocus(tfs[i].position);
+                    CallFocus(activeTFs[i].position);
                 }
             }
         }
@@ -417,7 +341,7 @@ void MapFrameLoop(){
 
     //objectives
     for(int i = 0; i < mapFromDisk.objective_count; i++){
-        if(mapFromDisk.map_objectives[i].type == Capital){
+        if(mapFromDisk.map_objectives[i].type == ReachTarget){
             if(mapFromDisk.map_objectives[i].team){
                 DrawCircleV(WorldToScreen(mapFromDisk.map_objectives[i].position), 8, YELLOW);
             }else{
@@ -443,66 +367,66 @@ void MapFrameLoop(){
 
 
     for(int i = 0; i < taskForceCount; i++){
-       Vector2 tfpos = WorldToScreen(tfs[i].position);
+       Vector2 tfpos = WorldToScreen(activeTFs[i].position);
 
-        if(tfs[i].team && !dayActive){
+        if(activeTFs[i].team && !dayActive){
 
             if(IsMouseButtonDown(0)){
                 if(Vector2DistanceSqr(tfpos, mousePos_ScreenCoords) < 50){
-                    tfs[i].selected = true;
+                    activeTFs[i].selected = true;
                 }else{
-                    tfs[i].selected = false;
+                    activeTFs[i].selected = false;
                 }
             }
 
-            if(tfs[i].selected){
-                Hit hit = AllIslandsIntersect(mapFromDisk.islands, (Edge){tfs[i].position, mousePos});
+            if(activeTFs[i].selected){
+                Hit hit = AllIslandsIntersect(mapFromDisk.islands, (Edge){activeTFs[i].position, mousePos});
                 if(hit.hit){
-                    DrawLineEx(WorldToScreen(tfs[i].position),WorldToScreen(hit.hitPosition), 1, GREEN);
+                    DrawLineEx(WorldToScreen(activeTFs[i].position),WorldToScreen(hit.hitPosition), 1, GREEN);
                     DrawLineEx(WorldToScreen(hit.hitPosition), WorldToScreen(mousePos), 1, RED);
                 }else{
-                    DrawLineEx(WorldToScreen(tfs[i].position), WorldToScreen(mousePos), 1, GREEN);
+                    DrawLineEx(WorldToScreen(activeTFs[i].position), WorldToScreen(mousePos), 1, GREEN);
                 }
                 if(IsMouseButtonDown(1) && !hit.hit){
-                    tfs[i].selected = false;
-                    tfs[i].destination = mousePos;
+                    activeTFs[i].selected = false;
+                    activeTFs[i].destination = mousePos;
                 }
             }
 
         }
 
         bool validPath = false;
-        if(!Vector2Equals(Vector2Zero(), tfs[i].destination)){
-            Vector2 delta = Vector2Subtract(tfs[i].destination, tfs[i].position);
+        if(!Vector2Equals(Vector2Zero(), activeTFs[i].destination)){
+            Vector2 delta = Vector2Subtract(activeTFs[i].destination, activeTFs[i].position);
             if(Vector2LengthSqr(delta) < 0.01 && !dayActive) {
-                if(tfs[i].team){
-                    tfs[i].destination = Vector2Zero();
+                if(activeTFs[i].team){
+                    activeTFs[i].destination = Vector2Zero();
                     continue;
                 }else{
-                    tfs[i].destination = PickRandomLegalDestination(tfs[i].position);
+                    activeTFs[i].destination = PickRandomLegalDestination(activeTFs[i].position);
                 }
 
             }
-            delta = Vector2Scale(Vector2Normalize(delta), tfs[i].min_speed * scaledDeltaTime);
+            delta = Vector2Scale(Vector2Normalize(delta), activeTFs[i].min_speed * scaledDeltaTime);
             validPath = true;
             if(!focusing){
-                tfs[i].position = Vector2Add(tfs[i].position, delta);
+                activeTFs[i].position = Vector2Add(activeTFs[i].position, delta);
             }
 
         }
 
-        if(tfs[i].team){
-            if(tfs[i].selected){
-                Vector2 pos = WorldToScreen(tfs[i].position);
+        if(activeTFs[i].team){
+            if(activeTFs[i].selected){
+                Vector2 pos = WorldToScreen(activeTFs[i].position);
 
                 if(validPath){
-                    Vector2 target = tfs[i].destination;
-                    Vector2 delta = Vector2Normalize(Vector2Subtract( target, tfs[i].position));
-                    Vector2 dayPoint = Vector2Add(tfs[i].position, Vector2Scale(delta, SHIPSPEED * DAY_LENGTH));
+                    Vector2 target = activeTFs[i].destination;
+                    Vector2 delta = Vector2Normalize(Vector2Subtract( target, activeTFs[i].position));
+                    Vector2 dayPoint = Vector2Add(activeTFs[i].position, Vector2Scale(delta, SHIPSPEED * DAY_LENGTH));
                     if(dayActive){
-                        DrawLineEx(WorldToScreen(tfs[i].position), WorldToScreen(target), 1, DARKGRAY);
+                        DrawLineEx(WorldToScreen(activeTFs[i].position), WorldToScreen(target), 1, DARKGRAY);
                     }else{
-                        DrawLineEx(WorldToScreen(tfs[i].position), WorldToScreen(dayPoint), 2, WHITE);
+                        DrawLineEx(WorldToScreen(activeTFs[i].position), WorldToScreen(dayPoint), 2, WHITE);
                         DrawLineEx(WorldToScreen(dayPoint), WorldToScreen(target), 1,  DARKGRAY);
                     }
 
@@ -512,22 +436,22 @@ void MapFrameLoop(){
             }else{
 
                 if(validPath){
-                    Vector2 target = tfs[i].destination;
-                    Vector2 delta = Vector2Normalize(Vector2Subtract( target, tfs[i].position));
-                    Vector2 dayPoint = Vector2Add(tfs[i].position, Vector2Scale(delta, SHIPSPEED * DAY_LENGTH));
+                    Vector2 target = activeTFs[i].destination;
+                    Vector2 delta = Vector2Normalize(Vector2Subtract( target, activeTFs[i].position));
+                    Vector2 dayPoint = Vector2Add(activeTFs[i].position, Vector2Scale(delta, SHIPSPEED * DAY_LENGTH));
                     if(dayActive){
-                        DrawLineEx(WorldToScreen(tfs[i].position), WorldToScreen(target), 1, DARKGRAY);
+                        DrawLineEx(WorldToScreen(activeTFs[i].position), WorldToScreen(target), 1, DARKGRAY);
                     }else{
-                        DrawLineEx(WorldToScreen(tfs[i].position), WorldToScreen(dayPoint), 1.5, GRAY);
+                        DrawLineEx(WorldToScreen(activeTFs[i].position), WorldToScreen(dayPoint), 1.5, GRAY);
                         DrawLineEx(WorldToScreen(dayPoint), WorldToScreen(target), 1,  DARKGRAY);
                     }
                 }
-                DrawCircle(WorldToScreen(tfs[i].position).x, WorldToScreen(tfs[i].position).y, 3, GRAY); 
+                DrawCircle(WorldToScreen(activeTFs[i].position).x, WorldToScreen(activeTFs[i].position).y, 3, GRAY); 
             }
-            DrawText(tfs[i].name, tfpos.x - 15, tfpos.y - 20, 1, WHITE);
+            DrawText(activeTFs[i].name, tfpos.x - 15, tfpos.y - 20, 1, WHITE);
         }else{
             if(IsKeyPressed(KEY_S)){
-                DrawCircle(WorldToScreen(tfs[i].position).x, WorldToScreen(tfs[i].position).y, 3, RED); 
+                DrawCircle(WorldToScreen(activeTFs[i].position).x, WorldToScreen(activeTFs[i].position).y, 3, RED); 
                 DrawText("OPFOR", tfpos.x - 30, tfpos.y - 20, 1, RED);
             }
         }
@@ -548,8 +472,8 @@ void MapUIRender(){
     DrawText(rightBar.charArray, WIDTH * RSCALE - border - diff - 25, 35, 18, GRAY);
 
     for(int i =0 ;i < taskForceCount; i++){
-        if(tfs[i].selected){
-            DrawText(tfs[i].name, WIDTH * RSCALE - border - diff - 25, 200, 18, WHITE);
+        if(activeTFs[i].selected){
+            DrawText(activeTFs[i].name, WIDTH * RSCALE - border - diff - 25, 200, 18, WHITE);
             Vector3 col = (Vector3){1, 1, 1};
 
             DotShaderValues(&generalShader, 0.2, 12, col);
@@ -557,16 +481,16 @@ void MapUIRender(){
             BeginShaderMode(generalShader.shader);
             rlBegin(RL_TRIANGLES);
             // rlColor4ub(255, 255, 255, 255);
-            for(int j = 0; j < tfs[i].shipCount; j++){
-                RenderShipIconAtPoint(tfs[i].ships[j], 60, (Vector2){WIDTH * RSCALE * 0.91, 250 + j * 100});
+            for(int j = 0; j < activeTFs[i].shipCount; j++){
+                RenderShipIconAtPoint(activeTFs[i].ships[j], 60, (Vector2){WIDTH * RSCALE * 0.91, 250 + j * 100});
                 // DrawText(tfs[i].ships[j]->name, cruiser.polyCenter.x, cruiser.polyCenter.y, 12, WHITE);
             }
             rlEnd();
             rlSetTexture(0); 
             EndShaderMode();
 
-            for(int j = 0; j < tfs[i].shipCount; j++){
-                DrawText(tfs[i].ships[j]->shipName, WIDTH * RSCALE * 0.87 ,280 + j * 100, 15, GRAY);
+            for(int j = 0; j < activeTFs[i].shipCount; j++){
+                DrawText(activeTFs[i].ships[j]->shipName, WIDTH * RSCALE * 0.87 ,280 + j * 100, 15, GRAY);
             }
         }
     }

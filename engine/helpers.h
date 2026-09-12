@@ -57,3 +57,5 @@ typedef struct Map Map;
 
 Hit RayAllShipsIntersect(Edge ray, Ship * allships, int shipCount, float scaleMult);
 Hit IntersectIslandsAndShips(Vector2 start, Vector2 angle, Map *m, float scaleMult);
+
+Vector2 PickRandomLegalDestination(Vector2 fromPoint);

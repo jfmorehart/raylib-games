@@ -59,6 +59,17 @@ typedef struct Ship{
 } Ship;
 
 
+//dehydrated record to store in fleet files, etc. 
+typedef struct ShipLog{
+    ShipType shipType;
+    char shipName [30];
+    char captName[30]; 
+    bool team;
+    float health;
+    Vector2 tfLocalOffset;
+}ShipLog;
+
+
 bool IsPointInShip(Vector2 worldSpace, const Ship *ship, float scaleMult);
 
 float Path2Target(const Ship *ship, int rays, float fanAngle, Vector2 target, Island *obstacles);
@@ -71,3 +82,5 @@ void SteerShipBattle(Ship *ship, bool avoidIslands, Island *islandsToAvoid);
 
 void BattleSceneIntroReset(Ship *ship);
 void ShipCombat(Ship *ship, Ship *targetShipsArray, int arrayLen);
+
+
