@@ -55,7 +55,7 @@ void RehydrateTaskForces(int * tf_length, TaskForce *torehydrate, Fleet * friend
         tr->position = from.position;
         tr->shipCount = from.shipCount;
 
-        tr->min_speed = 0.09;
+        float minspeed = 999;
         tr->selected = false;
 
         for(int s = 0; s < from.shipCount; s++){
@@ -64,7 +64,9 @@ void RehydrateTaskForces(int * tf_length, TaskForce *torehydrate, Fleet * friend
             slot->wPos = Vector2Add(slot->wPos, tr->position);
             tr->ships[s] = slot;
             placeShipsIn->fcount++;
+            minspeed = fminf(minspeed, slot->speed);
         }
+        tr->min_speed = minspeed;
     }
     for(int i = 0; i < enemy->tf_count; i++){
         TaskForce * tr = &torehydrate[*tf_length];
@@ -79,7 +81,7 @@ void RehydrateTaskForces(int * tf_length, TaskForce *torehydrate, Fleet * friend
         tr->position = from.position;
         tr->shipCount = from.shipCount;
 
-        tr->min_speed = 0.09;
+        float minspeed = 999;
         tr->selected = false;
 
         for(int s = 0; s < from.shipCount; s++){
@@ -88,7 +90,9 @@ void RehydrateTaskForces(int * tf_length, TaskForce *torehydrate, Fleet * friend
             slot->wPos = Vector2Add(slot->wPos,tr->position);
             tr->ships[s] = slot;
             placeShipsIn->ecount++;
+            minspeed = fminf(minspeed, slot->speed);
         }
+        tr->min_speed = minspeed;
     }
 }
 void RehydrateTFsFromDisk(Map * toreh){
@@ -135,6 +139,7 @@ void CreateTaskForcesFromMapFile(Map *map){
             if(activeTFs[t].team != map->friendlies[i].team) continue;
             if(Vector2Distance(map->friendlies[i].wPos, activeTFs[t].position) < TF_MAX_RADIUS){
                 activeTFs[t].ships[activeTFs[t].shipCount] = &map->friendlies[i];
+                activeTFs[t].min_speed = fminf(activeTFs[t].min_speed, map->friendlies[i].speed);
                 activeTFs[t].shipCount++;
                 found = true;
                 break;
@@ -149,7 +154,7 @@ void CreateTaskForcesFromMapFile(Map *map){
         // tfs[taskForceCount].name = "Task Force" + taskForceCount.toString();
 
         activeTFs[taskForceCount].shipCount = 0;
-        activeTFs[taskForceCount].min_speed = 0.09;
+        activeTFs[taskForceCount].min_speed = map->friendlies[i].speed;
         activeTFs[taskForceCount].team = map->friendlies[i].team;
         activeTFs[taskForceCount].position = map->friendlies[i].wPos;
         activeTFs[taskForceCount].ships[activeTFs[taskForceCount].shipCount] = &map->friendlies[i];
@@ -170,6 +175,7 @@ void CreateTaskForcesFromMapFile(Map *map){
             if(activeTFs[t].team != map->enemies[i].team) continue;
             if(Vector2Distance(map->enemies[i].wPos, activeTFs[t].position) < TF_MAX_RADIUS){
                 activeTFs[t].ships[activeTFs[t].shipCount] = &map->enemies[i];
+                activeTFs[t].min_speed = fminf(activeTFs[t].min_speed, map->enemies->speed);
                 activeTFs[t].shipCount++;
                 found = true;
                 break;
@@ -181,7 +187,7 @@ void CreateTaskForcesFromMapFile(Map *map){
 
         activeTFs[taskForceCount].shipCount = 0;
         activeTFs[taskForceCount] = (TaskForce){0};
-        activeTFs[taskForceCount].min_speed = 0.09;
+        activeTFs[taskForceCount].min_speed = map->enemies->speed;
         activeTFs[taskForceCount].team = false;
         activeTFs[taskForceCount].position = map->enemies[i].wPos;
         activeTFs[taskForceCount].ships[activeTFs[taskForceCount].shipCount] = &map->enemies[i];

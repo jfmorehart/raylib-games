@@ -26,14 +26,30 @@ void OnCompleteMap(){
     TFShipsLocalToWorld();
     DehydrateTaskForces(taskForceCount, activeTFs, &activeFleet, &activeEnemyFleet);
 
-    //load next map
+    //load next map geometry
     currentStage++;
-
     RehydrateMap(&mapFromDisk, &activeCampaign.maps[currentStage]);
+
+
+    //adjust activeFleet and activeEnemyFleet to maintain balance
+    DryTF newenemyTF;
+    newenemyTF.position = RandomWorldPointNoIsland();
+    newenemyTF.destination = PickRandomLegalDestination(newenemyTF.position);
+    AssignName(newenemyTF.name, "Added TF");
+    newenemyTF.shipCount = 1;
+    ShipLog newLog;
+    newLog.shipType = Battleship;
+    newLog.health = 500;
+    newLog.team = false;
+    newenemyTF.logs[0] = newLog;
+    activeEnemyFleet.tfs[activeEnemyFleet.tf_count] = newenemyTF;
+    activeEnemyFleet.tf_count++;
+
+    //load ships into the map
     taskForceCount = 0;
     RehydrateTaskForces(&taskForceCount, activeTFs, &activeFleet, &activeEnemyFleet, &mapFromDisk);
 
-    //load cutscene 4 next map
+    //load cutscene intro 4 next map
     SwitchScenes(TroopScene);
 }
 

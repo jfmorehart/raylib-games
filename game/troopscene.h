@@ -102,6 +102,9 @@ void RenderShipTroopScreen(Vector2 screenPos, Ship ship){
         case Destroyer:
             DrawText("Destroyer", screenPos.x - textLROffset, screenPos.y -70, 15, GRAY);//, int fontSize, Color color)
         break;
+        case Transport:
+            DrawText("Transport", screenPos.x - textLROffset, screenPos.y -70, 15, GRAY);//, int fontSize, Color color)
+        break;
     }
 
     DrawText(ship.shipName, screenPos.x - textLROffset, screenPos.y + 55, 20, WHITE);//, int fontSize, Color color)
@@ -109,13 +112,32 @@ void RenderShipTroopScreen(Vector2 screenPos, Ship ship){
     switch(ship.shipType){
         case Battleship:
         DrawText("2,500 men", screenPos.x - textLROffset, screenPos.y + 105, 15, DARKGRAY);//, int fontSize, Color color)
+
+        if(ship.health > BattleshipStats.health * 0.5 && ship.health < BattleshipStats.health){
+            DrawText("lightly damaged", screenPos.x - textLROffset, screenPos.y + 125, 15, DARKGRAY);//, int fontSize, Color color)
+        }else if (ship.health < BattleshipStats.health * 0.5){
+            DrawText("critically damaged", screenPos.x - textLROffset, screenPos.y + 125, 15, DARKGRAY);//, int fontSize, Color color)
+        }
+
         break;
         case Destroyer:
-           DrawText("300 men", screenPos.x - textLROffset, screenPos.y + 105, 15, DARKGRAY);//, int fontSize, Color color)
+            DrawText("300 men", screenPos.x - textLROffset, screenPos.y + 105, 15, DARKGRAY);//, int fontSize, Color color)
+            if(ship.health > DestroyerStats.health * 0.5 && ship.health < DestroyerStats.health){
+                DrawText("lightly damaged", screenPos.x - textLROffset, screenPos.y + 125, 15, DARKGRAY);//, int fontSize, Color color)
+            }else if (ship.health < DestroyerStats.health * 0.5){
+                DrawText("critically damaged", screenPos.x - textLROffset, screenPos.y + 125, 15, DARKGRAY);//, int fontSize, Color color)
+            }
+        break;
+        
+        case Transport:
+            DrawText("300 men", screenPos.x - textLROffset, screenPos.y + 105, 15, DARKGRAY);//, int fontSize, Color color)
+            if(ship.health > TransportStats.health * 0.5 && ship.health < TransportStats.health){
+                DrawText("lightly damaged", screenPos.x - textLROffset, screenPos.y + 125, 15, DARKGRAY);//, int fontSize, Color color)
+            }else if (ship.health < TransportStats.health * 0.5){
+                DrawText("critically damaged", screenPos.x - textLROffset, screenPos.y + 125, 15, DARKGRAY);//, int fontSize, Color color)
+            }
         break;
     }
-
-
     Vector3 col = (Vector3){1, 1, 1};
     DotShaderValues(&generalShader, 0.2, 12, col);
     SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);

@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 #define SHIPTURN 2
-#define SHIPSPEED 0.1
+// #define SHIPSPEED 0.1
 #define SHIP_BLEND_MAX 0.15
 #define BATTLE_SEARCHRANGE 0.2
 #define SHIP_MAXBATTERIES 6
@@ -20,7 +20,8 @@ typedef enum ShipType{
     Patrol,
     Destroyer,
     Cruiser, 
-    Battleship
+    Battleship,
+    Transport
 }ShipType;
 
 typedef struct Ship{
@@ -39,6 +40,7 @@ typedef struct Ship{
     float angle;
     float scale;
     float health;
+    float speed;
 
     //movement
     bool hasMoveTarget;
@@ -78,7 +80,7 @@ void RenderShip(const Ship *ship, float scaleMult);
 void RenderShipColor(const Ship *ship, float scaleMult, Vector3 color);
 
 void SteerShip(Ship *ship, bool avoidIslands, Island *islandsToAvoid);
-void SteerShipBattle(Ship *ship, bool avoidIslands, Island *islandsToAvoid);
+void SteerShipBattle(Ship *ship, bool avoidIslands, Map * map, float scaleMult);
 
 void BattleSceneIntroReset(Ship *ship);
 void ShipCombat(Ship *ship, Ship *targetShipsArray, int arrayLen);

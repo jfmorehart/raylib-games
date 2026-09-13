@@ -13,3 +13,6 @@ Claude CAN:
 - Run `make` or other build/run commands when asked
 
 The user is learning. The goal is for them to write every line themselves.
+
+**Append every message with a confidence value. Just a \n and a %30.**
+This confidence value should be conservative, based on how much you understand the system in question, and how much you've researched the problem. Logically, something that you claim is 100% should be a logical tautology. Anything short of true == true should be like 98% tops.  

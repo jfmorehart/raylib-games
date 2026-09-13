@@ -1,6 +1,7 @@
 #pragma once
 #include "raylib.h"
 #include "globals.h"
+// #include "ships.h"
 // #include "game/map.h"
 
 float R01();
@@ -26,6 +27,9 @@ bool IsOnScreen(Vector2 worldPoint);
 
 typedef struct Island Island;// name;
 Island *WhatIslandIsThis(Vector2 wPoint, Island *toCheckArray, int islandLength);
+
+typedef struct Ship Ship; //believe me!
+Ship * NearestShip(Ship * array, int arrlen, Vector2 topoint);
 
 Vector2 NearestPointOnSegment(Vector2 la, Vector2 lb, Vector2 point);
 bool PointIslandCheck(Vector2 point, const Island *is);

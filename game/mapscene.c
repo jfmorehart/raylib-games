@@ -179,6 +179,7 @@ void RandomizeMap(){
 
 void InitMapScene(){
 
+    focusing = false;
     dayActive = false;
     ClearBuffer(&rightBar);
     AddBufferText(&rightBar, "LCLICK - Select\n");
@@ -345,9 +346,9 @@ void MapFrameLoop(){
     for(int i = 0; i < mapFromDisk.objective_count; i++){
         if(mapFromDisk.map_objectives[i].type == ReachTarget){
             if(mapFromDisk.map_objectives[i].team){
-                DrawCircleV(WorldToScreen(mapFromDisk.map_objectives[i].position), 8, YELLOW);
+                DrawCircleV(WorldToScreen(mapFromDisk.map_objectives[i].position), 8, SKYBLUE);
             }else{
-                DrawCircleV(WorldToScreen(mapFromDisk.map_objectives[i].position), 8, GOLD);
+                DrawCircleV(WorldToScreen(mapFromDisk.map_objectives[i].position), 8, PINK);
             }
         }
         else if(mapFromDisk.map_objectives[i].type == Spotter){
@@ -367,7 +368,7 @@ void MapFrameLoop(){
     }
 
 
-
+    int enemyTFcount = 0;
     for(int i = 0; i < taskForceCount; i++){
        Vector2 tfpos = WorldToScreen(activeTFs[i].position);
 
@@ -424,7 +425,7 @@ void MapFrameLoop(){
                 if(validPath){
                     Vector2 target = activeTFs[i].destination;
                     Vector2 delta = Vector2Normalize(Vector2Subtract( target, activeTFs[i].position));
-                    Vector2 dayPoint = Vector2Add(activeTFs[i].position, Vector2Scale(delta, SHIPSPEED * DAY_LENGTH));
+                    Vector2 dayPoint = Vector2Add(activeTFs[i].position, Vector2Scale(delta, activeTFs[i].min_speed * DAY_LENGTH));
                     if(dayActive){
                         DrawLineEx(WorldToScreen(activeTFs[i].position), WorldToScreen(target), 1, DARKGRAY);
                     }else{
@@ -440,7 +441,7 @@ void MapFrameLoop(){
                 if(validPath){
                     Vector2 target = activeTFs[i].destination;
                     Vector2 delta = Vector2Normalize(Vector2Subtract( target, activeTFs[i].position));
-                    Vector2 dayPoint = Vector2Add(activeTFs[i].position, Vector2Scale(delta, SHIPSPEED * DAY_LENGTH));
+                    Vector2 dayPoint = Vector2Add(activeTFs[i].position, Vector2Scale(delta, activeTFs[i].min_speed * DAY_LENGTH));
                     if(dayActive){
                         DrawLineEx(WorldToScreen(activeTFs[i].position), WorldToScreen(target), 1, DARKGRAY);
                     }else{
@@ -452,13 +453,18 @@ void MapFrameLoop(){
             }
             DrawText(activeTFs[i].name, tfpos.x - 15, tfpos.y - 20, 1, WHITE);
         }else{
+            if(activeTFs[i].shipCount > 0){
+                enemyTFcount++;
+            }
             if(IsKeyPressed(KEY_S)){
                 DrawCircle(WorldToScreen(activeTFs[i].position).x, WorldToScreen(activeTFs[i].position).y, 3, RED); 
                 DrawText("OPFOR", tfpos.x - 30, tfpos.y - 20, 1, RED);
             }
         }
     }
-
+    if(enemyTFcount < 1){
+        OnCompleteMap();
+    }
 }
 
 void MapUIRender(){

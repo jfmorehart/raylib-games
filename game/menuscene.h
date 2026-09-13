@@ -152,10 +152,23 @@ void MenuUpdate(){
         AddLine("Admiral Wilhelm Raenin.");
         AddLine("You will be executed in 87 days.");
         AddLine("At your disposal are the battleships:");
-        AddLine("Scharnitz");
-        AddLine("Tirphorst");
-        AddLine("and nine destroyers");
-        AddLine("Begin? (y/n)");
+        Fleet fraenin = LoadFleetFile("raenin0_f.fleet");
+        for(int i = 0; i < fraenin.tf_count; i++){
+            for(int s  = 0; s < fraenin.tfs[i].shipCount; s++){
+                if(fraenin.tfs[i].logs[s].shipType == Battleship){
+                    AddLine(fraenin.tfs[i].logs[s].shipName);
+                }
+            }
+        }
+        AddLine("\nand the destroyers:");
+         for(int i = 0; i < fraenin.tf_count; i++){
+            for(int s  = 0; s < fraenin.tfs[i].shipCount; s++){
+                if(fraenin.tfs[i].logs[s].shipType == Destroyer){
+                    AddLine(fraenin.tfs[i].logs[s].shipName);
+                }
+            }
+        }
+        AddLine("\nBegin? (yes)");
     }
     
     if(strcmp(textBuffer, "Lutzo") == 0){

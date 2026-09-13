@@ -191,15 +191,15 @@ void SteerShip(Ship *ship, bool avoidIslands, Island *islandsToAvoid){
         }else if(diff >= 0.01){
             ship->angle += scaledDeltaTime * SHIPTURN;
         }
-        ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), scaledDeltaTime * SHIPSPEED));
+        ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), scaledDeltaTime * ship->speed));
     }
 }
-void SteerShipBattle(Ship *ship, bool avoidIslands, Island *islandsToAvoid){
+void SteerShipBattle(Ship *ship, bool avoidIslands, Map * map, float scaleMult){
     //Steer Ship
     if(ship->hasMoveTarget){
         float angle;
         if(avoidIslands){
-            angle = Path2Target(ship, 4, PI * 0.5, ship->moveTargetPosition, islandsToAvoid);
+            angle = Path2Target(ship, 4, PI * 0.5, ship->moveTargetPosition, map->islands);
         }else{
             Vector2 delta =  Vector2Subtract(ship->moveTargetPosition, ship->wPos);
             angle = atan2f(delta.y, delta.x);
@@ -211,7 +211,35 @@ void SteerShipBattle(Ship *ship, bool avoidIslands, Island *islandsToAvoid){
         }else if(diff >= 0.01){
             ship->angle += scaledDeltaTime * SHIPTURN * BATTLESCENE_SPEEDMULT;
         }
-        ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), scaledDeltaTime * SHIPSPEED * BATTLESCENE_SPEEDMULT));
+        ship->wPos = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), scaledDeltaTime * ship->speed * BATTLESCENE_SPEEDMULT));
+
+        // Hit h = IntersectIslandsAndShips(ship->wPos, VfromAngle(ship->angle), map, scaleMult);
+
+        Vector2 noisePoint = Vector2Add(ship->wPos, Vector2Scale(Vector2Normalize(VfromAngle(ship->angle)), 5 * scaleMult * ship->scale));
+        // DrawLineEx(WorldToScreen(ship->wPos), WorldToScreen(noisePoint), 5, PINK);
+        if(IsPointWithinIslands(noisePoint)){
+            // ship->health -= 1;
+            ship->speed *= 1 - scaledDeltaTime * 0.7; //running aground
+            if(ship->health < 1){
+                ship->alive = false;
+                FireSmoke(noisePoint, 20);
+            }
+        }
+        // if(IsPointInShip(Vector2 worldSpace, const Ship *ship, float scaleMult))
+        // if(h.shipHit){
+        //     if(*h.shipHit->captName == *ship->captName){
+        //         return;
+        //     }else{
+        //         //hit the fucker
+        //         FireSmoke(h.hitPosition, 0.01);
+        //         h.shipHit->health -= 20;
+        //         if(h.shipHit->health < 1){
+        //             FireSmoke(h.hitPosition, SHIP_EXPLOSION_RADIUS);
+        //             h.shipHit->alive = false;
+        //         }
+        //     }
+        // }
+
     }
 }
 

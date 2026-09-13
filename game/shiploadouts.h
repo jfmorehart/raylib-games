@@ -10,9 +10,8 @@
     extern Battery DestroyerLoadout[SHIP_MAXBATTERIES];
     extern Battery BattleshipLoadout[SHIP_MAXBATTERIES];
 
+    extern Ship TransportStats;
     extern Ship DestroyerStats;
-
-
     extern Ship BattleshipStats;
 
     void MakeLoadouts();
@@ -23,6 +22,7 @@
     PolyPoly cruiser;
     PolyPoly destroyer;
     PolyPoly battleship;
+    PolyPoly transport;
 
     void LoadShipIcons();
 

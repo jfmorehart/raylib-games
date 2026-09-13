@@ -265,7 +265,7 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
             // battery->timesTargeted++;
             // if(battery->timesTargeted > 4) battery->timesTargeted = 4;
             // printf("firing on %p, time %d, spread = ", battery->shipTarget, battery->timesTargeted);
-            Vector2 movement = Vector2Scale(VfromAngle(battery->shipTarget->angle), SHIPSPEED);
+            Vector2 movement = Vector2Scale(VfromAngle(battery->shipTarget->angle), battery->shipTarget->speed);
             float localforward = battery->currentAngle_local + batteryAngle;
 
             Vector2 dir = Vector2Subtract(battery->shipTarget->wPos, batteryPosition);
@@ -314,7 +314,6 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
 void AimBatteryBeam(Battery * battery, const Ship * ship){
     if(battery->currentState == Off || battery->currentState == Lingering) return;
 
-
     Vector2 batteryPosition = Vector2Add(ship->wPos, Vector2Scale(VfromAngle(ship->angle), battery->batteryOffset_Y * ship->scale));
     Gun btype = battery->BatteryType;
     //calculate where we ARE aiming
@@ -326,7 +325,7 @@ void AimBatteryBeam(Battery * battery, const Ship * ship){
 
     if(battery->currentState == Searching){
         //pingpong
-        worldTarget = sin(scaledTime * 0.1) * battery->traverseAmount * DEG2RAD * 0.5 + turretWorldForward; 
+        worldTarget = sin(scaledTime * 0.1 + battery->_r_index * 100) * battery->traverseAmount * DEG2RAD * 0.5 + turretWorldForward; 
     }
     else if(battery->currentState == Engaging){
         Vector2 rvec = Vector2Scale(RVec_Perlin(battery->_r_index, 0.3), 0.5);
@@ -334,7 +333,7 @@ void AimBatteryBeam(Battery * battery, const Ship * ship){
         float innaccuracy = battery->batterySpread * tdist * tdist;
         float accuracy = (btype.range + btype.range * ((battery->timesTargeted + 1) * 0.04));
         float btime = tdist / BULLET_SPEED * BATTLESCENE_SPEEDMULT;
-        Vector2 vel = Vector2Scale(Vector2Normalize(VfromAngle(battery->shipTarget->angle)), SHIPSPEED * BATTLESCENE_SPEEDMULT);
+        Vector2 vel = Vector2Scale(Vector2Normalize(VfromAngle(battery->shipTarget->angle)), battery->shipTarget->speed * BATTLESCENE_SPEEDMULT);
         Vector2 movingTarget = Vector2Add(battery->shipTarget->wPos, Vector2Scale(vel, btime));
         Vector2 spreadTarget = Vector2Add(movingTarget, Vector2Scale(rvec,  fmax(innaccuracy / accuracy, 0.1)));
         // Vector2 spreadTarget = battery->shipTarget->wPos;

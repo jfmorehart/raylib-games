@@ -237,7 +237,7 @@ void GenericInput(){
                 EditorThing newthing;
                 newthing.data = & localMap.map_objectives[localMap.objective_count];
                 newthing.type = ObjectiveThing;
-                newthing.color = GOLD;
+                newthing.color = PINK;
                 newthing.size = 4;
                 newthing.real = true;
                 newthing.position = mousePos;
@@ -263,7 +263,7 @@ void GenericInput(){
                 EditorThing newthing;
                 newthing.data = & localMap.map_objectives[localMap.objective_count];
                 newthing.type = ObjectiveThing;
-                newthing.color = YELLOW;
+                newthing.color = SKYBLUE;
                 newthing.size = 4;
                 newthing.real = true;
                 newthing.position = mousePos;
@@ -923,6 +923,25 @@ void PlaceIslandMode(){
                 editorThingCount++;
                 localMap.fcount++;
             }
+            if(IsKeyPressed(KEY_H)){
+                localMap.friendlies[localMap.fcount] = TransportStats;
+                localMap.friendlies[localMap.fcount].shipType = Transport;
+                memset(localMap.friendlies[localMap.fcount].batteries, 0, sizeof(BattleshipLoadout)); 
+                localMap.friendlies[localMap.fcount].wPos = mousePos;
+                localMap.friendlies[localMap.fcount].team = true;
+                localMap.friendlies[localMap.fcount].alive = true;
+
+                EditorThing newthing;
+                newthing.data = &localMap.friendlies[localMap.fcount];
+                newthing.type = ShipThing;
+                newthing.color = BLUE;
+                newthing.size = 2;
+                newthing.real = true;
+                newthing.position = mousePos;
+                thingies[editorThingCount] = newthing;
+                editorThingCount++;
+                localMap.fcount++;
+            }
         }else{
             DrawText("max fships allotted", 300, 400, 10, RED);
         }
@@ -959,6 +978,26 @@ void PlaceIslandMode(){
                 newthing.type = ShipThing;
                 newthing.color = RED;
                 newthing.size = 5;
+                newthing.real = true;
+                newthing.position = mousePos;
+                thingies[editorThingCount] = newthing;
+                editorThingCount++;
+                localMap.ecount++;
+            }
+
+            if(IsKeyPressed(KEY_APOSTROPHE)){
+                localMap.enemies[localMap.ecount] = TransportStats;
+                localMap.enemies[localMap.ecount].shipType = Transport;
+                memset(localMap.enemies[localMap.ecount].batteries, 0, sizeof(BattleshipLoadout)); 
+                localMap.enemies[localMap.ecount].wPos = mousePos;
+                localMap.enemies[localMap.ecount].team = false;
+                localMap.enemies[localMap.ecount].alive = true;
+
+                EditorThing newthing;
+                newthing.data = &localMap.enemies[localMap.ecount];
+                newthing.type = ShipThing;
+                newthing.color = RED;
+                newthing.size = 2;
                 newthing.real = true;
                 newthing.position = mousePos;
                 thingies[editorThingCount] = newthing;

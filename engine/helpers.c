@@ -279,6 +279,20 @@ Hit RayShipIntersect(Edge ray, Ship *ship, float scaleMult){
     return (Hit){false, Vector2Zero()};
 }
 
+Ship * NearestShip(Ship * array, int arrlen, Vector2 topoint){
+    Ship * sofar;
+    float min_dist = 999;
+    for(int i = 0; i < arrlen; i++){
+        Ship * try = &array[i];
+        float d = Vector2Distance(try->wPos, topoint);
+        if(d < min_dist){
+            sofar = try;
+            min_dist = d;
+        }
+    }
+    return sofar;
+}
+
 Hit RayAllShipsIntersect(Edge ray, Ship * allships, int shipCount, float scaleMult){
     Vector2 chit;
     float nearest = 999;

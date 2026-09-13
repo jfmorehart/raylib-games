@@ -36,6 +36,7 @@ extern Vector2 focusTarget;
 extern DotShader islandShader;
 extern DotShader oceanShader;
 extern DotShader generalShader;
+extern DotShader generalShader_noCamMovement;
 extern DotShader explosionShader;
 extern DotShader lightShader;
 extern DotShader illuminatedShader;
@@ -71,7 +72,7 @@ int splashCount = 100;
 Smoke splashPool[100];
 
 float lastContactTime;
-float disengageTime  = 20;
+float disengageTime = 30;
 
 void UpdateAndRenderFireStacks(){
     bool tickDamage = unscaledTime - firetick_last > firetick_delay;
@@ -152,6 +153,7 @@ void ApplyFireStacks(Ship * toship, int amount){
 
 void InitBattleScene(){
 
+    battleOver = false;
     lastContactTime = unscaledTime + 5;
 
     printf("cpos %f, %f, wscale %f\n", cameraPosition.x, cameraPosition.y, worldScale);
@@ -196,6 +198,11 @@ void InitBattleScene(){
         }
     }
     printf("rendering these ships: friendly %d, enemy%d\n", fc, ec);
+
+
+    //one prep just to get these non-zero, but they wont be moved again
+    FrameRefreshShader(&generalShader_noCamMovement, unscaledTime, cameraPosition,  worldScale, Vector2Zero());
+
 }
 
 void BattleFrameLoop(){
@@ -333,7 +340,7 @@ void BattleFrameLoop(){
     for(int d = 0; d < mapFromDisk.ecount; d++){
         if(mapFromDisk.enemies[d].illuminationThisFrame > 0.1 && mapFromDisk.enemies[d].alive && mapFromDisk.enemies[d].includedInScene){
             RenderShipColor(&mapFromDisk.enemies[d], 0.3, Vector3Scale(col, fminf(1, mapFromDisk.enemies[d].illuminationThisFrame)));
-            SteerShipBattle(&mapFromDisk.enemies[d], true, mapFromDisk.islands);
+            SteerShipBattle(&mapFromDisk.enemies[d], true, &mapFromDisk, 0.3);
         }
     }
     rlEnd();          
@@ -350,7 +357,7 @@ void BattleFrameLoop(){
     for(int i = 0; i < mapFromDisk.fcount; i++){
         if(!mapFromDisk.friendlies[i].alive || !mapFromDisk.friendlies[i].includedInScene)continue;
         RenderShipColor(&mapFromDisk.friendlies[i], 0.3, col);
-        SteerShipBattle(&mapFromDisk.friendlies[i], false, mapFromDisk.islands);
+        SteerShipBattle(&mapFromDisk.friendlies[i], false, &mapFromDisk, 0.3);
         active_fcount++;
         // DrawLineEx(WorldToScreen(currentMap.friendlies[i].wPos), mousePos_ScreenCoords, 3,  WHITE);
         // DrawCircleV(WorldToScreen(currentMap.friendlies[i].wPos), 30, WHITE);
@@ -447,9 +454,9 @@ void BattleFrameLoop(){
         battleOverTime = unscaledTime;
         // WonBattleSwitch();
     }
-    if(!battleOver && unscaledTime - lastContactTime > disengageTime){
+    if(!battleOver && scaledTime - lastContactTime > disengageTime){
         //DISENGAGE
-        wonlostbattle  = Disengage;
+        wonlostbattle = Disengage;
         battleOverTime = unscaledTime;
         battleOver = true;
 
@@ -468,21 +475,14 @@ void BattleFrameLoop(){
 
         if(IsPointWithinIslands(mousePos)){
             DrawCircleV(mousePos_ScreenCoords, 5, RED);
-        }else{
-            DrawCircleV(mousePos_ScreenCoords, 5, GREEN);
-        }
-        for(int i = 0; i < mapFromDisk.fcount; i++){
-            if(IsPointInShip(mousePos, &mapFromDisk.friendlies[i], 0.3)){
-                DrawCircleV(mousePos_ScreenCoords, 5, RED);
-            }
         }
 
-        for(int i = 0; i < mapFromDisk.fcount; i++){
-            if(!mapFromDisk.friendlies[i].alive)continue;
-            if(Vector2Distance(mapFromDisk.friendlies[i].wPos, mousePos) < 0.1){
-                mapFromDisk.friendlies[i].selected = true;
+        Ship * nearest = NearestShip(mapFromDisk.friendlies, mapFromDisk.fcount, mousePos);
+        if(nearest){
+            if(Vector2Distance(nearest->wPos, mousePos) < 0.15){ //so we can unselect all
+                nearest->selected = true;
             }
-        }   
+        }
     }
     if(IsKeyDown(KEY_D)){
         cameraPosition.x += fixedDeltaTime * worldScale;
@@ -542,15 +542,16 @@ void BattleUIRender(){
     for(int i = 0 ; i < mapFromDisk.fcount; i++){
         if(mapFromDisk.friendlies[i].selected){
             DrawText(mapFromDisk.friendlies[i].shipName, WIDTH * RSCALE - border - diff - 25, 200 + numSel * 80, 18, WHITE);
-            Vector3 col = (Vector3){1, 1, 1};
+            float grey = 0.5;
+            Vector3 col = (Vector3){grey, grey, grey};
 
-            DotShaderValues(&generalShader, 0.2, 70, col);
-            SetShaderValue(generalShader.shader, generalShader.colLoc, &col, SHADER_UNIFORM_VEC3);
-            BeginShaderMode(generalShader.shader);
+            DotShaderValues(&generalShader_noCamMovement, 0.2, 100, col);
+            SetShaderValue(generalShader_noCamMovement.shader, generalShader_noCamMovement.colLoc, &col, SHADER_UNIFORM_VEC3);
+            BeginShaderMode(generalShader_noCamMovement.shader);
             rlBegin(RL_TRIANGLES);
             rlColor4ub(255, 255, 255, 255);
 
-            RenderShipIconAtPoint(&mapFromDisk.friendlies[i], 60, (Vector2){WIDTH * RSCALE * 0.93, 245 + numSel * 80});//
+            RenderShipIconAtPoint(&mapFromDisk.friendlies[i], 60, (Vector2){WIDTH * RSCALE * 0.91, 245 + numSel * 80});//
             // cruiser.polyCenter = (Vector2){WIDTH * RSCALE * 0.93, 245 + numSel * 80};
             numSel++;
             // cruiser.polyScale = 60;

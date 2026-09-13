@@ -4,7 +4,7 @@
 #include "string.h"
 
 Gun FiveInch = {
-    .range = 0.3,
+    .range = 0.2,
     .reloadTime = 5,
     .explosionRadius = 0.007,
     .spread = 0.03,
@@ -12,7 +12,7 @@ Gun FiveInch = {
     .shotWidth = 1
 };
 Gun EightInch = {
-    .range = 0.5,
+    .range = 0.3,
     .reloadTime = 4,
     .explosionRadius = 0.009,
     .spread = 0.02,
@@ -20,7 +20,7 @@ Gun EightInch = {
     .shotWidth = 1
 };
 Gun SixteenInch = { 
-    .range = 0.8,
+    .range = 0.3,
     .reloadTime = 8,
     .explosionRadius = 0.012,
     .spread = 0.01,
@@ -54,10 +54,23 @@ Battery threeGun = {
     .searchCooldown = 1,  //<= NOT THE SAME AS RELOAD TIME
 };
 
+
+Ship TransportStats = {
+    .speed = 0.05,
+    .batteryCount = 0,
+    .alive = true,
+    .health  = 80,
+    .includedInScene = true,
+    .scale = 0.01,
+    .searchCooldown = 999,  //<= NOT THE SAME AS RELOAD TIME
+    .searchRange = BATTLE_SEARCHRANGE,
+};
+
 Ship DestroyerStats = {
+    .speed = 0.13,
     .batteryCount = 2,
     .alive = true,
-    .health  = 100,
+    .health  = 150,
     .includedInScene = true,
     .scale = 0.008,
     .searchCooldown = 1,  //<= NOT THE SAME AS RELOAD TIME
@@ -65,6 +78,7 @@ Ship DestroyerStats = {
 };
 
 Ship CruiserStats = {
+    .speed = 0.15,
     .batteryCount = 3,
     .alive = true,
     .health = 300,
@@ -75,6 +89,7 @@ Ship CruiserStats = {
 };
 
 Ship BattleshipStats = {
+    .speed = 0.1,
     .batteryCount = 4,
     .alive = true,
     .health  = 600,
@@ -88,6 +103,7 @@ void LoadShipIcons(){
     cruiser = LoadPolyFile("cruiser.poly");
     battleship = LoadPolyFile("battleship.poly");
     destroyer = LoadPolyFile("destroyer.poly");
+    transport = LoadPolyFile("transport.poly");
 }
 
 void MakeLoadouts(){
@@ -209,8 +225,13 @@ void RehydrateShip(Ship * torehydrate, ShipLog log){
             *torehydrate = BattleshipStats;
             memcpy(torehydrate->batteries, BattleshipLoadout, sizeof(BattleshipLoadout));
         break;
+        case Transport:
+            *torehydrate = TransportStats;
+            memset(torehydrate->batteries, 0, sizeof(DestroyerLoadout));
+        break;
         case Cruiser: //not real yet
-            *torehydrate = CruiserStats;
+            printf("error: cruiser not implemented\n");
+            // *torehydrate = CruiserStats;
             // memcpy(torehydrate->batteries, DestroyerLoadout, sizeof(CruiserLoadout));
         break;
     }

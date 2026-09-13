@@ -22,7 +22,7 @@ Font cutfont;
 PolyPoly sub;
 PolyPoly capt;
 PolyPoly conning;
-float sceneDurations[] = {5, 5, 5, 5, 5};
+float sceneDurations[] = {0.5, 0.5, 0.5, 0.5, 0.5};
 float startCutsceneTime;
 
 Vector2 focusTarget;
@@ -30,6 +30,7 @@ Vector2 focusTarget;
 extern PolyPoly cruiser;
 extern PolyPoly destroyer;
 extern PolyPoly battleship;
+extern PolyPoly transport;
 
 void InitCutScene(){
     worldScale = 2;
@@ -125,6 +126,11 @@ void RenderShipIconAtPoint(Ship * ship, int polyScale, Vector2 point){
         battleship.polyCenter = point;
         battleship.polyScale =polyScale;
         RenderPolyAsUI(battleship);
+    }
+    else if(ship->shipType == Transport){
+        transport.polyCenter = point;
+        transport.polyScale =polyScale;
+        RenderPolyAsUI(transport);
     }
 }
 
