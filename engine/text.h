@@ -1,3 +1,4 @@
+#pragma once
 #include <string.h>
 
 #define MAXBUFFERLENGTH 1024

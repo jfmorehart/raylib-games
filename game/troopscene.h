@@ -13,6 +13,8 @@
 #include "mapshaders.h"
 #include "rlgl.h"
 #include "cutscene.h"
+#include "text.h"
+#include "progression.h"
 
 /*
 The point of this scene is to familiarize the player with the ships and captains and men that they are about to put at risk!
@@ -41,11 +43,34 @@ typedef enum IntroState{
 }IntroState;
 IntroState state;
 
+TextBuffer text;
+int textCharsToRender;
+char tempTextBuffer[MAXBUFFERLENGTH];
+
+void SwitchPage(IntroState to){
+    switch(to){
+        case Impetus:
+            textCharsToRender = 0;
+            ClearBuffer(&text);
+            AddBufferText(&text, GetEnemyActionText());
+        break;
+        case Mission:
+            textCharsToRender = 0;
+            ClearBuffer(&text);
+            AddBufferText(&text, GetMissionText());
+            // AddBufferText(&text, "");
+        break;
+        case Ships:
+        break;
+    }
+}
 
 void InitTroopScene(){
     state = Impetus;
+    SwitchPage(Impetus);
+
     ClearBackground(BLACK);
-    
+
     worldScale = 2;
     cameraPosition = worldZero;
     FrameRefreshShader(&generalShader, unscaledTime, cameraPosition, worldScale, worldZero);
@@ -62,8 +87,34 @@ void InitTroopScene(){
 
 void RenderShipTroopScreen(Vector2 screenPos, Ship ship){
 
-    DrawText(ship.shipName, screenPos.x - 100, screenPos.y + 55, 20, WHITE);//, int fontSize, Color color)
-    DrawText(ship.captName, screenPos.x - 100, screenPos.y + 85, 15, GRAY);//, int fontSize, Color color)
+    //render a couple ships at a time and a way to scroll between them
+
+    //an icon of the ship
+    //name of the ship
+    //captain of the ship
+    //speed, armamanents, 
+    //total souls aboard
+    int textLROffset = 70;
+    switch(ship.shipType){
+        case Battleship:
+            DrawText("Battleship", screenPos.x - textLROffset, screenPos.y - 70, 15, GRAY);//, int fontSize, Color color)
+        break;
+        case Destroyer:
+            DrawText("Destroyer", screenPos.x - textLROffset, screenPos.y -70, 15, GRAY);//, int fontSize, Color color)
+        break;
+    }
+
+    DrawText(ship.shipName, screenPos.x - textLROffset, screenPos.y + 55, 20, WHITE);//, int fontSize, Color color)
+    DrawText(ship.captName, screenPos.x - textLROffset, screenPos.y + 85, 15, GRAY);//, int fontSize, Color color)
+    switch(ship.shipType){
+        case Battleship:
+        DrawText("2,500 men", screenPos.x - textLROffset, screenPos.y + 105, 15, DARKGRAY);//, int fontSize, Color color)
+        break;
+        case Destroyer:
+           DrawText("300 men", screenPos.x - textLROffset, screenPos.y + 105, 15, DARKGRAY);//, int fontSize, Color color)
+        break;
+    }
+
 
     Vector3 col = (Vector3){1, 1, 1};
     DotShaderValues(&generalShader, 0.2, 12, col);
@@ -95,6 +146,7 @@ void DrawButton(char * text, Vector2 buttonTL, IntroState toset){
                 SwitchScenes(MapScene);
             }else{
                 state = toset;
+                SwitchPage(toset);
             }
         }
     }else{
@@ -134,7 +186,9 @@ void ShipsUnderCommand(){
 void RenderImpetus(){
     DrawText("ENEMY ACTION", 100, 100, 60, WHITE);//, int fontSize, Color color)
 
-    DrawText("Multiple intelligence reports point towards a convoy leaving Luhansk tonight.\nIt is imperative to the party that it is not allowed to reach its destination.", 100, 300, 30, WHITE);
+    snprintf(tempTextBuffer, textCharsToRender, "%s", text.charArray);
+    DrawText(tempTextBuffer, 100, 300, 30, GRAY);
+
     Vector2 buttonTL = (Vector2){RSCALE * WIDTH * 0.5, RSCALE * HEIGHT * 0.8};
     DrawButton("Next", buttonTL, Mission);
 }
@@ -189,17 +243,22 @@ void RenderMission(){
     DrawRectangle(WIDTH * start, HEIGHT * mult, WIDTH * mult - WIDTH * start, 5, GRAY);
     DrawRectangle(WIDTH * mult- 5, HEIGHT * start, 5, HEIGHT * mult - HEIGHT * start, GRAY);
 
+    snprintf(tempTextBuffer, textCharsToRender, "%s", text.charArray);
+    DrawText(tempTextBuffer, 100, HEIGHT * RSCALE * 0.7, 30, GRAY);
+
 }
+
+float lastTextTick;
+float textTickDelay =0.03;
 
 void TroopUIUpdate(){
 
-    //render a couple ships at a time and a way to scroll between them
-
-    //an icon of the ship
-    //name of the ship
-    //captain of the ship
-    //speed, armamanents, 
-    //total souls aboard
+    if(unscaledTime - lastTextTick > textTickDelay){
+        if(textCharsToRender < text.cham){
+            textCharsToRender++;
+            lastTextTick = unscaledTime;
+        }
+    }
 
     switch(state){
         case Impetus:

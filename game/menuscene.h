@@ -102,7 +102,7 @@ void MenuUpdate(){
 
     ClearBackground(BLACK);
 
-    if(unscaledTime - lastWriteTime > 0.01){
+    if(unscaledTime - lastWriteTime > 0.02){
         WriteBacklogToDisplayBuffer_Tick();
         lastWriteTime = unscaledTime;
     }

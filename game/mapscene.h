@@ -2,7 +2,7 @@
 #include "routines.h"
 #include "taskforce.h"
 
-#define DAY_LENGTH 2.5
+#define DAY_LENGTH 5
 #define MAP_SEARCHRANGE 0.3
 
 void TimeRoutine(Routine *routine);

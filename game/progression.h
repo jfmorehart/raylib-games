@@ -6,6 +6,7 @@
 #include "ships.h"
 #include "fleet.h"
 #include "map.h"
+#include "text.h"
 
 typedef enum Admirals{
     Raenin, 
@@ -19,6 +20,8 @@ typedef struct Campaign{
     char filepath [30];
     Admirals name;
     MapRecord maps [5];
+    char enemyActionText [5][MAXBUFFERLENGTH];
+    char missionText [5][MAXBUFFERLENGTH];
     Fleet starterFleet;
     Fleet enemyStarterFleet;
 }Campaign;
@@ -32,4 +35,7 @@ typedef struct SaveFile {
 
 void CreateCampaigns();
 void OnCompleteMap();
+
+char * GetEnemyActionText();
+char * GetMissionText();
 

@@ -243,7 +243,7 @@ void PlaySong(float predictiveTime){
     if(predictiveTime- nextNoteTime < 0) return;
 
     if(currentNoteInSong >= songnum) currentNoteInSong = 0;
-    printf("note: %d\n", currentNoteInSong);
+    // printf("note: %d\n", currentNoteInSong);
     notes[noteCount] = song[currentNoteInSong];
     notes[noteCount].startTime = nextNoteTime;
     notes[noteCount].active = true;

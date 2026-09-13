@@ -1,5 +1,6 @@
 #include <string.h>
 #include "text.h"
+#include <stdio.h>
 
 
 void AddBufferText(TextBuffer * buffer, char * text){
