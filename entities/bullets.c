@@ -30,6 +30,8 @@ extern Bullet bulletPool[];
 
 extern Map mapFromDisk;
 
+extern float lastContactTime;
+
 bool DamageShips(Vector2 position, float radius, Ship **allShips, int count, int damage){
     int h = 0;
     for(int i = 0; i < count; i++){
@@ -272,6 +274,7 @@ void BatteryUpdate(const Ship *ship, Ship *targetShips, int arrayLen, Battery *b
             if(fabsf(localTarget) < DEG2RAD * 10){ //BEAM WIDTH
                 BatteryEngageTarget(batteryPosition, battery, battery->shipTarget->wPos, movement);
                 battery->currentState = Engaging;
+                lastContactTime = scaledTime;
             }
 
         }else{

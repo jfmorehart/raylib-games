@@ -15,7 +15,7 @@
 #include "game/cutscene.h"
 #include"vendor/rfxgen/rfxgen.h"
 #include "troopscene.h"
-#include "shiploadouts.h"
+#include "progression.h"
 
 #include <math.h>       
 #include <stdio.h>
@@ -31,6 +31,8 @@ Shader postProcess_frag;
 void RunOnStart(){
 
     CreateWordBank();
+    CreateCampaigns();
+
     scenes[0] = (Scene){Menu, MenuInit};
     scenes[1] = (Scene){MapScene, InitMapScene};
     scenes[2] = (Scene){Battle, InitBattleScene};
@@ -137,6 +139,7 @@ int main(void)
         }
 
         switch(currentScene){
+            case TroopScene:
             case Menu:
             //menuUpdate uses GUI update (below)
                 ClearBackground(BLACK);

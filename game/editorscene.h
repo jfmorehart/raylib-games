@@ -155,7 +155,7 @@ void InitEditorScene(){
     timeScale = 0;
 
     Map loadMap = LoadMapFile("new.map");
-    CompleteRehydrateMap(&loadMap);
+    RehydrateTFsFromDisk(&loadMap);
 
     if(loadMap.islandLength > 0 && loadMap.islandLength <  ISLANDCOUNT){
         //good data
@@ -882,7 +882,9 @@ void PlaceIslandMode(){
         if(localMap.fcount < MAX_SHIPS) {
             if(IsKeyPressed(KEY_K)){
 
-                localMap.friendlies[localMap.fcount] = destroyerShip;
+                localMap.friendlies[localMap.fcount] = DestroyerStats;
+                localMap.friendlies[localMap.fcount].shipType = Destroyer;
+                memcpy(localMap.friendlies[localMap.fcount].batteries, DestroyerLoadout, sizeof(DestroyerLoadout)); 
                 localMap.friendlies[localMap.fcount].wPos = mousePos;
                 localMap.friendlies[localMap.fcount].team = true;
 
@@ -927,7 +929,9 @@ void PlaceIslandMode(){
 
         if(localMap.ecount < MAX_SHIPS) {
             if(IsKeyPressed(KEY_L)){
-                localMap.enemies[localMap.ecount] = destroyerShip;
+                localMap.enemies[localMap.ecount] = DestroyerStats;
+                localMap.enemies[localMap.ecount].shipType = Destroyer;
+                memcpy(localMap.enemies[localMap.ecount].batteries, DestroyerLoadout, sizeof(DestroyerLoadout)); 
                 localMap.enemies[localMap.ecount].wPos = mousePos;
                 localMap.enemies[localMap.ecount].team = false;
                 localMap.enemies[localMap.ecount].shipType = Destroyer;
@@ -1000,7 +1004,7 @@ void EditorUILoop(){
             if(IsMouseButtonPressed(0)){
                 printf("loading map: %s\n", StringAt(&allMaps, i));
                 mapFromDisk = LoadMapFile(StringAt(&allMaps, i));
-                CompleteRehydrateMap(&mapFromDisk);
+                RehydrateTFsFromDisk(&mapFromDisk);
 
                 worldTime = 0;
                 localMap = mapFromDisk;

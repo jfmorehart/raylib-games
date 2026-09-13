@@ -71,7 +71,7 @@ int splashCount = 100;
 Smoke splashPool[100];
 
 float lastContactTime;
-float disengageTime  = 10;
+float disengageTime  = 20;
 
 void UpdateAndRenderFireStacks(){
     bool tickDamage = unscaledTime - firetick_last > firetick_delay;
@@ -175,6 +175,11 @@ void InitBattleScene(){
         if(mapFromDisk.friendlies[i].includedInScene){
             // mapFromDisk.friendlies[i].includedInScene = true;
             allShipsIncludedInScene[allShipsIncludedCount] = &mapFromDisk.friendlies[i];
+
+            for(int b = 0; b < allShipsIncludedInScene[allShipsIncludedCount]->batteryCount; b++){
+                allShipsIncludedInScene[allShipsIncludedCount]->batteries[b].currentState = Off;
+            }
+            // allShipsIncludedInScene[allShipsIncludedCount]->batteries
             allShipsIncludedCount++;
             fc++;
         }
@@ -329,7 +334,6 @@ void BattleFrameLoop(){
         if(mapFromDisk.enemies[d].illuminationThisFrame > 0.1 && mapFromDisk.enemies[d].alive && mapFromDisk.enemies[d].includedInScene){
             RenderShipColor(&mapFromDisk.enemies[d], 0.3, Vector3Scale(col, fminf(1, mapFromDisk.enemies[d].illuminationThisFrame)));
             SteerShipBattle(&mapFromDisk.enemies[d], true, mapFromDisk.islands);
-            lastContactTime = unscaledTime;
         }
     }
     rlEnd();          

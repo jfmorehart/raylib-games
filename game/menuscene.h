@@ -7,6 +7,7 @@
 #include <string.h>
 #include "cutscene.h"
 #include "taskforce.h"
+#include "progression.h"
 
 Font menufont;
 
@@ -24,14 +25,6 @@ typedef struct DisplayLine{
     int renderedCharCount; //if this == length, we're done.
 }DisplayLine;
 
-
-typedef enum Campaign{
-    Raenin, 
-    Lutzo, 
-    Kenning, 
-    Artem
-}Campaign;
-Campaign selected;
 
 char displayBuffer[MAXCHARS];
 int displayBufferCham = 0;
@@ -203,8 +196,8 @@ void MenuUpdate(){
         currentChar = 0;
         memset(displayBuffer, 0, sizeof(displayBuffer));
         displayBufferCham = 0;
-        mapFromDisk = LoadMapFile("bergen.map");
-        CompleteRehydrateMap(&mapFromDisk);
+        mapFromDisk = LoadMapFile("raenin0.map");
+        RehydrateTFsFromDisk(&mapFromDisk);
         SwitchScenes(TroopScene);
     }
 

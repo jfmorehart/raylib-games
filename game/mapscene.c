@@ -16,6 +16,7 @@
 #include "cutscene.h"
 #include "mapscene.h"
 #include "filesystem.h"
+#include "progression.h"
 
 #include <math.h>       
 #include <stdio.h>
@@ -267,7 +268,8 @@ void ObjectiveUpdate(){
                 if(obj->type == Spotter){
                     obj->alive = true; //set them active if they spot something;
                 }else if (obj->type == ReachTarget){
-                    SwitchScenes(Menu);
+                    // SwitchScenes(Men);
+                    OnCompleteMap();
                     return;
                 }
             }

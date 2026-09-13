@@ -91,7 +91,7 @@ void RehydrateTaskForces(int * tf_length, TaskForce *torehydrate, Fleet * friend
         }
     }
 }
-void CompleteRehydrateMap(Map * toreh){
+void RehydrateTFsFromDisk(Map * toreh){
     //load active fleet info
     char filepath [30];
 

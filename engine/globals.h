@@ -21,12 +21,12 @@ Vector2 yBounds;
 
 
 #define ISLANDCOUNT  40
-#define MAX_SHIPS 10
+#define MAX_SHIPS 20
 #define FRAMERATE 120
 
-#define TF_MAX_RADIUS 0.5
+#define TF_MAX_RADIUS 0.3
 #define MAX_SHIPS_IN_TF 10
-#define MAX_TFS 10
+#define MAX_TFS 6
 
 int frameCount;
 float frames_fudged;

@@ -44,7 +44,8 @@ IntroState state;
 
 void InitTroopScene(){
     state = Impetus;
-    ClearBackground(GREEN);
+    ClearBackground(BLACK);
+    
     worldScale = 2;
     cameraPosition = worldZero;
     FrameRefreshShader(&generalShader, unscaledTime, cameraPosition, worldScale, worldZero);

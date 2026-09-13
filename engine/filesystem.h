@@ -5,13 +5,14 @@
 
 #include "islands.h"
 #include "game/map.h"
+#include "fleet.h"
 
 #ifdef _WIN32
 #include <direct.h> //WINDOWS
 #elif __APPLE__
 #include <sys/stat.h> //MACOS
 
-#include "fleet.h"
+
 
 #endif
 
@@ -39,7 +40,8 @@ typedef enum FileType{
     IslandFile,
     MapFile,
     LevelFile,
-    PolyPolyFile
+    PolyPolyFile,
+    FleetFile
 
 } FileType;
 
@@ -51,6 +53,7 @@ int AppendStringToStrArr(const char* str, StringArray * strArr);
 
 bool FileCheck(const char* path);
 
+MapRecord LoadMapRecord(const char* path); 
 Map LoadMapFile(const char* path);
 
 PolyPoly LoadPolyFile(const char* path);
@@ -67,4 +70,6 @@ StringArray GetMapNames();
 StringArray GetPolyNames();
 
 void ReAppendSuffix(char* dest, char * toread, const char * toappend);
+
+void RehydrateMap(Map * toreh, MapRecord * record);
 MapRecord DehydrateMap(Map * dehydrate);

@@ -4,6 +4,7 @@
 #include "game/map.h"
 #include <string.h>
 #include "filesystem.h"
+#include "progression.h"
 
 #ifdef _WIN32
 #include <direct.h> //WINDOWS
@@ -77,6 +78,24 @@ MapRecord DehydrateMap(Map * dehydrate){
     memcpy(dry.islands, dehydrate->islands, sizeof(Island) * dry.islandLength);
     return dry;
 }
+MapRecord LoadMapRecord(const char* path){ //returns the dry record
+    MapRecord fromDisk;
+
+    char fullpath[30] = "editor/";
+    strcat(fullpath, path);
+    bool filexists = FileCheck (fullpath);
+    
+    if(filexists){
+        printf("found file: %s \n", fullpath);
+        FILE * fptr = fopen(fullpath, "rb");
+        fread(&fromDisk, sizeof(MapRecord), 1, fptr);
+        fclose(fptr);
+        AssignName(fromDisk.filename, path);
+        return fromDisk;
+    }
+    printf("error: %s, no such file found\n", fullpath);
+  return (MapRecord){0};
+}
 
 Map LoadMapFile(const char* path){ //rehydrates from MapRecord
     Map loadMap;
@@ -133,7 +152,6 @@ PolyPoly LoadPolyFile(const char* path){
     printf("error: %s, no such file found\n", fullpath);
   return (PolyPoly){0}; 
 }
-
 
 int GetMapCount(){
     #ifdef _WIN32

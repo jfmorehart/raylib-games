@@ -17,7 +17,7 @@ typedef struct TaskForce {
     bool selected;
 } TaskForce;
 
-void CompleteRehydrateMap(Map * toreh);
+void RehydrateTFsFromDisk(Map * toreh);
 void RehydrateTaskForces(int * tf_length, TaskForce *torehydrate, Fleet * friendly, Fleet * enemy, Map * placeShipsIn);
 void DehydrateTaskForces(int tf_count, TaskForce * tfs, Fleet * friendly, Fleet * enemy);
 void TFShipsWorldToLocal();
