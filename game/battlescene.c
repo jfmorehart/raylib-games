@@ -152,7 +152,7 @@ void ApplyFireStacks(Ship * toship, int amount){
 
 void InitBattleScene(){
 
-    lastContactTime = scaledTime + 5;
+    lastContactTime = unscaledTime + 5;
 
     printf("cpos %f, %f, wscale %f\n", cameraPosition.x, cameraPosition.y, worldScale);
     worldScale = 0.25;
