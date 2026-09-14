@@ -128,7 +128,7 @@ void RenderShipTroopScreen(Vector2 screenPos, Ship ship){
                 DrawText("critically damaged", screenPos.x - textLROffset, screenPos.y + 125, 15, DARKGRAY);//, int fontSize, Color color)
             }
         break;
-        
+
         case Transport:
             DrawText("300 men", screenPos.x - textLROffset, screenPos.y + 105, 15, DARKGRAY);//, int fontSize, Color color)
             if(ship.health > TransportStats.health * 0.5 && ship.health < TransportStats.health){
@@ -250,20 +250,21 @@ void RenderMission(){
     rlSetTexture(0); 
     EndShaderMode();
 
-    float start = 0.1;
-    float mult = 0.9;
-    float border = 120;
+    float border = 30;
+    float topinlay = 30;
+    float diff = 0.4 * (WIDTH - HEIGHT);
     
-    DrawRectangle(WIDTH * start, HEIGHT * mult, WIDTH * mult +border, border, BLACK);
-    DrawRectangle(WIDTH * mult- 5, HEIGHT * start, 5 + border, HEIGHT * mult + border, BLACK);
+    DrawRectangle(0, 0, WIDTH, topinlay, BLACK);//top
+    DrawRectangle(0, 0, diff, HEIGHT, BLACK); //left
 
-    DrawRectangle(0, 0,WIDTH * mult, HEIGHT * start, BLACK);
+    DrawRectangle(0, HEIGHT - topinlay, WIDTH, topinlay + border, BLACK); // bottom
+    DrawRectangle(WIDTH - diff, 0, diff, HEIGHT, BLACK); //right
 
-    DrawRectangle(WIDTH * start, HEIGHT * start, WIDTH * mult - WIDTH * start, 5, GRAY);
-    DrawRectangle(WIDTH * start, HEIGHT * start, 5, HEIGHT * mult - HEIGHT * start, GRAY);
+    DrawRectangle(diff, topinlay, WIDTH - diff * 2, 5, GRAY); //top
+    DrawRectangle(diff, topinlay, 5, HEIGHT- topinlay * 2, GRAY); // left?
 
-    DrawRectangle(WIDTH * start, HEIGHT * mult, WIDTH * mult - WIDTH * start, 5, GRAY);
-    DrawRectangle(WIDTH * mult- 5, HEIGHT * start, 5, HEIGHT * mult - HEIGHT * start, GRAY);
+    DrawRectangle(diff, HEIGHT - topinlay, WIDTH - diff * 2, 5, GRAY); //bottom
+    DrawRectangle(WIDTH - diff, topinlay, 5, HEIGHT - topinlay * 2, GRAY); //right
 
     snprintf(tempTextBuffer, textCharsToRender, "%s", text.charArray);
     DrawText(tempTextBuffer, 100, HEIGHT * RSCALE * 0.7, 30, GRAY);

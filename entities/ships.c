@@ -220,6 +220,8 @@ void SteerShipBattle(Ship *ship, bool avoidIslands, Map * map, float scaleMult){
         if(IsPointWithinIslands(noisePoint)){
             // ship->health -= 1;
             ship->speed *= 1 - scaledDeltaTime * 0.7; //running aground
+            ship->health -= scaledDeltaTime * 3; //running aground damage
+            // printf("hp: %f, damage: %f\n", ship->health, scaledDeltaTime * 0.5);
             if(ship->health < 1){
                 ship->alive = false;
                 FireSmoke(noisePoint, 20);
